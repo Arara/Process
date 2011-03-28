@@ -1,4 +1,4 @@
-(Script originally created in 2009/01/25 for a french website : [phpcs.com](http://phpcs.com "PHP CS"))
+(**Script originally created in 2009/01/25** for a french website : [http://www.phpcs.com/codes/PHP5-MULTI-THREADING-ACCELERATION-TEMPS-TRAVAIL-SCRIPT_49077.aspx](http://www.phpcs.com/codes/PHP5-MULTI-THREADING-ACCELERATION-TEMPS-TRAVAIL-SCRIPT_49077.aspx "PHP CS"))
 
 L'article rédigé par Martin Roest [http://www.ibuildings.com/blog/archives/1539-Boost-performance-with-parallel-processing.html](http://www.ibuildings.com/blog/archives/1539-Boost-performance-with-parallel-processing.html) nous montre à quel point il peut-être facile de jouer avec plusieurs processus en même temps, même en PHP.
 
@@ -10,39 +10,37 @@ En gros et pour faire simple, ce type de script s'utilise en ligne de commande (
 
 Pour vous prouver l'efficacité de mes dires, voici un code bateau qui utilise 5 processus simultanés pour exécuter un script :
 
-`
-<?php
-/**
- * Voici un exemple de ce que cela pourrait donner :
- * Dans un terminal sous linux, appelez le, et vous devriez voir la façon dont la méthode "doBigWork" est appelée (5 fois par 5 fois jusqu'à 12) (5, 5, 2)
- */
-require_once ('ProcessManager.php');
-
-function doBigWork ($iWork) {
-	echo 'Sleeping for Work N° '.$iWork."\n";
-	sleep (20);
-}
-
-try {
-	// We instanciate the ProcessManager with 5 childs
-	$oPM = new ProcessManager (5);
-}
-catch (Exception $oE) {
-	die ('Your configuration does not support "pcntl" methods.');
-}
-
-for ($i = 0; $i < 12; $i++) {
-	// It could happen that the script couldn't fork a process. In that case, an Exception would be raised
+	<?php
+	/**
+	 * Voici un exemple de ce que cela pourrait donner :
+	 * Dans un terminal sous linux, appelez le, et vous devriez voir la façon dont la méthode "doBigWork" est appelée (5 fois par 5 fois jusqu'à 12) (5, 5, 2)
+	 */
+	require_once ('ProcessManager.php');
+	
+	function doBigWork ($iWork) {
+		echo 'Sleeping for Work N° '.$iWork."\n";
+		sleep (20);
+	}
+	
 	try {
-		$oPM->fork ('doBigWork', array ($i));
+		// We instanciate the ProcessManager with 5 childs
+		$oPM = new ProcessManager (5);
 	}
 	catch (Exception $oE) {
-		echo 'Using non forked way :'."\n";
-		doBigWork ($i);
+		die ('Your configuration does not support "pcntl" methods.');
 	}
-}
-?>
-`
+	
+	for ($i = 0; $i < 12; $i++) {
+		// It could happen that the script couldn't fork a process. In that case, an Exception would be raised
+		try {
+			$oPM->fork ('doBigWork', array ($i));
+		}
+		catch (Exception $oE) {
+			echo 'Using non forked way :'."\n";
+			doBigWork ($i);
+		}
+	}
+	?>
 
 Au final, sans utiliser plusieurs processus, ce code aurait pris 12*20 = 240 secondes.
 Avec 5 enfants, le temps de travail est divisé par ... 5, soit 48 secondes ! Quand même !
