@@ -5,6 +5,9 @@
  */
 namespace Console\Process;
 
+/** Console\Process\Memory **/
+require_once 'Console/Process/Memory.php';
+
 /**
  * Class to create forked process.
  *
@@ -194,6 +197,7 @@ class Fork
             $message = 'There is no forked process.';
             throw new \UnexpectedValueException($message);
         }
+        $this->_memory->clean();
         posix_kill($this->_pid, SIGKILL);
     }
 

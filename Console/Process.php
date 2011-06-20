@@ -5,6 +5,9 @@
  */
 namespace Console;
 
+/** Console\Process\Fork **/
+require_once 'Console/Process/Fork.php';
+
 /**
  * Class that handle creating multiple process.
  *
@@ -30,19 +33,12 @@ class Process
     private $_pid;
 
     /**
-     * Contain the priority for the current process.
-     *
-     * @var int
-     */
-    private $_priority = 1;
-
-    /**
      * Contains a list of all the children PID's.
      * (in case the current process is the father)
      *
      * @var array
      */
-    private $_children = array();
+    private $_forks = array();
 
     /**
      * Contain the number of max allowed children.
@@ -75,13 +71,6 @@ class Process
             throw new \UnexpectedValueException($message);
 
         }
-
-        $this->_pid = getmypid();
-
-        // Setting up the signal handlers
-        $this->addSignal(SIGTERM, array($this, 'signalHandler'));
-        $this->addSignal(SIGQUIT, array($this, 'signalHandler'));
-        $this->addSignal(SIGINT, array($this, 'signalHandler'));
     }
 
     /**
@@ -91,116 +80,48 @@ class Process
      */
     public function __destruct()
     {
-        foreach ($this->_children as $childPid) {
-            pcntl_waitpid($childPid, $status);
+        foreach ($this->_forks as $fork) {
+            pcntl_waitpid($fork->getPid(), $status);
         }
     }
 
     /**
-     * Fork a process.
+     * Forks a process.
      *
      * @param   array|string|Cousure $callback
      * @param   int[optional] $uid
      * @param   int[optional] $gid
-     * @return  void
+     * @return  Console\Process\Fork Forked process
      */
     public function fork($callback, $uid = null, $gid = null)
     {
-        if (!is_callable($callback)) {
-            $message = 'Callback given must be callable';
-            throw new \InvalidArgumentException($message);
+        $fork = new Process\Fork($uid, $gid);
+        $fork->setCallback($callback)
+             ->start();
+
+        $this->_forks[] = $fork;
+
+        if (count($this->_forks) >= $this->_maxChildren) {
+            $first = array_shift($this->_forks);
+            pcntl_waitpid($first->getPid(), $status);
         }
-
-        $pid = pcntl_fork();
-
-        if ($pid === -1) {
-            $message = 'Unable to fork.';
-            throw new \RuntimeException($message);
-        } elseif ($pid > 0) {
-
-            // We are in the parent process
-            $this->_children[] = $pid;
-
-            if (count($this->_children) >= $this->_maxChildren) {
-                pcntl_waitpid(array_shift($this->_children), $status);
-            }
-        } elseif ($pid === 0) {
-
-            if ($gid !== null) {
-                posix_setgid($gid);
-            }
-
-            if ($uid !== null) {
-                posix_setuid($uid);
-            }
-
-            // We are in the child process
-            call_user_func($callback);
-            exit(0);
-        }
-    }
-
-    /**
-     * Add a new signal that will be called to the given function with
-     * an optional callback.
-     *
-     * @param   int $signal
-     * @param   string|array|Clousure $callback
-     * @return  Process Fluent interface, returns self.
-     */
-    public function addSignal($signal, $callback)
-    {
-        if (!is_int($signal)) {
-            $message = 'Signal must be an integer.';
-            throw new \InvalidArgumentException($message);
-        }
-
-        if (!is_callable($callback)) {
-            $message = 'Callback must be callable.';
-            throw new \InvalidArgumentException($message);
-        }
-
-        if (!pcntl_signal($signal, $callback)) {
-            $message = 'Unable to set up the signal.';
-            throw new \RuntimeException($message);
-        }
-        return $this;
-    }
-
-    /**
-     * The default signal handler, to avoid Zombies
-     *
-     * @param   int $signal
-     * @return  void
-     */
-    public function signalHandler($signal = SIGTERM)
-    {
-        switch ($signal) {
-            case SIGTERM: // Finish
-                exit(0);
-                break;
-            case SIGQUIT: // Quit
-            case SIGINT:  // Stop from the keyboard
-            case SIGKILL: // Kill
-                exit(1);
-                break;
-        }
+        return $fork;
     }
 
     /**
      * Define the the number of max allowed children.
      *
-     * @param   int $maxChildren
+     * @param   int $value
      * @return  Process Fluent interface, returns self
      */
-    public function setMaxChildren($maxChildren)
+    public function setMaxChildren($value)
     {
-        if (!is_int($maxChildren) || $maxChildren < 1) {
+        if (!is_int($value) || $value < 1) {
             $message = 'Children must be an int';
             throw new \InvalidArgumentException($message);
         }
 
-        $this->_maxChildren = $maxChildren;
+        $this->_maxChildren = $value;
         return $this;
     }
 
@@ -215,52 +136,15 @@ class Process
     }
 
     /**
-     * Set the priority of the current process.
-     *
-     * @param   int $priority
-     * @param   int $processIdentifier
-     * @return  Process Fluent interface, returns self
-     */
-    public function setPriority($priority, $processIdentifier = PRIO_PROCESS)
-    {
-        if (!is_int($priority) || $priority < -20 || $priority > 20) {
-            $message = 'Invalid priority.';
-            throw new \InvalidArgumentException($message);
-        }
-
-        if ($processIdentifier != PRIO_PROCESS
-                || $processIdentifier != PRIO_PGRP
-                || $processIdentifier != PRIO_USER) {
-            $message = 'Invalid Process Identifier type.';
-            throw new \InvalidArgumentException($message);
-        }
-
-        if (!pcntl_setpriority($priority, $this->_pid, $processIdentifier)) {
-            $message = 'Unable to set the priority.';
-            throw new \RuntimeException($message);
-        }
-
-        $this->_priority = $priority;
-        return $this;
-    }
-
-    /**
-     * Returns the priority of the current process.
-     *
-     * @return  int
-     */
-    public function getPriority()
-    {
-        return $this->_priority;
-    }
-
-    /**
      * Retursn the PID of the current process.
      *
      * @return  int
      */
     public function getPid()
     {
+        if (null === $this->_pid) {
+            $this->_pid = posix_getpid();
+        }
         return $this->_pid;
     }
 
