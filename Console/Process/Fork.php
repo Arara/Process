@@ -3,17 +3,15 @@
 /**
  * @namespace
  */
-namespace Console\Process;
-
-/** Console\Process\Memory **/
-require_once 'Console/Process/Memory.php';
+namespace PHProcess\Console\Process;
 
 /**
  * Class to create forked process.
  *
- * @package     Console
- * @subpackage  Console\Process
- * @author      Henrique Moody <henriquemoody@gmail.com>
+ * @category   PHProcess
+ * @package    PHProcess\Console
+ * @subpackage PHProcess\Console\Process
+ * @author     Henrique Moody <henriquemoody@gmail.com>
  */
 class Fork
 {
@@ -56,7 +54,7 @@ class Fork
     /**
      * Object that handles shared memory.
      *
-     * @var Console\Process\Memory
+     * @var PHProcess\Console\Process\Memory
      */
     private $_memory;
 
@@ -135,7 +133,7 @@ class Fork
      * Defines the callback to execute in the forked process.
      *
      * @param   mixed $callback
-     * @return  Console\Process\Fork Fluent interface, returns self.
+     * @return  PHProcess\Console\Process\Fork Fluent interface, returns self.
      */
     public function setCallback($callback)
     {
@@ -217,7 +215,7 @@ class Fork
      *
      * @param   int $signal
      * @param   string|array|Clousure $callback
-     * @return  Console\Process\Fork Fluent interface, returns self.
+     * @return  PHProcess\Console\Process\Fork Fluent interface, returns self.
      */
     public function addSignal($signal, $callback)
     {
@@ -263,7 +261,7 @@ class Fork
      *
      * @param   int $priority
      * @param   int $processIdentifier
-     * @return  Console\Process\Fork Fluent interface, returns self
+     * @return  PHProcess\Console\Process\Fork Fluent interface, returns self
      */
     public function setPriority($priority, $processIdentifier = PRIO_PROCESS)
     {
@@ -275,7 +273,7 @@ class Fork
         if ($processIdentifier != PRIO_PROCESS
                 || $processIdentifier != PRIO_PGRP
                 || $processIdentifier != PRIO_USER) {
-            $message = 'Invalid Console\Process\Fork Identifier type.';
+            $message = 'Invalid Process Identifier type.';
             throw new \InvalidArgumentException($message);
         }
 

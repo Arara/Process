@@ -3,14 +3,14 @@
 /**
  * @namespace
  */
-
-namespace Console\Process;
+namespace PHProcess\Console\Process;
 
 /**
  * Handles Shared Memoty data.
  *
- * @package    Console
- * @subpackage Console\Process
+ * @category   PHProcess
+ * @package    PHProcess\Console
+ * @subpackage PHProcess\Console\Process
  * @author     Henrique Moody <henriquemoody@gmail.com>
  */
 class Memory

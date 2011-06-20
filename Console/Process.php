@@ -3,19 +3,18 @@
 /**
  * @namespace
  */
-namespace Console;
-
-/** Console\Process\Fork **/
-require_once 'Console/Process/Fork.php';
+namespace PHProcess\Console;
 
 /**
  * Class that handle creating multiple process.
  *
  * This source file is subject to the GNU/GPLv3 license.
  *
- * @package    Console
- * @subpackage Console\Process
+ * @category   PHProcess
+ * @package    PHProcess\Console
+ * @subpackage PHProcess\Console\Process
  * @author     Cyril Nicodème
+ * @author     Henrique Moody <henriquemoody@gmail.com>
  */
 class Process
 {
@@ -91,7 +90,7 @@ class Process
      * @param   array|string|Cousure $callback
      * @param   int[optional] $uid
      * @param   int[optional] $gid
-     * @return  Console\Process\Fork Forked process
+     * @return  PHProcess\Console\Process\Fork Forked process
      */
     public function fork($callback, $uid = null, $gid = null)
     {
@@ -112,7 +111,7 @@ class Process
      * Define the the number of max allowed children.
      *
      * @param   int $value
-     * @return  Process Fluent interface, returns self
+     * @return  PHProcess\Console\Process Fluent interface, returns self
      */
     public function setMaxChildren($value)
     {
