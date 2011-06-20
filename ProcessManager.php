@@ -18,14 +18,14 @@ class ProcessManager {
 	/**
 	 * Contain the Processus Id of the current processus
 	 * 
-	 * @var Integer $_iPid
+	 * @var Integer
 	 */
 	private $_iPid;
 	
 	/**
 	 * Contain the priority for the current processus
 	 * 
-	 * @var Integer $_iPriority
+	 * @var Integer
 	 */
 	private $_iPriority = 0;
 
@@ -33,34 +33,32 @@ class ProcessManager {
 	 * Contain a list of all the childrens
 	 * (in case the current processus is the father)
 	 * 
-	 * @var Array $_aChildrens
+	 * @var Array
 	 */
-	private $_aChildrens = array ();
+	private $_aChildrenPid = array ();
 
 	/**
 	 * Contain the number of max allowed childrens
 	 * 
-	 * @var Integer $_iMaxChildrens
+	 * @var Integer
 	 */
-	private $_iMaxChildrens = 2;
+	private $_iMaxChildren = 2;
 
 	/**
 	 * Constructor
 	 * Test if this application can be used, set the MaxChildren value, 
 	 * retrieve his Process ID and set the signals
 	 * 
-	 * @param Integer $iMaxChildrens (optional)
-	 * 
-	 * @return ProcessManager
+	 * @param Integer[optional] $iMaxChildren
 	 */
-	public function __construct ($iMaxChildrens = 2) {
+	public function __construct ($iMaxChildren = 2) {
 		if (!function_exists ('pcntl_fork'))
 			throw new Exception ('Your configuration does not include pcntl functions.');
 		
-		if (!is_int ($iMaxChildrens) || $iMaxChildrens < 1)
+		if (!is_int ($iMaxChildren) || $iMaxChildren < 1)
 			throw new Exception ('Childrens must be an Integer');
 
-		$this->_iMaxChildrens = $iMaxChildrens;
+		$this->_iMaxChildren = $iMaxChildren;
 		$this->_iPid = getmypid ();
 
 		// Setting up the signal handlers
@@ -71,8 +69,8 @@ class ProcessManager {
 
 	
 	public function __destruct () {
-		foreach ($this->_aChildrens as $iChildrensPid)
-			pcntl_waitpid ($iChildrensPid, $iStatus);
+		foreach ($this->_aChildrenPid as $iChildPid)
+			pcntl_waitpid ($iChildPid, $iStatus);
 	}
 
 	/**
@@ -80,12 +78,9 @@ class ProcessManager {
 	 * 
 	 * @return void
 	 */
-	public function fork ($mFunction, $aParams = array ()) {
-		if (!is_string ($mFunction) && !is_array ($mFunction))
-			throw new Exception ('Function given must be a String or an Array');
-		
-		if (!is_array ($aParams))
-			throw new Exception ('Parameters must be an Array');
+	public function fork ($mCallback, array $aParams = array ()) {
+		if (!is_callable($mCallback))
+			throw new Exception ('Callback given must be callable');
 		
 		$iPid = pcntl_fork ();
 
@@ -93,14 +88,14 @@ class ProcessManager {
 			throw new Exception ('Unable to fork.');
 		elseif ($iPid > 0) {
 			// We are in the parent process
-			$this->_aChildrens[] = $iPid;
+			$this->_aChildrenPid[] = $iPid;
 
-			if (count ($this->_aChildrens) >= $this->_iMaxChildrens) {
-				pcntl_waitpid (array_shift ($this->_aChildrens), $iStatus);
+			if (count ($this->_aChildrenPid) >= $this->_iMaxChildren) {
+				pcntl_waitpid (array_shift ($this->_aChildrenPid), $iStatus);
 			}
 		}
 		elseif ($iPid === 0) { // We are in the child process
-			call_user_func_array ($mFunction, $aParams);
+			call_user_func_array ($mCallback, $aParams);
 			exit (0);
 		}
 	}
@@ -109,19 +104,18 @@ class ProcessManager {
 	 * Add a new signal that will be called to the given function with some optionnals parameters
 	 * 
 	 * @param Integer $iSignal
-	 * @param Mixed $mFunction
-	 * @param Array $aParams[optional]
+	 * @param Mixed $mCallback
 	 * 
 	 * @return void
 	 */
-	public function addSignal ($iSignal, $mFunction) {
+	public function addSignal ($iSignal, $mCallback) {
 		if (!is_int ($iSignal))
 			throw new Exception ('Signal must be an Integer.');
 
-		if (!is_string ($mFunction) && !is_array ($mFunction))
-			throw new Exception ('Function to callback must be a String or an Array.');
+		if (!is_callable($mCallback))
+			throw new Exception ('Callback must be callable.');
 
-		if (!pcntl_signal ($iSignal, $mFunction))
+		if (!pcntl_signal ($iSignal, $mCallback))
 			throw new Exception ('Unable to set up the signal.');
 	}
 
@@ -153,10 +147,10 @@ class ProcessManager {
 	 * @return void
 	 */
 	public function setMaxChildren ($iMaxChildren) {
-		if (!is_int ($iMaxChildrens) || $iMaxChildrens < 1)
-			throw new Exception ('Childrens must be an Integer');
+		if (!is_int ($iMaxChildren) || $iMaxChildren < 1)
+			throw new Exception ('Children must be an Integer');
 
-		$this->_iMaxChildrens = $iMaxChildrens;
+		$this->_iMaxChildren = $iMaxChildren;
 	}
 
 	/**
@@ -165,14 +159,14 @@ class ProcessManager {
 	 * @return Integer
 	 */
 	public function getMaxChildrens () {
-		return self::$_iMaxChildrens;
+		return $this->_iMaxChildren;
 	}
 
 	/**
 	 * Set the priority of the current processus.
 	 * 
 	 * @param Integer $iPriority
-	 * @param Integer $iProcessIdentifier[optional]
+	 * @param Integer[optional] $iProcessIdentifier
 	 * 
 	 * @return void
 	 */
@@ -188,7 +182,7 @@ class ProcessManager {
 		if (!pcntl_setpriority ($iPriority, $this->_iPid, $iProcessIdentifier))
 			throw new Exception ('Unable to set the priority.');
 		
-		self::$_iPriority = $iPriority;
+		$this->_iPriority = $iPriority;
 	}
 
 	/**
@@ -197,7 +191,7 @@ class ProcessManager {
 	 * @return Integer
 	 */
 	public function getPriority () {
-		return self::$_iPriority;
+		return $this->_iPriority;
 	}
 
 	/**

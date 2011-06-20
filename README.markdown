@@ -40,6 +40,20 @@ Pour vous prouver l'efficacité de mes dires, voici un code bateau qui utilise 5
 			doBigWork ($i);
 		}
 	}
+
+    // Using a clousures
+    for ($i = 1; $i <= 12; $i++) {
+        $oPM->fork (function ($iWork) {
+            echo 'Sleeping for Work Number ' . $iWork . PHP_EOL;
+            sleep($iWork);
+        }, array ($i));
+    }
+
+    // Using objects
+    for ($i = 1; $i <= 12; $i++) {
+        $oPM->fork (array(new Example(), 'doSomething'), array ($i));
+    }
+
 	?>
 
 Au final, sans utiliser plusieurs processus, ce code aurait pris 12*20 = 240 secondes.
@@ -47,4 +61,4 @@ Avec 5 enfants, le temps de travail est divisé par ... 5, soit 48 secondes ! Qu
 
 Bien entendu, vous pouvez augmenter le nombre d'enfant, tout dépendra des ressources que consomment votre fonction de travail (histoire de ne pas tuer votre machine (je l'ai fait pendant les tests :p)).
 
-Une dernière modification qui serait sympathique, c'est d'inclure les fonctions lambdas dans la méthode fork, au lieu de l'appel à une méthode en utilisant le [call_user_func_array](http://fr2.php.net/call_user_func_array). Mais ma configuration actuelle de Php n'est pas encore en 5.3, donc je ne peux ni jouer avec les closures, ni avec les fonctions lambdas :p Peut-être plus tard ? :)
+Une dernière modification qui serait sympathique, c'est d'inclure les fonctions lambdas dans la méthode fork, au lieu de l'appel à une méthode en utilisant le [call_user_func_array](http://fr2.php.net/call_user_func_array).
