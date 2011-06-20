@@ -1,206 +1,271 @@
 <?php
+
 /**
- * @class ProcessManager
- * Class that handle creating multiple process
- * 
- * @licence GNU/GPLv3
- * 
- * @author Cyril Nicodème
- * 
- * 
- * @note : This doesn't work on Windows machine
- * @note : It is recommended to use this class in an cli environnement, 
- * 			forking is NOT recommended running from an Apache (or some other preforking web server) module
- * 
- * @see : http://www.ibuildings.com/blog/archives/1539-Boost-performance-with-parallel-processing.html
+ * @namespace
  */
-class ProcessManager {
-	/**
-	 * Contain the Processus Id of the current processus
-	 * 
-	 * @var Integer
-	 */
-	private $_iPid;
-	
-	/**
-	 * Contain the priority for the current processus
-	 * 
-	 * @var Integer
-	 */
-	private $_iPriority = 0;
+namespace Console;
 
-	/**
-	 * Contain a list of all the childrens
-	 * (in case the current processus is the father)
-	 * 
-	 * @var Array
-	 */
-	private $_aChildrenPid = array ();
+/**
+ * Class that handle creating multiple process.
+ *
+ *
+ * This source file is subject to the GNU/GPLv3 license.
+ *
+ * @package     Console
+ * @subpackage  Process
+ * @author      Cyril Nicodème
+ */
+class Process
+{
 
-	/**
-	 * Contain the number of max allowed childrens
-	 * 
-	 * @var Integer
-	 */
-	private $_iMaxChildren = 2;
+    /**
+     * Default children count
+     */
+    const DEFAULT_MAX_CHILDREN = 5;
 
-	/**
-	 * Constructor
-	 * Test if this application can be used, set the MaxChildren value, 
-	 * retrieve his Process ID and set the signals
-	 * 
-	 * @param Integer[optional] $iMaxChildren
-	 */
-	public function __construct ($iMaxChildren = 2) {
-		if (!function_exists ('pcntl_fork'))
-			throw new Exception ('Your configuration does not include pcntl functions.');
-		
-		if (!is_int ($iMaxChildren) || $iMaxChildren < 1)
-			throw new Exception ('Childrens must be an Integer');
+    /**
+     * Contain the PID of the current process.
+     *
+     * @var int
+     */
+    private $_pid;
 
-		$this->_iMaxChildren = $iMaxChildren;
-		$this->_iPid = getmypid ();
+    /**
+     * Contain the priority for the current process.
+     *
+     * @var type
+     */
+    private $_priority = 0;
 
-		// Setting up the signal handlers
-		$this->addSignal (SIGTERM, array ($this, 'signalHandler'));
-		$this->addSignal (SIGQUIT, array ($this, 'signalHandler'));
-		$this->addSignal (SIGINT, array ($this, 'signalHandler'));
-	}
+    /**
+     * Contains a list of all the children PID's.
+     * (in case the current process is the father)
+     *
+     * @var array
+     */
+    private $_children = array();
 
-	
-	public function __destruct () {
-		foreach ($this->_aChildrenPid as $iChildPid)
-			pcntl_waitpid ($iChildPid, $iStatus);
-	}
+    /**
+     * Contain the number of max allowed children.
+     *
+     * @var int
+     */
+    private $_maxChildren = self::DEFAULT_MAX_CHILDREN;
 
-	/**
-	 * Fork a Processus
-	 * 
-	 * @return void
-	 */
-	public function fork ($mCallback, array $aParams = array ()) {
-		if (!is_callable($mCallback))
-			throw new Exception ('Callback given must be callable');
-		
-		$iPid = pcntl_fork ();
+    /**
+     * Constructor.
+     *
+     * Checks whether the system meets the requirements needed to run the class.
+     */
+    public function __construct()
+    {
+        if (substr(PHP_OS, 0, 3) === 'WIN') {
+            $message = 'Cannot run on windows';
+            throw new \UnexpectedValueException($message);
 
-		if ($iPid === -1)
-			throw new Exception ('Unable to fork.');
-		elseif ($iPid > 0) {
-			// We are in the parent process
-			$this->_aChildrenPid[] = $iPid;
+        } else if (!in_array(substr(PHP_SAPI, 0, 3), array('cli', 'cgi'))) {
+            $message = 'Can only run on CLI or CGI enviroment';
+            throw new \UnexpectedValueException($message);
 
-			if (count ($this->_aChildrenPid) >= $this->_iMaxChildren) {
-				pcntl_waitpid (array_shift ($this->_aChildrenPid), $iStatus);
-			}
-		}
-		elseif ($iPid === 0) { // We are in the child process
-			call_user_func_array ($mCallback, $aParams);
-			exit (0);
-		}
-	}
+        } else if (!function_exists('pcntl_fork')) {
+            $message = 'pcntl_* functions are required';
+            throw new \UnexpectedValueException();
 
-	/**
-	 * Add a new signal that will be called to the given function with some optionnals parameters
-	 * 
-	 * @param Integer $iSignal
-	 * @param Mixed $mCallback
-	 * 
-	 * @return void
-	 */
-	public function addSignal ($iSignal, $mCallback) {
-		if (!is_int ($iSignal))
-			throw new Exception ('Signal must be an Integer.');
+        } else if (!function_exists('posix_setgid')) {
+            $message = 'posix_* functions are required';
+            throw new \UnexpectedValueException($message);
 
-		if (!is_callable($mCallback))
-			throw new Exception ('Callback must be callable.');
+        }
 
-		if (!pcntl_signal ($iSignal, $mCallback))
-			throw new Exception ('Unable to set up the signal.');
-	}
+        $this->_pid = getmypid();
 
-	/**
-	 * The default signal handler, to avoid Zombies
-	 * 
-	 * @param Integer $iSignal
-	 * 
-	 * @return void
-	 */
-	public function signalHandler ($iSignal = SIGTERM) {
-		switch ($iSignal) {
-			case SIGTERM: // Finish
-				exit (0);
-				break;
-			case SIGQUIT: // Quit
-			case SIGINT:  // Stop from the keyboard
-			case SIGKILL: // Kill
-				exit (1);
-				break;
-		}
-	}
+        // Setting up the signal handlers
+        $this->addSignal(SIGTERM, array($this, 'signalHandler'));
+        $this->addSignal(SIGQUIT, array($this, 'signalHandler'));
+        $this->addSignal(SIGINT, array($this, 'signalHandler'));
+    }
 
-	/**
-	 * Set the number of max childrens
-	 * 
-	 * @param Integer $iMaxChildren
-	 * 
-	 * @return void
-	 */
-	public function setMaxChildren ($iMaxChildren) {
-		if (!is_int ($iMaxChildren) || $iMaxChildren < 1)
-			throw new Exception ('Children must be an Integer');
+    /**
+     * Destructor.
+     *
+     * Suspends the execution of the childrens.
+     */
+    public function __destruct()
+    {
+        foreach ($this->_children as $childPid) {
+            pcntl_waitpid($childPid, $status);
+        }
+    }
 
-		$this->_iMaxChildren = $iMaxChildren;
-	}
+    /**
+     * Fork a process.
+     *
+     * @param   array|string|Cousure $callback
+     * @param   int[optional] $uid
+     * @param   int[optional] $gid
+     * @return  void
+     */
+    public function fork($callback, $uid = null, $gid = null)
+    {
+        if (!is_callable($callback)) {
+            $message = 'Callback given must be callable';
+            throw new \InvalidArgumentException($message);
+        }
 
-	/**
-	 * Return the current number of MaxChildrens
-	 * 
-	 * @return Integer
-	 */
-	public function getMaxChildrens () {
-		return $this->_iMaxChildren;
-	}
+        $pid = pcntl_fork();
 
-	/**
-	 * Set the priority of the current processus.
-	 * 
-	 * @param Integer $iPriority
-	 * @param Integer[optional] $iProcessIdentifier
-	 * 
-	 * @return void
-	 */
-	public function setPriority ($iPriority, $iProcessIdentifier = PRIO_PROCESS) {
-		if (!is_int ($iPriority) || $iPriority < -20 || $iPriority > 20)
-			throw new Exception ('Invalid priority.');
+        if ($pid === -1) {
+            $message = 'Unable to fork.';
+            throw new \RuntimeException($message);
+        } elseif ($pid > 0) {
 
-		if ($iProcessIdentifier != PRIO_PROCESS 
-				|| $iProcessIdentifier != PRIO_PGRP 
-				|| $iProcessIdentifier != PRIO_USER)
-			throw new Exception ('Invalid Process Identifier type.');
+            // We are in the parent process
+            $this->_children[] = $pid;
 
-		if (!pcntl_setpriority ($iPriority, $this->_iPid, $iProcessIdentifier))
-			throw new Exception ('Unable to set the priority.');
-		
-		$this->_iPriority = $iPriority;
-	}
+            if (count($this->_children) >= $this->_maxChildren) {
+                pcntl_waitpid(array_shift($this->_children), $status);
+            }
+        } elseif ($pid === 0) {
 
-	/**
-	 * Get the priority of the current processus.
-	 * 
-	 * @return Integer
-	 */
-	public function getPriority () {
-		return $this->_iPriority;
-	}
+            if ($gid !== null) {
+                posix_setgid($gid);
+            }
 
-	/**
-	 * Return the PID of the current process
-	 * 
-	 * @return Integer
-	 */
-	public function getMyPid () {
-		return $this->_iPid;
-	}
+            if ($uid !== null) {
+                posix_setuid($uid);
+            }
+
+            // We are in the child process
+            call_user_func($callback);
+            exit(0);
+        }
+    }
+
+    /**
+     * Add a new signal that will be called to the given function with
+     * an optional callback.
+     *
+     * @param   int $signal
+     * @param   string|array|Clousure $callback
+     * @return  Process Fluent interface, returns self.
+     */
+    public function addSignal($signal, $callback)
+    {
+        if (!is_int($signal)) {
+            $message = 'Signal must be an integer.';
+            throw new \InvalidArgumentException($message);
+        }
+
+        if (!is_callable($callback)) {
+            $message = 'Callback must be callable.';
+            throw new \InvalidArgumentException($message);
+        }
+
+        if (!pcntl_signal($signal, $callback)) {
+            $message = 'Unable to set up the signal.';
+            throw new \RuntimeException($message);
+        }
+        return $this;
+    }
+
+    /**
+     * The default signal handler, to avoid Zombies
+     *
+     * @param   int $signal
+     * @return  void
+     */
+    public function signalHandler($signal = SIGTERM)
+    {
+        switch ($signal) {
+            case SIGTERM: // Finish
+                exit(0);
+                break;
+            case SIGQUIT: // Quit
+            case SIGINT:  // Stop from the keyboard
+            case SIGKILL: // Kill
+                exit(1);
+                break;
+        }
+    }
+
+    /**
+     * Define the the number of max allowed children.
+     *
+     * @param   int $maxChildren
+     * @return  Process Fluent interface, returns self
+     */
+    public function setMaxChildren($maxChildren)
+    {
+        if (!is_int($maxChildren) || $maxChildren < 1) {
+            $message = 'Children must be an int';
+            throw new \InvalidArgumentException($message);
+        }
+
+        $this->_maxChildren = $maxChildren;
+        return $this;
+    }
+
+    /**
+     * Returns the number of max allowed children.
+     *
+     * @return int
+     */
+    public function getMaxChildren()
+    {
+        return $this->_maxChildren;
+    }
+
+    /**
+     * Set the priority of the current process.
+     *
+     * @param   int $priority
+     * @param   int $processIdentifier
+     * @return  Process Fluent interface, returns self
+     */
+    public function setPriority($priority, $processIdentifier = PRIO_PROCESS)
+    {
+        if (!is_int($priority) || $priority < -20 || $priority > 20) {
+            $message = 'Invalid priority.';
+            throw new \InvalidArgumentException($message);
+        }
+
+        if ($processIdentifier != PRIO_PROCESS
+                || $processIdentifier != PRIO_PGRP
+                || $processIdentifier != PRIO_USER) {
+            $message = 'Invalid Process Identifier type.';
+            throw new \InvalidArgumentException($message);
+        }
+
+        if (!pcntl_setpriority($priority, $this->_pid, $processIdentifier)) {
+            $message = 'Unable to set the priority.';
+            throw new \RuntimeException($message);
+        }
+
+        $this->_priority = $priority;
+        return $this;
+    }
+
+    /**
+     * Returns the priority of the current process.
+     *
+     * @return  int
+     */
+    public function getPriority()
+    {
+        return $this->_priority;
+    }
+
+    /**
+     * Retursn the PID of the current process.
+     *
+     * @return  int
+     */
+    public function getPid()
+    {
+        return $this->_pid;
+    }
+
+
 }
-?>
+
+
