@@ -33,9 +33,9 @@ class Process
     /**
      * Contain the priority for the current process.
      *
-     * @var type
+     * @var int
      */
-    private $_priority = 0;
+    private $_priority = 1;
 
     /**
      * Contains a list of all the children PID's.
