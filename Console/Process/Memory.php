@@ -9,7 +9,8 @@ namespace Console\Process;
 /**
  * Handles Shared Memoty data.
  *
- * @category   PHP5-Multi-Threading
+ * @package    Console
+ * @subpackage Console\Process
  * @author     Henrique Moody <henriquemoody@gmail.com>
  */
 class Memory
@@ -72,8 +73,8 @@ class Memory
 
         $data = serialize($this->_data);
 
-        $bytes_written = shmop_write($this->_id, $data, 0);
-        if ($bytes_written != strlen($data)) {
+        $bytesWritten = shmop_write($this->_id, $data, 0);
+        if ($bytesWritten != strlen($data)) {
             $message = 'Could not write the entire length of data';
             throw new \RuntimeException($message);
         }

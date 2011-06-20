@@ -8,8 +8,8 @@ namespace Console\Process;
 /**
  * Class to create forked process.
  *
- * @package     Console\Process
- * @subpackage  Console\Process\Fork
+ * @package     Console
+ * @subpackage  Console\Process
  * @author      Henrique Moody <henriquemoody@gmail.com>
  */
 class Fork
@@ -120,7 +120,10 @@ class Fork
     public function getCallback()
     {
         if (null === $this->_callback) {
-            $this->_callback = function () {};
+            $this->_callback = function () 
+            {
+                // ..
+            };
         }
         return $this->_callback;
     }

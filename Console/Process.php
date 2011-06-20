@@ -8,12 +8,11 @@ namespace Console;
 /**
  * Class that handle creating multiple process.
  *
- *
  * This source file is subject to the GNU/GPLv3 license.
  *
- * @package     Console
- * @subpackage  Process
- * @author      Cyril Nicodème
+ * @package    Console
+ * @subpackage Console\Process
+ * @author     Cyril Nicodème
  */
 class Process
 {
