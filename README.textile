@@ -1,0 +1,58 @@
+h1. PHProcess
+
+Example:
+
+<pre>
+require_once ('PHProcess/Console/Process.php');
+require_once ('PHProcess/Console/Process/Fork.php');
+require_once ('PHProcess/Console/Process/Memory.php');
+
+try {
+
+    $process = new PHProcess\Console\Process();
+    $process->setMaxChildren(5);
+    
+    // Some Linux users
+    $users   = array(
+        posix_getpwnam('root'),
+        posix_getpwnam('cnicodeme'),
+        posix_getpwnam('henriquemoody')
+    );
+
+    for ($value = 1; $value <= 10; $value++) {
+        $user   = $users[rand(0, 4)];
+        $fork   = $process->fork(
+            function () use ($value, $user) {
+                $value  = sprintf('%02d', $value);
+                $data   = 'Doing work job ' . $value;
+                $file   = sys_get_temp_dir();
+                $file   .= "/fork-{$user['name']}-{$value}";
+                echo $data . PHP_EOL;
+                echo $file . PHP_EOL;
+                file_put_contents($file, $data);
+                sleep((int) $value);
+            }, 
+            $user['uid'], 
+            $user['gid']
+        );
+        echo 'Waiting' . PHP_EOL;
+        while ($fork->isRunning()) {
+            usleep(100000);
+            echo '.';
+        }
+        
+        // Ensures that the process will not continue active 
+        // and that shared memory is cleared
+        $fork->stop();
+        echo PHP_EOL;
+    }
+
+} catch (Exception $exception) {
+
+    echo $exception->getMessage() . PHP_EOL;
+    echo $exception->getTraceAsString();
+
+}
+echo PHP_EOL;
+
+</pre>
