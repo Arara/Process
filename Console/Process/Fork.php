@@ -51,6 +51,13 @@ class Fork
     private $_callback;
 
     /**
+     * Object that handles shared memory.
+     *
+     * @var Console\Process\Memory
+     */
+    private $_memory;
+
+    /**
      * Constructor.
      *
      * Checks whether the system meets the requirements needed to run the class.
@@ -67,7 +74,7 @@ class Fork
 
         } else if (!function_exists('pcntl_fork')) {
             $message = 'pcntl_* functions are required';
-            throw new \UnexpectedValueException();
+            throw new \UnexpectedValueException($message);
 
         } else if (!function_exists('posix_setgid')) {
             $message = 'posix_* functions are required';
@@ -84,6 +91,10 @@ class Fork
             $gid = posix_getgid();
         }
         $this->_gid = (int) $gid;
+
+        // Shared memory object
+        $this->_memory = new Memory();
+        $this->_memory->write('running', false);
 
         // Setting up the signal handlers
         $this->addSignal(SIGTERM, array($this, 'signalHandler'));
@@ -152,6 +163,7 @@ class Fork
                 throw new \UnexpectedValueException($message);
             }
 
+            $this->_memory->write('running', true);
             $this->_pid = $pid;
 
         } elseif ($pid === 0) {
@@ -161,6 +173,7 @@ class Fork
 
             // We are in the child process
             call_user_func($this->getCallback());
+            $this->_memory->write('running', false);
             exit(0);
         }
     }
@@ -179,6 +192,16 @@ class Fork
             throw new \UnexpectedValueException($message);
         }
         posix_kill($this->_pid, SIGKILL);
+    }
+
+    /**
+     * Returns TRUE if the forked process is running or FALSE if not.
+     *
+     * @return  bool
+     */
+    public function isRunning()
+    {
+        return $this->_memory->read('running');
     }
 
     /**
