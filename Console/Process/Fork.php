@@ -17,6 +17,23 @@ class Fork
 {
 
     /**
+     * Represents the success status of the callback.
+     */
+    const RESULT_STATUS_SUCESS  = 1;
+
+    /**
+     * Represents the error status of the callback.
+     */
+    const RESULT_STATUS_ERROR   = 2;
+
+    /**
+     * Represents the fail status of the callback.
+     *
+     * This error may happen when PHP generates an error.
+     */
+    const RESULT_STATUS_FAIL    = 3;
+
+    /**
      * Contain the PID of the child process.
      *
      * @var int
@@ -63,7 +80,7 @@ class Fork
      *
      * Checks whether the system meets the requirements needed to run the class.
      */
-    public function __construct($uid = null, $gid = null)
+    public function __construct()
     {
         if (substr(PHP_OS, 0, 3) === 'WIN') {
             $message = 'Cannot run on windows';
@@ -83,19 +100,9 @@ class Fork
 
         }
 
-        if (null === $uid) {
-            $uid = posix_getuid();
-        }
-        $this->_uid = (int) $uid;
-
-        if (null === $gid) {
-            $gid = posix_getgid();
-        }
-        $this->_gid = (int) $gid;
-
         // Shared memory object
         $this->_memory = new Memory();
-        $this->_memory->write('running', false);
+        $this->_memory->write('__running', false);
 
         // Setting up the signal handlers
         $this->addSignal(SIGTERM, array($this, 'signalHandler'));
@@ -110,7 +117,9 @@ class Fork
      */
     public function __destruct()
     {
-        pcntl_waitpid($this->_pid, $status);
+        if ($this->_pid > 0) {
+            posix_kill($this->_pid, SIGKILL);
+        }
     }
 
     /**
@@ -121,7 +130,7 @@ class Fork
     public function getCallback()
     {
         if (null === $this->_callback) {
-            $this->_callback = function () 
+            $this->_callback = function ()
             {
                 // ..
             };
@@ -167,17 +176,63 @@ class Fork
                 throw new \UnexpectedValueException($message);
             }
 
-            $this->_memory->write('running', true);
             $this->_pid = $pid;
+            $this->_memory->write('__running', true);
 
         } elseif ($pid === 0) {
 
-            posix_setgid($this->getGid());
-            posix_setuid($this->getUid());
-
             // We are in the child process
-            call_user_func($this->getCallback());
-            $this->_memory->write('running', false);
+            posix_setgid($this->getGroupId());
+            posix_setuid($this->getUserId());
+
+            $groupId    = posix_getgid();
+            $userId     = posix_getuid();
+
+            if ($groupId != $this->getGroupId()
+                    || $userId != $this->getUserId()) {
+                $message = sprintf(
+                    'Unable to fork process as UID:GID "%d:%d". "%d:%d" given',
+                    $this->getUserId(),
+                    $this->getGroupId(),
+                    $userId,
+                    $groupId
+                );
+                throw new \RuntimeException($message);
+            }
+
+            try {
+
+                // Custom error hanlder
+                set_error_handler(
+                    function ($severity, $message, $filename, $line) {
+                        throw new \ErrorException(
+                            $message,
+                            0,
+                            $severity,
+                            $filename,
+                            $line
+                        );
+                    }
+                );
+
+                $result = call_user_func($this->getCallback());
+                $status = self::RESULT_STATUS_SUCESS;
+
+            } catch (\ErrorException $exception) {
+
+                $result = $exception->getMessage();
+                $status = self::RESULT_STATUS_FAIL;
+
+            } catch (\Exception $exception) {
+
+                $result = $exception->getMessage();
+                $status = self::RESULT_STATUS_ERROR;
+
+            }
+
+            $this->_memory->write('__result', $result);
+            $this->_memory->write('__status', $status);
+            $this->_memory->write('__running', false);
             exit(0);
         }
     }
@@ -191,12 +246,10 @@ class Fork
      */
     public function stop()
     {
-        if (null === $this->_pid) {
-            $message = 'There is no forked process.';
-            throw new \UnexpectedValueException($message);
+        if ($this->_pid > 0) {
+            posix_kill($this->_pid, SIGKILL);
         }
         $this->_memory->clean();
-        posix_kill($this->_pid, SIGKILL);
     }
 
     /**
@@ -206,7 +259,37 @@ class Fork
      */
     public function isRunning()
     {
-        return $this->_memory->read('running');
+        return $this->_memory->read('__running');
+    }
+
+    /**
+     * Returns the callback result.
+     *
+     * @return  mixed
+     */
+    public function getCallbackResult()
+    {
+        return $this->_memory->read('__result');
+    }
+
+    /**
+     * Returns the callback result.
+     *
+     * @return  int
+     */
+    public function getCallbackStatus()
+    {
+        return $this->_memory->read('__status');
+    }
+
+    /**
+     * Returns TRUE if the callback is successful.
+     *
+     * @return  bool
+     */
+    public function isCallbackSuccessful()
+    {
+        return ($this->_memory->read('__status') == self::RESULT_STATUS_SUCESS);
     }
 
     /**
@@ -252,6 +335,11 @@ class Fork
             case SIGINT:  // Stop from the keyboard
             case SIGKILL: // Kill
                 exit(1);
+            case SIGCHLD:
+                // zombies nevermore!
+                while (pcntl_wait($status, WNOHANG | WUNTRACED) > 0) {
+                    usleep(1000);
+                }
                 break;
         }
     }
@@ -307,22 +395,61 @@ class Fork
     }
 
     /**
-     * Returns the process UID
+     * Defines the process UNIX User ID.
+     *
+     * @throws  InvalidArgumentException If the UID is not valid.
+     * @param   int $value
+     * @return  PHProcess\Console\Process\Fork Fluent interface, returns self
+     */
+    public function setUserId($value)
+    {
+        if (false === posix_getpwuid($value)) {
+            $message = sprintf('The given UID "%s" is not valid', $value);
+            throw new \InvalidArgumentException($message);
+        }
+        $this->_uid = $value;
+        return $this;
+    }
+
+    /**
+     * Returns the process UNIX User ID.
      *
      * @return  int
      */
-    public function getUid()
+    public function getUserId()
     {
+        if (null === $this->_uid) {
+            $this->_uid = posix_getuid();
+        }
         return $this->_uid;
     }
 
     /**
-     * Returns the process GID.
+     * Defines the process UNIX Group ID.
+     *
+     * @param   int $value
+     * @return  PHProcess\Console\Process\Fork Fluent interface, returns self
+     */
+    public function setGroupId($value)
+    {
+        if (false === posix_getgrgid($value)) {
+            $message = sprintf('The given GID "%s" is not valid', $value);
+            throw new \InvalidArgumentException($message);
+        }
+        $this->_gid = $value;
+        return $this;
+    }
+
+    /**
+     * Returns the process UNIX Group ID.
      *
      * @return  int
      */
-    public function getGid()
+    public function getGroupId()
     {
+        if (null === $this->_gid) {
+            $this->_gid = posix_getgid();
+        }
         return $this->_gid;
     }
 

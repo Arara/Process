@@ -94,7 +94,13 @@ class Process
      */
     public function fork($callback, $uid = null, $gid = null)
     {
-        $fork = new Process\Fork($uid, $gid);
+        $fork = new Process\Fork();
+        if (null !== $uid) {
+            $fork->setUserId($uid);
+        }
+        if (null !== $gid) {
+            $fork->setGroupId($gid);
+        }
         $fork->setCallback($callback)
              ->start();
 
