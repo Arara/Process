@@ -51,7 +51,8 @@ class Memory
             throw new \UnexpectedValueException($message);
         }
 
-        $this->_id = @shmop_open(spl_object_hash($this), 'c', 0644, 1024);
+        $key        = rand(1000, 2000);
+        $this->_id  = @shmop_open($key, 'c', 0644, 1024);
         if (!$this->_id) {
             $message = 'Could not create shared memory segment';
             throw new \RuntimeException($message);
