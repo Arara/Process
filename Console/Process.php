@@ -20,11 +20,6 @@ class Process
 {
 
     /**
-     * Default children count
-     */
-    const DEFAULT_MAX_CHILDREN = 5;
-
-    /**
      * Contain the PID of the current process.
      *
      * @var int
@@ -44,7 +39,14 @@ class Process
      *
      * @var int
      */
-    private $_maxChildren = self::DEFAULT_MAX_CHILDREN;
+    private $_maxChildren;
+
+    /**
+     * Contain the default number of max allowed children.
+     *
+     * @var int
+     */
+    private static $_defaultMaxChildren = 5;
 
     /**
      * Constructor.
@@ -106,7 +108,7 @@ class Process
 
         $this->_forks[] = $fork;
 
-        if (count($this->_forks) >= $this->_maxChildren) {
+        if (count($this->_forks) >= $this->getMaxChildren()) {
             $first = array_shift($this->_forks);
             pcntl_waitpid($first->getPid(), $status);
         }
@@ -137,7 +139,34 @@ class Process
      */
     public function getMaxChildren()
     {
+        if (null === $this->_maxChildren) {
+            $this->_maxChildren = self::getDefaultMaxChildren();
+        }
         return $this->_maxChildren;
+    }
+
+    /**
+     * Return the default number of childrens.
+     *
+     * @return  int
+     */
+    public static function getDefaultMaxChildren()
+    {
+        return self::$_defaultMaxChildren;
+    }
+
+    /**
+     * Defines the default number of childrens.
+     *
+     * @return  void
+     */
+    public static function setDefaultMaxChildren($int)
+    {
+        if (!is_int($value) || $value < 1) {
+            $message = 'Children must be an int';
+            throw new \InvalidArgumentException($message);
+        }
+        self::$_defaultMaxChildren = $int;
     }
 
     /**
