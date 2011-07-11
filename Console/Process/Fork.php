@@ -387,7 +387,7 @@ class Fork
     /**
      * Retursn the PID of the current process.
      *
-     * @return  int
+     * @return  int|null
      */
     public function getPid()
     {
