@@ -117,8 +117,10 @@ class Fork
      */
     public function __destruct()
     {
-        if ($this->_pid > 0) {
-            posix_kill($this->_pid, SIGKILL);
+        try {
+            $this->stop();
+        } catch (\Exception $exception) {
+            trigger_error($exception->getMessage(), E_USER_ERROR);
         }
     }
 
@@ -163,7 +165,7 @@ class Fork
     {
         $this->addSignal(SIGCHLD, array($this, 'signalHandler'));
 
-        $pid = pcntl_fork();
+        $pid = @pcntl_fork();
 
         if ($pid === -1) {
             $message = 'Unable to fork.';
@@ -191,7 +193,7 @@ class Fork
             if ($groupId != $this->getGroupId()
                     || $userId != $this->getUserId()) {
                 $message = sprintf(
-                    'Unable to fork process as UID:GID "%d:%d". "%d:%d" given',
+                    'Unable to fork process as "%d:%d". "%d:%d" given',
                     $this->getUserId(),
                     $this->getGroupId(),
                     $userId,
@@ -200,20 +202,20 @@ class Fork
                 throw new \RuntimeException($message);
             }
 
-            try {
+            // Custom error hanlder
+            set_error_handler(
+                function ($severity, $message, $filename, $line) {
+                    throw new \ErrorException(
+                        $message,
+                        0,
+                        $severity,
+                        $filename,
+                        $line
+                    );
+                }
+            );
 
-                // Custom error hanlder
-                set_error_handler(
-                    function ($severity, $message, $filename, $line) {
-                        throw new \ErrorException(
-                            $message,
-                            0,
-                            $severity,
-                            $filename,
-                            $line
-                        );
-                    }
-                );
+            try {
 
                 $result = call_user_func($this->getCallback());
                 $status = self::RESULT_STATUS_SUCESS;
@@ -229,6 +231,8 @@ class Fork
                 $status = self::RESULT_STATUS_ERROR;
 
             }
+
+            restore_error_handler();
 
             $this->_memory->write('__result', $result);
             $this->_memory->write('__status', $status);
@@ -329,11 +333,13 @@ class Fork
     {
         switch ($signal) {
             case SIGTERM: // Finish
+                $this->_memory->clean();
                 exit(0);
                 break;
             case SIGQUIT: // Quit
             case SIGINT:  // Stop from the keyboard
             case SIGKILL: // Kill
+                $this->_memory->clean();
                 exit(1);
             case SIGCHLD:
                 // zombies nevermore!

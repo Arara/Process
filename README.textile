@@ -3,6 +3,7 @@ h1. PHProcess
 Example:
 
 <pre>
+<?php
 require_once ('PHProcess/Console/Process.php');
 require_once ('PHProcess/Console/Process/Fork.php');
 require_once ('PHProcess/Console/Process/Memory.php');
@@ -10,41 +11,27 @@ require_once ('PHProcess/Console/Process/Memory.php');
 try {
 
     $process = new PHProcess\Console\Process();
-    $process->setMaxChildren(5);
-    
-    // Some Linux users
-    $users   = array(
-        posix_getpwnam('root'),
-        posix_getpwnam('cnicodeme'),
-        posix_getpwnam('henriquemoody')
-    );
+    $process->setMaxChildren(10);
 
-    for ($value = 1; $value <= 10; $value++) {
-        $user   = $users[rand(0, 4)];
+    // Linux users
+    exec("awk -F ':' '{ print $1,$3,$4 }' /etc/passwd", $users);
+    $users = array_filter($users);
+    foreach($users as $key => $user) {
+        list($username, $uid, $gid) = explode(' ', $user);
         $fork   = $process->fork(
-            function () use ($value, $user) {
-                $value  = sprintf('%02d', $value);
-                $data   = 'Doing work job ' . $value;
+            function () use ($key, $username) {
+                $key    = sprintf('%02d', $key);
+                $data   = "Doing work job {$key} for {$username}";
                 $file   = sys_get_temp_dir();
-                $file   .= "/fork-{$user['name']}-{$value}";
+                $file   .= "/fork-{$username}-{$key}";
                 echo $data . PHP_EOL;
                 echo $file . PHP_EOL;
                 file_put_contents($file, $data);
-                sleep((int) $value);
-            }, 
-            $user['uid'], 
-            $user['gid']
+                sleep(5);
+            },
+            $uid,
+            $gid
         );
-        echo 'Waiting' . PHP_EOL;
-        while ($fork->isRunning()) {
-            usleep(100000);
-            echo '.';
-        }
-        
-        // Ensures that the process will not continue active 
-        // and that shared memory is cleared
-        $fork->stop();
-        echo PHP_EOL;
     }
 
 } catch (Exception $exception) {
