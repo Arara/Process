@@ -24,6 +24,13 @@ class Memory
     private $_id;
 
     /**
+     * Incremental variable to define shared memory ID's.
+     *
+     * @var int
+     */
+    private static $_incremental = 1000;
+
+    /**
      * The number of bytes the shared memory block occupies.
      *
      * @var int
@@ -51,8 +58,7 @@ class Memory
             throw new \UnexpectedValueException($message);
         }
 
-        $key        = rand(1000, 2000);
-        $this->_id  = @shmop_open($key, 'c', 0644, 1024);
+        $this->_id  = @shmop_open(++self::$_incremental, 'c', 0777, 1024);
         if (!$this->_id) {
             $message = 'Could not create shared memory segment';
             throw new \RuntimeException($message);
@@ -115,10 +121,7 @@ class Memory
      */
     public function clean()
     {
-        if (!shmop_delete($this->_id)) {
-            $message = 'Could not mark shared memory block for deletion';
-            throw new \RuntimeException($message);
-        }
+        @shmop_delete($this->_id);
         return $this;
     }
 
@@ -129,7 +132,7 @@ class Memory
      */
     public function __destruct()
     {
-        shmop_close($this->_id);
+        @shmop_close($this->_id);
     }
 
 
