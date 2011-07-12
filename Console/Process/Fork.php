@@ -231,7 +231,8 @@ class Fork
                 $status = self::RESULT_STATUS_ERROR;
 
             }
-
+            
+            restore_error_handler();
             restore_error_handler();
 
             $this->_memory->write('__result', $result);
@@ -253,6 +254,7 @@ class Fork
         if ($this->_pid > 0) {
             posix_kill($this->_pid, SIGKILL);
         }
+        $this->_pid = null;
         $this->_memory->clean();
     }
 
