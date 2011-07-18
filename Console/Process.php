@@ -158,15 +158,16 @@ class Process
     /**
      * Defines the default number of childrens.
      *
+     * @param   int $value
      * @return  void
      */
-    public static function setDefaultMaxChildren($int)
+    public static function setDefaultMaxChildren($value)
     {
         if (!is_int($value) || $value < 1) {
-            $message = 'Children must be an int';
+            $message = 'Children must be an integer: ' . $value;
             throw new \InvalidArgumentException($message);
         }
-        self::$_defaultMaxChildren = $int;
+        self::$_defaultMaxChildren = $value;
     }
 
     /**
