@@ -3,7 +3,7 @@
 /**
  * @namespace
  */
-namespace PHProcess\Console;
+namespace Jack\Process;
 
 /**
  * Class that handle creating multiple process.
@@ -11,12 +11,11 @@ namespace PHProcess\Console;
  * This source file is subject to the GNU/GPLv3 license.
  *
  * @category   PHProcess
- * @package    PHProcess\Console
- * @subpackage PHProcess\Console\Process
+ * @package    Jack\Process
  * @author     Cyril Nicodème
  * @author     Henrique Moody <henriquemoody@gmail.com>
  */
-class Process
+class Manager
 {
 
     /**
@@ -49,32 +48,6 @@ class Process
     private static $_defaultMaxChildren = 5;
 
     /**
-     * Constructor.
-     *
-     * Checks whether the system meets the requirements needed to run the class.
-     */
-    public function __construct()
-    {
-        if (substr(PHP_OS, 0, 3) === 'WIN') {
-            $message = 'Cannot run on windows';
-            throw new \UnexpectedValueException($message);
-
-        } else if (!in_array(substr(PHP_SAPI, 0, 3), array('cli', 'cgi'))) {
-            $message = 'Can only run on CLI or CGI enviroment';
-            throw new \UnexpectedValueException($message);
-
-        } else if (!function_exists('pcntl_fork')) {
-            $message = 'pcntl_* functions are required';
-            throw new \UnexpectedValueException();
-
-        } else if (!function_exists('posix_setgid')) {
-            $message = 'posix_* functions are required';
-            throw new \UnexpectedValueException($message);
-
-        }
-    }
-
-    /**
      * Destructor.
      *
      * Suspends the execution of the childrens.
@@ -92,11 +65,11 @@ class Process
      * @param   array|string|Cousure $callback
      * @param   int[optional] $uid
      * @param   int[optional] $gid
-     * @return  PHProcess\Console\Process\Fork Forked process
+     * @return  Jack\Process\Fork Forked process object
      */
     public function fork($callback, $uid = null, $gid = null)
     {
-        $fork = new Process\Fork();
+        $fork = new Fork();
         if (null !== $uid) {
             $fork->setUserId($uid);
         }
@@ -119,7 +92,7 @@ class Process
      * Define the the number of max allowed children.
      *
      * @param   int $value
-     * @return  PHProcess\Console\Process Fluent interface, returns self
+     * @return  Jack\Process\Manager Fluent interface, returns self
      */
     public function setMaxChildren($value)
     {

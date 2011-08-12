@@ -4,13 +4,13 @@ Usage example:
 
 ```php
 <?php
-require_once ('Jack/Process.php');
+require_once ('Jack/Process/Manager.php');
 require_once ('Jack/Process/Fork.php');
 require_once ('Jack/Process/Memory.php');
 
 try {
 
-    $process = new Jack\Process();
+    $process = new Jack\Process\Manager();
     $process->setMaxChildren(10);
 
     // Linux users

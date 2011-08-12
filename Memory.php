@@ -3,14 +3,13 @@
 /**
  * @namespace
  */
-namespace PHProcess\Console\Process;
+namespace Jack\Process;
 
 /**
  * Handles Shared Memoty data.
  *
  * @category   PHProcess
- * @package    PHProcess\Console
- * @subpackage PHProcess\Console\Process
+ * @package    Jack\Process
  * @author     Henrique Moody <henriquemoody@gmail.com>
  */
 class Memory
@@ -48,16 +47,9 @@ class Memory
      * Constructor.
      *
      * Creates a shared memory block.
-     *
-     * @author  Henrique Moody <henriquemoody@gmail.com>
      */
     public function __construct()
     {
-        if (!function_exists('shmop_open')) {
-            $message = 'shmop_* functions are required';
-            throw new \UnexpectedValueException($message);
-        }
-
         $this->_id  = @shmop_open(++self::$_incremental, 'c', 0777, 1024);
         if (!$this->_id) {
             $message = 'Could not create shared memory segment';
@@ -72,15 +64,15 @@ class Memory
      *
      * @param   string $name
      * @param   mixed $value
-     * @return  Console\Process\Memory Fluent interface, returns self.
+     * @return  Jack\Process\Memory Fluent interface, returns self.
      */
     public function write($name, $value)
     {
         $this->_data[$name] = $value;
 
-        $data = serialize($this->_data);
+        $data = @serialize($this->_data);
 
-        $bytesWritten = shmop_write($this->_id, $data, 0);
+        $bytesWritten = @shmop_write($this->_id, $data, 0);
         if ($bytesWritten != strlen($data)) {
             $message = 'Could not write the entire length of data';
             throw new \RuntimeException($message);
@@ -97,13 +89,13 @@ class Memory
     public function read($name)
     {
         // Now lets read the string back
-        $data = shmop_read($this->_id, 0, $this->_size);
+        $data = @shmop_read($this->_id, 0, $this->_size);
         if (!$data) {
             $message = 'Could not read from shared memory block';
             throw new \RuntimeException($message);
         }
 
-        $data = unserialize($data);
+        $data = @unserialize($data);
         if (!is_array($data)) {
             $data = array();
         }
@@ -117,7 +109,7 @@ class Memory
     /**
      * Cleans the data of the shared memory.
      *
-     * @return  Console\Process\Memory Fluent interface, returns self.
+     * @return  Jack\Process\Memory Fluent interface, returns self.
      */
     public function clean()
     {

@@ -3,14 +3,13 @@
 /**
  * @namespace
  */
-namespace PHProcess\Console\Process;
+namespace Jack\Process;
 
 /**
  * Class to create forked process.
  *
  * @category   PHProcess
- * @package    PHProcess\Console
- * @subpackage PHProcess\Console\Process
+ * @package    Jack\Process
  * @author     Henrique Moody <henriquemoody@gmail.com>
  */
 class Fork
@@ -71,7 +70,7 @@ class Fork
     /**
      * Object that handles shared memory.
      *
-     * @var PHProcess\Console\Process\Memory
+     * @var Jack\Process\Memory
      */
     private $_memory;
 
@@ -82,24 +81,6 @@ class Fork
      */
     public function __construct()
     {
-        if (substr(PHP_OS, 0, 3) === 'WIN') {
-            $message = 'Cannot run on windows';
-            throw new \UnexpectedValueException($message);
-
-        } else if (!in_array(substr(PHP_SAPI, 0, 3), array('cli', 'cgi'))) {
-            $message = 'Can only run on CLI or CGI enviroment';
-            throw new \UnexpectedValueException($message);
-
-        } else if (!function_exists('pcntl_fork')) {
-            $message = 'pcntl_* functions are required';
-            throw new \UnexpectedValueException($message);
-
-        } else if (!function_exists('posix_setgid')) {
-            $message = 'posix_* functions are required';
-            throw new \UnexpectedValueException($message);
-
-        }
-
         // Shared memory object
         $this->_memory = new Memory();
         $this->_memory->write('__running', false);
@@ -144,7 +125,7 @@ class Fork
      * Defines the callback to execute in the forked process.
      *
      * @param   mixed $callback
-     * @return  PHProcess\Console\Process\Fork Fluent interface, returns self.
+     * @return  Jack\Process\Fork Fluent interface, returns self.
      */
     public function setCallback($callback)
     {
@@ -233,7 +214,6 @@ class Fork
             }
             
             restore_error_handler();
-            restore_error_handler();
 
             $this->_memory->write('__result', $result);
             $this->_memory->write('__status', $status);
@@ -304,7 +284,7 @@ class Fork
      *
      * @param   int $signal
      * @param   string|array|Clousure $callback
-     * @return  PHProcess\Console\Process\Fork Fluent interface, returns self.
+     * @return  Jack\Process\Fork Fluent interface, returns self.
      */
     public function addSignal($signal, $callback)
     {
@@ -357,7 +337,7 @@ class Fork
      *
      * @param   int $priority
      * @param   int $processIdentifier
-     * @return  PHProcess\Console\Process\Fork Fluent interface, returns self
+     * @return  Jack\Process\Process\Fork Fluent interface, returns self
      */
     public function setPriority($priority, $processIdentifier = PRIO_PROCESS)
     {
@@ -407,7 +387,7 @@ class Fork
      *
      * @throws  InvalidArgumentException If the UID is not valid.
      * @param   int $value
-     * @return  PHProcess\Console\Process\Fork Fluent interface, returns self
+     * @return  Jack\Process\Fork Fluent interface, returns self
      */
     public function setUserId($value)
     {
@@ -436,7 +416,7 @@ class Fork
      * Defines the process UNIX Group ID.
      *
      * @param   int $value
-     * @return  PHProcess\Console\Process\Fork Fluent interface, returns self
+     * @return  Jack\Process\Fork Fluent interface, returns self
      */
     public function setGroupId($value)
     {
