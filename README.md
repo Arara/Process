@@ -1,16 +1,16 @@
-h1. PHProcess
+# Jack\Process
 
-Example:
+Usage example:
 
-<pre>
+```php
 <?php
-require_once ('PHProcess/Console/Process.php');
-require_once ('PHProcess/Console/Process/Fork.php');
-require_once ('PHProcess/Console/Process/Memory.php');
+require_once ('Jack/Process.php');
+require_once ('Jack/Process/Fork.php');
+require_once ('Jack/Process/Memory.php');
 
 try {
 
-    $process = new PHProcess\Console\Process();
+    $process = new Jack\Process();
     $process->setMaxChildren(10);
 
     // Linux users
@@ -42,4 +42,4 @@ try {
 }
 echo PHP_EOL;
 
-</pre>
+```
