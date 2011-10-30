@@ -4,9 +4,15 @@ Usage example:
 
 ```php
 <?php
-require_once ('Jack/Process/Manager.php');
-require_once ('Jack/Process/Fork.php');
-require_once ('Jack/Process/Memory.php');
+
+/* Jack\Process\Manager */
+require_once 'Jack/Process/Manager.php';
+
+/* Jack\Process\Fork */
+require_once 'Jack/Process/Fork.php';
+
+/* Jack\Process\Memory */
+require_once 'Jack/Process/Memory.php';
 
 try {
 
@@ -17,6 +23,9 @@ try {
     exec("awk -F ':' '{ print $1,$3,$4 }' /etc/passwd", $users);
     $users = array_filter($users);
     foreach($users as $key => $user) {
+        if (0 === strpos($user, '#')) {// Comments
+            continue;
+        }
         list($username, $uid, $gid) = explode(' ', $user);
         $fork   = $process->fork(
             function () use ($key, $username) {
