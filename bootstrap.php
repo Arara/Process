@@ -5,8 +5,8 @@ date_default_timezone_set('America/Sao_Paulo');
 
 /* Include path */
 set_include_path(implode(PATH_SEPARATOR, array(
-    realpath(__DIR__ . '/src'),
-    realpath(__DIR__ . '/tests/dataproviders'),
+    __DIR__ . '/src',
+    __DIR__ . '/tests/dataproviders',
     get_include_path(),
 )));
 
