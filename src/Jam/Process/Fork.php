@@ -3,13 +3,13 @@
 /**
  * @namespace
  */
-namespace Jack\Process;
+namespace Jam\Process;
 
 /**
  * Class to create forked process.
  *
- * @category   PHProcess
- * @package    Jack\Process
+ * @category   Jam
+ * @package    Jam\Process
  * @author     Henrique Moody <henriquemoody@gmail.com>
  */
 class Fork
@@ -70,7 +70,7 @@ class Fork
     /**
      * Object that handles shared memory.
      *
-     * @var Jack\Process\Memory
+     * @var Jam\Process\Memory
      */
     private $_memory;
 
@@ -125,7 +125,7 @@ class Fork
      * Defines the callback to execute in the forked process.
      *
      * @param   mixed $callback
-     * @return  Jack\Process\Fork Fluent interface, returns self.
+     * @return  Jam\Process\Fork Fluent interface, returns self.
      */
     public function setCallback($callback)
     {
@@ -284,7 +284,7 @@ class Fork
      *
      * @param   int $signal
      * @param   string|array|Clousure $callback
-     * @return  Jack\Process\Fork Fluent interface, returns self.
+     * @return  Jam\Process\Fork Fluent interface, returns self.
      */
     public function addSignal($signal, $callback)
     {
@@ -337,7 +337,7 @@ class Fork
      *
      * @param   int $priority
      * @param   int $processIdentifier
-     * @return  Jack\Process\Process\Fork Fluent interface, returns self
+     * @return  Jam\Process\Process\Fork Fluent interface, returns self
      */
     public function setPriority($priority, $processIdentifier = PRIO_PROCESS)
     {
@@ -387,7 +387,7 @@ class Fork
      *
      * @throws  InvalidArgumentException If the UID is not valid.
      * @param   int $value
-     * @return  Jack\Process\Fork Fluent interface, returns self
+     * @return  Jam\Process\Fork Fluent interface, returns self
      */
     public function setUserId($value)
     {
@@ -416,7 +416,7 @@ class Fork
      * Defines the process UNIX Group ID.
      *
      * @param   int $value
-     * @return  Jack\Process\Fork Fluent interface, returns self
+     * @return  Jam\Process\Fork Fluent interface, returns self
      */
     public function setGroupId($value)
     {

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Jam/Process" default="qa" basedir=".">
+
+    <property name="source" value="src" />
+    
+    <target name="clean" 
+            description="Clean up artifact directories">
+        <delete dir="${project.basedir}/build"/>
+    </target>
+
+    <target name="create"
+            description="Create artifact directories">
+        <mkdir dir="${project.basedir}/build/api"/>
+        <mkdir dir="${project.basedir}/build/code-browser"/>
+        <mkdir dir="${project.basedir}/build/coverage"/>
+        <mkdir dir="${project.basedir}/build/logs"/>
+        <mkdir dir="${project.basedir}/build/pdepend"/>
+    </target>
+
+    <target name="qa"
+            description="Run the PHP_Depend, phpmd, phpcpd, phpcs, DocBlox, phploc, PHPUnit and PHP_CodeBrowser.">
+        <phingcall target="clean" />
+        <phingcall target="create" />
+        <phingcall target="pdepend" />
+        <phingcall target="phpmd" />
+        <phingcall target="phpcpd" />
+        <phingcall target="phpcs" />
+        <phingcall target="docblox" />
+        <phingcall target="phploc" />
+        <phingcall target="phpunit" />
+        <phingcall target="phpcb" />
+    </target>
+    
+    <target name="phpunit" 
+            depends="create"
+            description="Run unit tests using PHPUnit and generates junit.xml and clover.xml">
+        <exec command="phpunit" logoutput="true" />
+    </target>
+
+    <target name="pdepend" 
+            depends="create"
+            description="Generate jdepend.xml and software metrics charts using PHP_Depend">
+        <exec command="pdepend
+                          --jdepend-xml=${project.basedir}/build/logs/jdepend.xml
+                          --jdepend-chart=${project.basedir}/build/pdepend/dependencies.svg
+                          --overview-pyramid=${project.basedir}/build/pdepend/overview-pyramid.svg
+                          ${source}"
+              logoutput="true" />
+    </target>
+
+    <target name="phpmd" 
+            depends="create"
+            description="Generate pmd.xml using PHPMD">
+        <exec command="phpmd
+                          ${source}
+                          xml
+                          codesize,design,naming,unusedcode
+                          --reportfile ${project.basedir}/build/logs/pmd.xml"
+              logoutput="true" />
+    </target>
+
+    <target name="phpcpd" 
+            depends="create"
+            description="Generate pmd-cpd.xml using PHPCPD">
+        <exec command="phpcpd
+                          --log-pmd ${project.basedir}/build/logs/pmd-cpd.xml
+                          ${source}"
+              logoutput="true" />
+    </target>
+
+    <target name="phploc" 
+            depends="create"
+            description="Generate phploc.csv">
+        <exec command="phploc
+                          --log-csv ${project.basedir}/build/logs/phploc.csv
+                          ${source}"
+              logoutput="true" />
+    </target>
+
+    <target name="phpcs" 
+            depends="create"
+            description="Generate checkstyle.xml using PHP_CodeSniffer">
+        <touch file="${project.basedir}/build/logs/checkstyle.xml" />
+        <exec command="phpcs
+                          --warning-severity=0
+                          --report=checkstyle
+                          --report-file=${project.basedir}/build/logs/checkstyle.xml
+                          --standard=Zend
+                          ${source}"
+              logoutput="true" />
+    </target>
+
+    <target name="docblox"
+            depends="create"
+            description="Generate API documentation using DocBlox">
+        <exec command="docblox
+                          project:run 
+                          -d ${source} 
+                          -t ${project.basedir}/build/api 
+                          --title '${phing.project.name}' 
+                          --quiet"
+              logoutput="true" />
+    </target>
+
+    <target name="phpcb"
+            depends="create"
+            description="Aggregate tool output with PHP_CodeBrowser">
+        <exec command="phpcb
+                          --log=${project.basedir}/build/logs
+                          --source=${source}
+                          --output=${project.basedir}/build/code-browser"
+              logoutput="true" />
+    </target>
+
+    <target name="build" depends="qa" />
+
+</project>

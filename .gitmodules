@@ -1,0 +1,3 @@
+[submodule "tests/dataproviders"]
+	path = tests/dataproviders
+	url = https://github.com/henriquemoody/dataproviders.git

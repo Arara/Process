@@ -3,13 +3,13 @@
 /**
  * @namespace
  */
-namespace Jack\Process;
+namespace Jam\Process;
 
 /**
- * Handles Shared Memoty data.
+ * Handles shared memory data.
  *
- * @category   PHProcess
- * @package    Jack\Process
+ * @category   Jam
+ * @package    Jam\Process
  * @author     Henrique Moody <henriquemoody@gmail.com>
  */
 class Memory
@@ -64,7 +64,7 @@ class Memory
      *
      * @param   string $name
      * @param   mixed $value
-     * @return  Jack\Process\Memory Fluent interface, returns self.
+     * @return  Jam\Process\Memory Fluent interface, returns self.
      */
     public function write($name, $value)
     {
@@ -109,7 +109,7 @@ class Memory
     /**
      * Cleans the data of the shared memory.
      *
-     * @return  Jack\Process\Memory Fluent interface, returns self.
+     * @return  Jam\Process\Memory Fluent interface, returns self.
      */
     public function clean()
     {

@@ -3,15 +3,15 @@
 /**
  * @namespace
  */
-namespace Jack\Process;
+namespace Jam\Process;
 
 /**
  * Class that handle creating multiple process.
  *
  * This source file is subject to the GNU/GPLv3 license.
  *
- * @category   PHProcess
- * @package    Jack\Process
+ * @category   Jam
+ * @package    Jam\Process
  * @author     Cyril Nicodème
  * @author     Henrique Moody <henriquemoody@gmail.com>
  */
@@ -65,7 +65,7 @@ class Manager
      * @param   array|string|Cousure $callback
      * @param   int[optional] $uid
      * @param   int[optional] $gid
-     * @return  Jack\Process\Fork Forked process object
+     * @return  Jam\Process\Fork Forked process object
      */
     public function fork($callback, $uid = null, $gid = null)
     {
@@ -92,12 +92,12 @@ class Manager
      * Define the the number of max allowed children.
      *
      * @param   int $value
-     * @return  Jack\Process\Manager Fluent interface, returns self
+     * @return  Jam\Process\Manager Fluent interface, returns self
      */
     public function setMaxChildren($value)
     {
         if (!is_int($value) || $value < 1) {
-            $message = 'Children must be an int';
+            $message = 'Children must be an int and greater than 1';
             throw new \InvalidArgumentException($message);
         }
 
@@ -137,7 +137,7 @@ class Manager
     public static function setDefaultMaxChildren($value)
     {
         if (!is_int($value) || $value < 1) {
-            $message = 'Children must be an integer: ' . $value;
+            $message = 'Children must be an integer and greater than 1';
             throw new \InvalidArgumentException($message);
         }
         self::$_defaultMaxChildren = $value;
