@@ -29,5 +29,5 @@ phing:
 
 test:
 	@echo "Running tests"
-	@git submodule update --init
+	@git submodule --quiet update --init
 	@phpunit --colors
