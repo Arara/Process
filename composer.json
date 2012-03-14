@@ -4,14 +4,7 @@
     "type": "library",
     "description": "This is a package that helps forking process with PHP.",
     "keywords": ["ini", "config"],
-    "homepage": "https://github.com/henriquemoody/Process",
-    "repositories": {
-        "henriquemoody/Process": {
-            "vcs": {
-                "url" : "git://github.com/henriquemoody/Process.git"
-            }
-        }
-    },
+    "homepage": "https://github.com/JamPHP/Process",
     "license" : "MIT",
     "authors" : [
         {
