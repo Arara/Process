@@ -1,66 +1,55 @@
 <?php
 
-/**
- * @namespace
- */
-namespace Jam\Test\Process;
-
-use Jam;
+namespace Jam\Process;
 
 class ManagerTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
-     * @var Jam\Process\Manager
-     */
-    private $manager;
-
-    public function setUp()
-    {
-        $this->manager = new Jam\Process\Manager();
-    }
-
-    public function tearDown()
-    {
-        $this->manager = null;
-    }
-
-    /**
      * @dataProvider Jam\DataProvider\IntegersPositives::getValid
+     * @covers Jam\Process\Manager::__construct
+     * @covers Jam\Process\Manager::getMaxChildren
      */
-    public function testValidDefaultMaxChildrenWith($value)
+    public function testShouldDefineAndRetrieveValidMaxChildrenNumbers($value)
     {
-        Jam\Process\Manager::setDefaultMaxChildren($value);
-        $this->assertEquals($value, Jam\Process\Manager::getDefaultMaxChildren());
-        $this->assertEquals($value, $this->manager->getMaxChildren());
+        $manager = new Manager($value);
+
+        $this->assertEquals($value, $manager->getMaxChildren());
     }
 
     /**
      * @dataProvider Jam\DataProvider\IntegersPositives::getInvalid
+     * @covers Jam\Process\Manager::__construct
      * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Children must be an int and greater than 1
      */
-    public function testInvalidDefaultMaxChildrenWith($value)
+    public function testShouldNotDefineInvalidMaxChildrenNumbers($value)
     {
-        Jam\Process\Manager::setDefaultMaxChildren($value);
+        $manager = new Manager($value);
     }
 
     /**
-     * @dataProvider Jam\DataProvider\IntegersPositives::getValid
+     * @covers Jam\Process\Manager::__construct
+     * @covers Jam\Process\Manager::getMaxChildren
      */
-    public function testValidMaxChildren($value)
+    public function testShouldHaveFiveMaxChildrenByDefault()
     {
-        $this->manager->setMaxChildren($value);
-        $this->assertEquals($value, $this->manager->getMaxChildren());
+        $manager = new Manager();
+
+        $this->assertEquals(5, $manager->getMaxChildren());
     }
 
     /**
-     * @dataProvider Jam\DataProvider\IntegersPositives::getInvalid
-     * @expectedException InvalidArgumentException
+     * @covers Jam\Process\Manager::getPid
      */
-    public function testInalidMaxChildren($value)
+    public function testShouldHaveAValidPidNumber()
     {
-        $this->manager->setMaxChildren($value);
+        $manager = new Manager();
+
+        $this->assertGreaterThan(0, $manager->getPid());
+        $this->assertInternalType('int', $manager->getPid());
     }
+
 
 }
 

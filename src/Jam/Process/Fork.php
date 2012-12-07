@@ -1,8 +1,5 @@
 <?php
 
-/**
- * @namespace
- */
 namespace Jam\Process;
 
 /**
