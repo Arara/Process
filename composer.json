@@ -15,6 +15,9 @@
     "require": {
         "php": ">=5.3.0"
     },
+    "require-dev": {
+        "jam/dataprovider": "*"
+    },
     "autoload": {
         "psr-0": {
             "Jam\\Process": "src"

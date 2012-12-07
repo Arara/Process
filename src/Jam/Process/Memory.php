@@ -8,9 +8,7 @@ namespace Jam\Process;
 /**
  * Handles shared memory data.
  *
- * @category   Jam
- * @package    Jam\Process
- * @author     Henrique Moody <henriquemoody@gmail.com>
+ * @author Henrique Moody <henriquemoody@gmail.com>
  */
 class Memory
 {
@@ -20,28 +18,28 @@ class Memory
      *
      * @var int
      */
-    private $_id;
+    private $id;
 
     /**
      * Incremental variable to define shared memory ID's.
      *
      * @var int
      */
-    private static $_incremental = 1000;
+    private static $incremental = 1000;
 
     /**
      * The number of bytes the shared memory block occupies.
      *
      * @var int
      */
-    private $_size;
+    private $size;
 
     /**
      * Data in the memory.
      *
      * @var array
      */
-    private $_data = array();
+    private $data = array();
 
     /**
      * Constructor.
@@ -50,13 +48,13 @@ class Memory
      */
     public function __construct()
     {
-        $this->_id  = @shmop_open(++self::$_incremental, 'c', 0777, 1024);
-        if (!$this->_id) {
+        $this->id  = @shmop_open(++self::$incremental, 'c', 0777, 1024);
+        if (!$this->id) {
             $message = 'Could not create shared memory segment';
             throw new \RuntimeException($message);
         }
         // Get shared memory block's size
-        $this->_size = shmop_size($this->_id);
+        $this->size = shmop_size($this->id);
     }
 
     /**
@@ -68,11 +66,11 @@ class Memory
      */
     public function write($name, $value)
     {
-        $this->_data[$name] = $value;
+        $this->data[$name] = $value;
 
-        $data = @serialize($this->_data);
+        $data = @serialize($this->data);
 
-        $bytesWritten = @shmop_write($this->_id, $data, 0);
+        $bytesWritten = @shmop_write($this->id, $data, 0);
         if ($bytesWritten != strlen($data)) {
             $message = 'Could not write the entire length of data';
             throw new \RuntimeException($message);
@@ -89,7 +87,7 @@ class Memory
     public function read($name)
     {
         // Now lets read the string back
-        $data = @shmop_read($this->_id, 0, $this->_size);
+        $data = @shmop_read($this->id, 0, $this->_size);
         if (!$data) {
             $message = 'Could not read from shared memory block';
             throw new \RuntimeException($message);
@@ -99,10 +97,10 @@ class Memory
         if (!is_array($data)) {
             $data = array();
         }
-        $this->_data = $data;
+        $this->data = $data;
 
-        if (isset($this->_data[$name])) {
-            return $this->_data[$name];
+        if (isset($this->data[$name])) {
+            return $this->data[$name];
         }
     }
 
@@ -113,7 +111,7 @@ class Memory
      */
     public function clean()
     {
-        @shmop_delete($this->_id);
+        @shmop_delete($this->id);
         return $this;
     }
 
@@ -124,7 +122,7 @@ class Memory
      */
     public function __destruct()
     {
-        @shmop_close($this->_id);
+        @shmop_close($this->id);
     }
 
 

@@ -10,10 +10,8 @@ namespace Jam\Process;
  *
  * This source file is subject to the GNU/GPLv3 license.
  *
- * @category   Jam
- * @package    Jam\Process
- * @author     Cyril Nicodème
- * @author     Henrique Moody <henriquemoody@gmail.com>
+ * @author Cyril Nicodème
+ * @author Henrique Moody <henriquemoody@gmail.com>
  */
 class Manager
 {
@@ -23,7 +21,7 @@ class Manager
      *
      * @var int
      */
-    private $_pid;
+    private $pid;
 
     /**
      * Contains a list of all the children PID's.
@@ -31,21 +29,21 @@ class Manager
      *
      * @var array
      */
-    private $_forks = array();
+    private $forks = array();
 
     /**
      * Contain the number of max allowed children.
      *
      * @var int
      */
-    private $_maxChildren;
+    private $maxChildren;
 
     /**
      * Contain the default number of max allowed children.
      *
      * @var int
      */
-    private static $_defaultMaxChildren = 5;
+    private static $defaultMaxChildren = 5;
 
     /**
      * Destructor.
@@ -54,7 +52,7 @@ class Manager
      */
     public function __destruct()
     {
-        foreach ($this->_forks as $fork) {
+        foreach ($this->forks as $fork) {
             pcntl_waitpid($fork->getPid(), $status);
         }
     }
@@ -79,10 +77,10 @@ class Manager
         $fork->setCallback($callback)
              ->start();
 
-        $this->_forks[] = $fork;
+        $this->forks[] = $fork;
 
-        if (count($this->_forks) >= $this->getMaxChildren()) {
-            $first = array_shift($this->_forks);
+        if (count($this->forks) >= $this->getMaxChildren()) {
+            $first = array_shift($this->forks);
             pcntl_waitpid($first->getPid(), $status);
         }
         return $fork;
@@ -101,7 +99,7 @@ class Manager
             throw new \InvalidArgumentException($message);
         }
 
-        $this->_maxChildren = $value;
+        $this->maxChildren = $value;
         return $this;
     }
 
@@ -112,10 +110,10 @@ class Manager
      */
     public function getMaxChildren()
     {
-        if (null === $this->_maxChildren) {
-            $this->_maxChildren = self::getDefaultMaxChildren();
+        if (null === $this->maxChildren) {
+            $this->maxChildren = self::getDefaultMaxChildren();
         }
-        return $this->_maxChildren;
+        return $this->maxChildren;
     }
 
     /**
@@ -125,7 +123,7 @@ class Manager
      */
     public static function getDefaultMaxChildren()
     {
-        return self::$_defaultMaxChildren;
+        return self::$defaultMaxChildren;
     }
 
     /**
@@ -140,7 +138,7 @@ class Manager
             $message = 'Children must be an integer and greater than 1';
             throw new \InvalidArgumentException($message);
         }
-        self::$_defaultMaxChildren = $value;
+        self::$defaultMaxChildren = $value;
     }
 
     /**
@@ -150,10 +148,10 @@ class Manager
      */
     public function getPid()
     {
-        if (null === $this->_pid) {
-            $this->_pid = posix_getpid();
+        if (null === $this->pid) {
+            $this->pid = posix_getpid();
         }
-        return $this->_pid;
+        return $this->pid;
     }
 
 

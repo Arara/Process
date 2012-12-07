@@ -5,7 +5,7 @@
  */
 namespace Jam\Test\Process;
 
-use Jam\Process as JP;
+use Jam;
 
 class ManagerTest extends \PHPUnit_Framework_TestCase
 {
@@ -13,65 +13,54 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @var Jam\Process\Manager
      */
-    private $_manager;
+    private $manager;
 
     public function setUp()
     {
-        $this->_manager = new JP\Manager();
+        $this->manager = new Jam\Process\Manager();
     }
 
     public function tearDown()
     {
-        $this->_manager = null;
+        $this->manager = null;
     }
 
     /**
-     * @dataProvider _providerIntegersPositives
+     * @dataProvider Jam\DataProvider\IntegersPositives::getValid
      */
     public function testValidDefaultMaxChildrenWith($value)
     {
-        JP\Manager::setDefaultMaxChildren($value);
-        $this->assertEquals($value, JP\Manager::getDefaultMaxChildren());
-        $this->assertEquals($value, $this->_manager->getMaxChildren());
+        Jam\Process\Manager::setDefaultMaxChildren($value);
+        $this->assertEquals($value, Jam\Process\Manager::getDefaultMaxChildren());
+        $this->assertEquals($value, $this->manager->getMaxChildren());
     }
 
     /**
-     * @dataProvider _providerIntegersPositivesNot
+     * @dataProvider Jam\DataProvider\IntegersPositives::getInvalid
      * @expectedException InvalidArgumentException
      */
     public function testInvalidDefaultMaxChildrenWith($value)
     {
-        JP\Manager::setDefaultMaxChildren($value);
+        Jam\Process\Manager::setDefaultMaxChildren($value);
     }
 
     /**
-     * @dataProvider _providerIntegersPositives
+     * @dataProvider Jam\DataProvider\IntegersPositives::getValid
      */
     public function testValidMaxChildren($value)
     {
-        $this->_manager->setMaxChildren($value);
-        $this->assertEquals($value, $this->_manager->getMaxChildren());
+        $this->manager->setMaxChildren($value);
+        $this->assertEquals($value, $this->manager->getMaxChildren());
     }
 
     /**
-     * @dataProvider _providerIntegersPositivesNot
+     * @dataProvider Jam\DataProvider\IntegersPositives::getInvalid
      * @expectedException InvalidArgumentException
      */
     public function testInalidMaxChildren($value)
     {
-        $this->_manager->setMaxChildren($value);
+        $this->manager->setMaxChildren($value);
     }
-
-    public function _providerIntegersPositives()
-    {
-        return include 'IntegersPositives.valid.php';
-    }
-
-    public function _providerIntegersPositivesNot()
-    {
-        return include 'IntegersPositives.invalid.php';
-    }
-
 
 }
 

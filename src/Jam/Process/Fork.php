@@ -8,9 +8,7 @@ namespace Jam\Process;
 /**
  * Class to create forked process.
  *
- * @category   Jam
- * @package    Jam\Process
- * @author     Henrique Moody <henriquemoody@gmail.com>
+ * @author Henrique Moody <henriquemoody@gmail.com>
  */
 class Fork
 {
@@ -37,42 +35,42 @@ class Fork
      *
      * @var int
      */
-    private $_pid;
+    private $pid;
 
     /**
      * Process UID.
      *
      * @var int
      */
-    private $_uid;
+    private $uid;
 
     /**
      * Process GID.
      *
      * @var int
      */
-    private $_gid;
+    private $gid;
 
     /**
      * Contain the priority for the current process.
      *
      * @var int
      */
-    private $_priority = 0;
+    private $priority = 0;
 
     /**
      * Callback to execute.
      *
      * @var mixed
      */
-    private $_callback;
+    private $callback;
 
     /**
      * Object that handles shared memory.
      *
      * @var Jam\Process\Memory
      */
-    private $_memory;
+    private $memory;
 
     /**
      * Constructor.
@@ -82,8 +80,8 @@ class Fork
     public function __construct()
     {
         // Shared memory object
-        $this->_memory = new Memory();
-        $this->_memory->write('__running', false);
+        $this->memory = new Memory();
+        $this->memory->write('__running', false);
 
         // Setting up the signal handlers
         $this->addSignal(SIGTERM, array($this, 'signalHandler'));
@@ -112,13 +110,13 @@ class Fork
      */
     public function getCallback()
     {
-        if (null === $this->_callback) {
-            $this->_callback = function ()
+        if (null === $this->callback) {
+            $this->callback = function ()
             {
                 // ..
             };
         }
-        return $this->_callback;
+        return $this->callback;
     }
 
     /**
@@ -133,7 +131,7 @@ class Fork
             $message = 'Callback given is not callable';
             throw new \InvalidArgumentException($message);
         }
-        $this->_callback = $callback;
+        $this->callback = $callback;
         return $this;
     }
 
@@ -154,13 +152,13 @@ class Fork
         } elseif ($pid > 0) {
 
             // We are in the parent process
-            if (null !== $this->_pid) {
+            if (null !== $this->pid) {
                 $message = 'Process already forked';
                 throw new \UnexpectedValueException($message);
             }
 
-            $this->_pid = $pid;
-            $this->_memory->write('__running', true);
+            $this->pid = $pid;
+            $this->memory->write('__running', true);
 
         } elseif ($pid === 0) {
 
@@ -215,9 +213,9 @@ class Fork
             
             restore_error_handler();
 
-            $this->_memory->write('__result', $result);
-            $this->_memory->write('__status', $status);
-            $this->_memory->write('__running', false);
+            $this->memory->write('__result', $result);
+            $this->memory->write('__status', $status);
+            $this->memory->write('__running', false);
             exit(0);
         }
     }
@@ -231,11 +229,11 @@ class Fork
      */
     public function stop()
     {
-        if ($this->_pid > 0) {
-            posix_kill($this->_pid, SIGKILL);
+        if ($this->pid > 0) {
+            posix_kill($this->pid, SIGKILL);
         }
-        $this->_pid = null;
-        $this->_memory->clean();
+        $this->pid = null;
+        $this->memory->clean();
     }
 
     /**
@@ -245,7 +243,7 @@ class Fork
      */
     public function isRunning()
     {
-        return $this->_memory->read('__running');
+        return $this->memory->read('__running');
     }
 
     /**
@@ -255,7 +253,7 @@ class Fork
      */
     public function getCallbackResult()
     {
-        return $this->_memory->read('__result');
+        return $this->memory->read('__result');
     }
 
     /**
@@ -265,7 +263,7 @@ class Fork
      */
     public function getCallbackStatus()
     {
-        return $this->_memory->read('__status');
+        return $this->memory->read('__status');
     }
 
     /**
@@ -275,7 +273,7 @@ class Fork
      */
     public function isCallbackSuccessful()
     {
-        return ($this->_memory->read('__status') == self::RESULT_STATUS_SUCESS);
+        return ($this->memory->read('__status') == self::RESULT_STATUS_SUCESS);
     }
 
     /**
@@ -315,13 +313,13 @@ class Fork
     {
         switch ($signal) {
             case SIGTERM: // Finish
-                $this->_memory->clean();
+                $this->memory->clean();
                 exit(0);
                 break;
             case SIGQUIT: // Quit
             case SIGINT:  // Stop from the keyboard
             case SIGKILL: // Kill
-                $this->_memory->clean();
+                $this->memory->clean();
                 exit(1);
             case SIGCHLD:
                 // zombies nevermore!
@@ -353,12 +351,12 @@ class Fork
             throw new \InvalidArgumentException($message);
         }
 
-        if (!pcntl_setpriority($priority, $this->_pid, $processIdentifier)) {
+        if (!pcntl_setpriority($priority, $this->pid, $processIdentifier)) {
             $message = 'Unable to set the priority.';
             throw new \RuntimeException($message);
         }
 
-        $this->_priority = $priority;
+        $this->priority = $priority;
         return $this;
     }
 
@@ -369,7 +367,7 @@ class Fork
      */
     public function getPriority()
     {
-        return $this->_priority;
+        return $this->priority;
     }
 
     /**
@@ -379,7 +377,7 @@ class Fork
      */
     public function getPid()
     {
-        return $this->_pid;
+        return $this->pid;
     }
 
     /**
@@ -395,7 +393,7 @@ class Fork
             $message = sprintf('The given UID "%s" is not valid', $value);
             throw new \InvalidArgumentException($message);
         }
-        $this->_uid = $value;
+        $this->uid = $value;
         return $this;
     }
 
@@ -406,10 +404,10 @@ class Fork
      */
     public function getUserId()
     {
-        if (null === $this->_uid) {
-            $this->_uid = posix_getuid();
+        if (null === $this->uid) {
+            $this->uid = posix_getuid();
         }
-        return $this->_uid;
+        return $this->uid;
     }
 
     /**
@@ -424,7 +422,7 @@ class Fork
             $message = sprintf('The given GID "%s" is not valid', $value);
             throw new \InvalidArgumentException($message);
         }
-        $this->_gid = $value;
+        $this->gid = $value;
         return $this;
     }
 
@@ -435,10 +433,10 @@ class Fork
      */
     public function getGroupId()
     {
-        if (null === $this->_gid) {
-            $this->_gid = posix_getgid();
+        if (null === $this->gid) {
+            $this->gid = posix_getgid();
         }
-        return $this->_gid;
+        return $this->gid;
     }
 
 
