@@ -1,5 +1,4 @@
 .*
 composer.*
 build/
-nbproject/
 vendor/

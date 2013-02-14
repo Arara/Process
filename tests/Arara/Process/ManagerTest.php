@@ -1,36 +1,36 @@
 <?php
 
-namespace Jam\Process;
+namespace Arara\Process;
 
 class ManagerTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
-     * @dataProvider Jam\DataProvider\IntegersPositives::getValid
-     * @covers Jam\Process\Manager::__construct
-     * @covers Jam\Process\Manager::getMaxChildren
+     * @covers Arara\Process\Manager::__construct
+     * @covers Arara\Process\Manager::getMaxChildren
      */
-    public function testShouldDefineAndRetrieveValidMaxChildrenNumbers($value)
+    public function testShouldDefineAndRetrieveValidMaxChildrenNumbers()
     {
+        $value = 50;
         $manager = new Manager($value);
 
         $this->assertEquals($value, $manager->getMaxChildren());
     }
 
     /**
-     * @dataProvider Jam\DataProvider\IntegersPositives::getInvalid
-     * @covers Jam\Process\Manager::__construct
+     * @covers Arara\Process\Manager::__construct
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Children must be an int and greater than 1
      */
-    public function testShouldNotDefineInvalidMaxChildrenNumbers($value)
+    public function testShouldNotDefineInvalidMaxChildrenNumbers()
     {
+        $value = new \stdClass();
         $manager = new Manager($value);
     }
 
     /**
-     * @covers Jam\Process\Manager::__construct
-     * @covers Jam\Process\Manager::getMaxChildren
+     * @covers Arara\Process\Manager::__construct
+     * @covers Arara\Process\Manager::getMaxChildren
      */
     public function testShouldHaveFiveMaxChildrenByDefault()
     {
@@ -40,7 +40,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Jam\Process\Manager::getPid
+     * @covers Arara\Process\Manager::getPid
      */
     public function testShouldHaveAValidPidNumber()
     {

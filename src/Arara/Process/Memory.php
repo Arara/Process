@@ -1,6 +1,6 @@
 <?php
 
-namespace Jam\Process;
+namespace Arara\Process;
 
 /**
  * Handles shared memory data.
@@ -59,7 +59,7 @@ class Memory
      *
      * @param   string $name
      * @param   mixed $value
-     * @return  Jam\Process\Memory Fluent interface, returns self.
+     * @return  Arara\Process\Memory Fluent interface, returns self.
      */
     public function write($name, $value)
     {
@@ -104,7 +104,7 @@ class Memory
     /**
      * Cleans the data of the shared memory.
      *
-     * @return  Jam\Process\Memory Fluent interface, returns self.
+     * @return  Arara\Process\Memory Fluent interface, returns self.
      */
     public function clean()
     {

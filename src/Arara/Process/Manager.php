@@ -1,6 +1,6 @@
 <?php
 
-namespace Jam\Process;
+namespace Arara\Process;
 
 /**
  * @author Cyril Nicodème
@@ -58,7 +58,7 @@ class Manager
      * @param  array|string|Cousure $callback
      * @param  int[optional] $uid
      * @param  int[optional] $gid
-     * @return Jam\Process\Fork Forked process object
+     * @return Arara\Process\Fork Forked process object
      */
     public function fork($callback, $uid = null, $gid = null)
     {

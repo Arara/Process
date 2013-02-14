@@ -5,7 +5,7 @@ require_once __DIR__ . '/../bootstrap.php';
 
 try {
 
-    $process = new Jam\Process\Manager(10);
+    $process = new Arara\Process\Manager(10);
 
     // Linux users
     exec("awk -F ':' '{ print $1,$3,$4 }' /etc/passwd", $users);

@@ -1,6 +1,6 @@
-Jam/Process
-===========
-[![Build Status](https://secure.travis-ci.org/JamPHP/Process.png)](http://travis-ci.org/JamPHP/Process)
+Arara/Process
+=============
+[![Build Status](https://secure.travis-ci.org/Arara/Process.png)](http://travis-ci.org/Arara/Process)
 
 Simple package for fork process.
 

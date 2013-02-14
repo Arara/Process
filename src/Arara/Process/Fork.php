@@ -1,6 +1,6 @@
 <?php
 
-namespace Jam\Process;
+namespace Arara\Process;
 
 /**
  * Class to create forked process.
@@ -65,7 +65,7 @@ class Fork
     /**
      * Object that handles shared memory.
      *
-     * @var Jam\Process\Memory
+     * @var Arara\Process\Memory
      */
     private $memory;
 
@@ -120,7 +120,7 @@ class Fork
      * Defines the callback to execute in the forked process.
      *
      * @param   mixed $callback
-     * @return  Jam\Process\Fork Fluent interface, returns self.
+     * @return  Arara\Process\Fork Fluent interface, returns self.
      */
     public function setCallback($callback)
     {
@@ -279,7 +279,7 @@ class Fork
      *
      * @param   int $signal
      * @param   string|array|Clousure $callback
-     * @return  Jam\Process\Fork Fluent interface, returns self.
+     * @return  Arara\Process\Fork Fluent interface, returns self.
      */
     public function addSignal($signal, $callback)
     {
@@ -332,7 +332,7 @@ class Fork
      *
      * @param   int $priority
      * @param   int $processIdentifier
-     * @return  Jam\Process\Process\Fork Fluent interface, returns self
+     * @return  Arara\Process\Process\Fork Fluent interface, returns self
      */
     public function setPriority($priority, $processIdentifier = PRIO_PROCESS)
     {
@@ -382,7 +382,7 @@ class Fork
      *
      * @throws  InvalidArgumentException If the UID is not valid.
      * @param   int $value
-     * @return  Jam\Process\Fork Fluent interface, returns self
+     * @return  Arara\Process\Fork Fluent interface, returns self
      */
     public function setUserId($value)
     {
@@ -411,7 +411,7 @@ class Fork
      * Defines the process UNIX Group ID.
      *
      * @param   int $value
-     * @return  Jam\Process\Fork Fluent interface, returns self
+     * @return  Arara\Process\Fork Fluent interface, returns self
      */
     public function setGroupId($value)
     {

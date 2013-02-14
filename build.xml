@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Jam/Process" default="qa" basedir=".">
+<project name="Arara/Process" default="qa" basedir=".">
 
     <property name="source" value="src" />
     

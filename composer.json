@@ -1,10 +1,10 @@
 {
-    "name": "Jam/Process",
-    "version": "1.0.0",
+    "name": "arara/process",
+    "version": "0.1.0",
     "type": "library",
-    "description": "This is a package that helps forking process with PHP.",
-    "keywords": ["ini", "config"],
-    "homepage": "https://github.com/JamPHP/Process",
+    "description": "Simple package for fork process",
+    "keywords": ["pcntl", "posix", "daemom", "fork", "process"],
+    "homepage": "https://github.com/Arara/Process",
     "license" : "MIT",
     "authors" : [
         {
@@ -15,12 +15,9 @@
     "require": {
         "php": ">=5.3.0"
     },
-    "require-dev": {
-        "jam/dataprovider": "master-dev"
-    },
     "autoload": {
         "psr-0": {
-            "Jam\\Process": "src"
+            "Arara\\Process": "src"
         }
     }
 }
