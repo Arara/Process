@@ -2,95 +2,60 @@
 
 namespace Arara\Process;
 
-/**
- * @author Cyril Nicodème
- * @author Henrique Moody <henriquemoody@gmail.com>
- */
 class Manager
 {
 
-    /**
-     * @var int
-     */
-    private $pid;
+    private $queue;
+    private $signalHandler;
+    private $processId;
+    private $getMaxChildren;
 
-    /**
-     * @var array
-     */
-    private $forks = array();
-
-    /**
-     * @var int
-     */
-    private $maxChildren;
-
-    /**
-     * @param  int $maxChildren
-     **/
-    public function __construct($maxChildren = 5)
+    public function __construct($getMaxChildren)
     {
-        if (!is_int($maxChildren) || $maxChildren < 1) {
-            $message = 'Children must be an int and greater than 1';
-            throw new \InvalidArgumentException($message);
+        if (!filter_var($getMaxChildren, FILTER_VALIDATE_INT)
+                || $getMaxChildren < 1) {
+            throw new \InvalidArgumentException('Children number is not valid');
         }
 
-        $this->pid = posix_getpid();
-        $this->maxChildren = $maxChildren;
+        $this->queue = new Queue();
+        $this->signalHandler = new SignalHandler();
+        $this->processId = posix_getpid();
+        $this->getMaxChildren = $getMaxChildren;
     }
 
-    /**
-     * @return int
-     */
     public function getMaxChildren()
     {
-        return $this->maxChildren;
+        return $this->getMaxChildren;
     }
 
-    /**
-     * @return  int
-     */
     public function getPid()
     {
-        return $this->pid;
+        return $this->processId;
     }
 
-    /**
-     * @param  array|string|Cousure $callback
-     * @param  int[optional] $uid
-     * @param  int[optional] $gid
-     * @return Arara\Process\Fork Forked process object
-     */
-    public function fork($callback, $uid = null, $gid = null)
+    public function addChild(Item $process, $priority = 0)
     {
-        $fork = new Fork();
-        if (null !== $uid) {
-            $fork->setUserId($uid);
-        }
-        if (null !== $gid) {
-            $fork->setGroupId($gid);
-        }
-        $fork->setCallback($callback)
-             ->start();
-
-        $this->forks[] = $fork;
-
-        if (count($this->forks) >= $this->getMaxChildren()) {
-            $first = array_shift($this->forks);
-            pcntl_waitpid($first->getPid(), $status);
+        if ($this->queue->count() == $this->getMaxChildren()) {
+            $this->queue->top()->wait();
         }
 
-        return $fork;
+        $process->start($this->signalHandler);
+
+        if (!pcntl_setpriority($priority, $this->getPid(), PRIO_PROCESS)) {
+            $message = 'Unable to set the priority';
+            throw new \RuntimeException($message);
+        }
+
+        $this->queue->insert($process, $priority);
+
+        return $this;
     }
 
     public function __destruct()
     {
-        foreach ($this->forks as $fork) {
-            pcntl_waitpid($fork->getPid(), $status);
+        foreach ($this->queue as $process) {
+            $process->wait();
         }
     }
 
 }
-
-
-
-
