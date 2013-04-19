@@ -10,4 +10,4 @@ before_script:
   - php composer.phar install --dev
 
 script:
-  - phpunit --colors --coverage-text
+  - ./vendor/bin/phpunit --colors --coverage-text

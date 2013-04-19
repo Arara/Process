@@ -1,11 +1,11 @@
 <?php
 
 /* Bootstrap */
-require_once __DIR__ . '/../bootstrap.php';
+require_once __DIR__ . '/bootstrap.php';
 
 try {
 
-    $process = new Arara\Process\Manager(10);
+    $manager = new Arara\Process\Manager(10);
 
     // Linux users
     exec("awk -F ':' '{ print $1,$3,$4 }' /etc/passwd", $users);
@@ -15,7 +15,7 @@ try {
             continue;
         }
         list($username, $uid, $gid) = explode(' ', $user);
-        $fork   = $process->fork(
+        $fork = new Arara\Process\Item(
             function () use ($key, $username) {
                 $key    = sprintf('%02d', $key);
                 $data   = "Doing work job {$key} for {$username}";
@@ -26,9 +26,11 @@ try {
                 file_put_contents($file, $data);
                 sleep(5);
             },
+            new Arara\Process\Ipc\SharedMemory(),
             $uid,
             $gid
         );
+        $manager->addChild($fork);
     }
 
 } catch (Exception $exception) {

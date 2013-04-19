@@ -1,6 +1,5 @@
 {
     "name": "arara/process",
-    "version": "0.1.0",
     "type": "library",
     "description": "Simple package for fork process",
     "keywords": ["pcntl", "posix", "daemom", "fork", "process"],
@@ -13,7 +12,13 @@
         }
     ],
     "require": {
+        "ext-pcntl": "*",
+        "ext-posix": "*",
+        "ext-shmop": "*",
         "php": ">=5.3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "@stable"
     },
     "autoload": {
         "psr-0": {

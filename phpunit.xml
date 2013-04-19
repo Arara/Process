@@ -1,24 +1,28 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="./bootstrap.php"
-         backupGlobals="false"
+<phpunit backupGlobals="true"
          backupStaticAttributes="false"
+         bootstrap="./bootstrap.php"
+         cacheTokens="false"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         forceCoversAnnotation="false"
+         mapTestClassNameToCoveredClassName="false"
+         processIsolation="false"
+         stopOnError="false"
+         stopOnFailure="false"
+         stopOnIncomplete="false"
+         stopOnSkipped="false"
          strict="true"
          verbose="true">
     <testsuites>
         <testsuite>
-            <directory suffix="Test.php">./tests</directory>
+            <directory>tests/</directory>
         </testsuite>
     </testsuites>
-
-    <logging>
-        <log type="coverage-html" target="./build/coverage" charset="UTF-8" />
-        <log type="coverage-clover" target="./build/logs/clover.xml"/>
-        <log type="junit" target="./build/logs/junit.xml" logIncompleteSkipped="false"/>
-    </logging>
-
     <filter>
-        <whitelist addUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">./src</directory>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">src/</directory>
         </whitelist>
     </filter>
 </phpunit>
