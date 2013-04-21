@@ -11,7 +11,7 @@ class Item
 
     private $userId;
     private $groupId;
-    private $processId;
+    private $pid;
     private $ipc;
 
     private $callback;
@@ -53,13 +53,13 @@ class Item
 
         } elseif ($pid > 0) {
 
-            if (null !== $this->processId) {
+            if (null !== $this->pid) {
                 $message = 'Process already forked';
                 throw new \UnexpectedValueException($message);
             }
 
-            $this->processId = $pid;
-            $this->ipc->save('__running', true);
+            $this->pid = $pid;
+            $this->getIpc()->save('__running', true);
 
         } elseif ($pid === 0) {
 
@@ -112,10 +112,10 @@ class Item
 
             restore_error_handler();
 
-            $this->ipc->save('__result', $result);
-            $this->ipc->save('__output', ob_get_clean());
-            $this->ipc->save('__status', $status);
-            $this->ipc->save('__running', false);
+            $this->getIpc()->save('__result', $result);
+            $this->getIpc()->save('__output', ob_get_clean());
+            $this->getIpc()->save('__status', $status);
+            $this->getIpc()->save('__running', false);
 
             $signalHandler->quit($code);
         }
@@ -123,67 +123,57 @@ class Item
 
     public function stop()
     {
-        if (null === $this->processId) {
-            $message = 'There is no process process to stop';
-            throw new \UnderflowException($message);
-        }
+        $return = posix_kill($this->getPid(), SIGKILL);
+        $this->getIpc()->destroy();
 
-        posix_kill($this->processId, SIGKILL);
-        $this->ipc->clear();
-
-        return $this;
+        return $return;
     }
 
     public function wait()
     {
         pcntl_waitpid($this->getPid(), $status);
 
-        return $this;
+        return $status;
     }
 
     public function isRunning()
     {
-        return $this->ipc->load('__running');
+        return (bool) $this->getIpc()->load('__running');
     }
 
     public function getResult()
     {
-        if (true === $this->isRunning()) {
-            $message = 'Process is still running';
-            throw new \UnderflowException($message);
-        }
-
-        return $this->ipc->load('__result');
+        return $this->getIpc()->load('__result');
     }
 
     public function getOutput()
     {
-        if (true === $this->isRunning()) {
-            $message = 'Process is still running';
-            throw new \UnderflowException($message);
-        }
-
-        return $this->ipc->load('__output');
+        return $this->getIpc()->load('__output');
     }
 
     public function getStatus()
     {
-        if (true === $this->isRunning()) {
-            $message = 'Process is still running';
-            throw new \UnderflowException($message);
-        }
-
-        return $this->ipc->load('__status');
+        return $this->getIpc()->load('__status');
     }
 
     public function isSuccessful()
     {
-        return ($this->ipc->load('__status') == self::STATUS_SUCESS);
+        return ($this->getIpc()->load('__status') == self::STATUS_SUCESS);
+    }
+
+    public function hasPid()
+    {
+        return (null !== $this->pid);
     }
 
     public function getPid()
     {
-        return $this->processId;
+        if (false === $this->hasPid()) {
+            $message = 'There is not defined process';
+            throw new \UnderflowException($message);
+        }
+
+        return $this->pid;
     }
 
     public function getUserId()
@@ -201,12 +191,4 @@ class Item
         return $this->ipc;
     }
 
-    public function getCallback()
-    {
-        return $this->callback;
-    }
-
-
-
 }
-

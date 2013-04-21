@@ -7,13 +7,16 @@ function posix_getgid() { return $GLOBALS['posix_getgid']; }
 function posix_getpwuid() { return $GLOBALS['posix_getpwuid']; }
 function posix_getgrgid() { return $GLOBALS['posix_getgrgid']; }
 function pcntl_fork() { return $GLOBALS['pcntl_fork']; }
+function posix_kill() { return $GLOBALS['posix_kill']; }
+function pcntl_waitpid($pid, &$status) { $status = $GLOBALS['pcntl_waitpid']; }
 
 class ArrayIpc implements Ipc\Ipc
 {
-    private $data = array();
+    public $data = array();
     public function save($name, $value) { $this->data[$name] = $value; }
     public function load($name) { if (isset($this->data[$name])) { return $this->data[$name]; } }
     public function destroy() { $this->data = array(); }
+
 }
 
 
@@ -28,6 +31,8 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['posix_getpwuid'] = true;
         $GLOBALS['posix_getgrgid'] = true;
         $GLOBALS['pcntl_signal'] = array();
+        $GLOBALS['posix_kill'] = true;
+        $GLOBALS['pcntl_waitpid'] = 0;
     }
 
     protected function tearDown()
@@ -44,6 +49,34 @@ class ItemTest extends \PHPUnit_Framework_TestCase
     public function testShouldThrowsAnExceptionIfCallbackIsNotCallable()
     {
         new Item(new \stdClass());
+    }
+
+    /**
+     * @covers Arara\Process\Item::getPid
+     * @expectedException UnderflowException
+     * @expectedExceptionMessage There is not defined process
+     */
+    public function testShouldThrowsAnExceptionIfPidIsNotDefined()
+    {
+        $item = new Item(function () {}, new ArrayIpc());
+        $item->getPid();
+    }
+
+    /**
+     * @covers Arara\Process\Item::getPid
+     * @covers Arara\Process\Item::hasPid
+     */
+    public function testShouldDefineAPid()
+    {
+        $GLOBALS['pcntl_fork'] = 7230;
+
+        $item = new Item(function () {}, new ArrayIpc());
+        $signalHandler = new SignalHandler();
+
+        $this->assertFalse($item->hasPid());
+        $item->start($signalHandler);
+        $this->assertSame($GLOBALS['pcntl_fork'], $item->getPid());
+        $this->asserttrue($item->hasPid());
     }
 
     /**
@@ -92,7 +125,6 @@ class ItemTest extends \PHPUnit_Framework_TestCase
      * @covers Arara\Process\Item::getIpc
      * @covers Arara\Process\Item::getUserId
      * @covers Arara\Process\Item::getGroupId
-     * @covers Arara\Process\Item::getCallback
      */
     public function testShouldRetrieveDefinedPropertiesOnConstructor()
     {
@@ -103,7 +135,6 @@ class ItemTest extends \PHPUnit_Framework_TestCase
 
         $item = new Item($callback, $ipc, $uid, $gid);
 
-        $this->assertSame($callback, $item->getCallback());
         $this->assertSame($ipc, $item->getIpc());
         $this->assertSame($uid, $item->getUserId());
         $this->assertSame($gid, $item->getGroupId());
@@ -314,6 +345,55 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($result, $item->getResult());
         $this->assertSame('', $item->getOutput());
     }
+
+
+    /**
+     * @covers Arara\Process\Item::wait
+     */
+    public function testShouldWaitAProcess()
+    {
+        $GLOBALS['pcntl_fork'] = 7230;
+        $GLOBALS['pcntl_waitpid'] = -1;
+
+        $item = new Item(function () {}, new ArrayIpc());
+        $signalHandler = new SignalHandler();
+
+        $item->start($signalHandler);
+        $this->assertSame($GLOBALS['pcntl_waitpid'], $item->wait());
+    }
+
+    /**
+     * @covers Arara\Process\Item::stop
+     */
+    public function testShouldStopAProcess()
+    {
+        $GLOBALS['pcntl_fork'] = 7230;
+        $GLOBALS['posix_kill'] = true;
+
+        $item = new Item(function () {}, new ArrayIpc());
+        $signalHandler = new SignalHandler();
+
+        $item->start($signalHandler);
+        $this->assertTrue($item->stop());
+    }
+
+    /**
+     * @covers Arara\Process\Item::stop
+     */
+    public function testShouldCleanIpcAfterStopAProcess()
+    {
+        $GLOBALS['pcntl_fork'] = 7230;
+
+        $ipc = new ArrayIpc();
+        $ipc->save('foo', 123);
+        $item = new Item(function () {}, $ipc);
+        $signalHandler = new SignalHandler();
+
+        $item->start($signalHandler);
+        $this->assertTrue($item->stop());
+        $this->assertEmpty($ipc->data);
+    }
+
 
 
 }
