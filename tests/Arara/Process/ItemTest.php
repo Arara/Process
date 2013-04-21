@@ -196,7 +196,7 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['pcntl_fork'] = 0;
 
         $successful = true;
-        $status     = Item::RESULT_STATUS_SUCESS;
+        $status     = Item::STATUS_SUCESS;
         $result     = 'This is the result';
         $output     = 'This is the output';
         $callback   = function () use ($result, $output) {
@@ -240,7 +240,7 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['pcntl_fork'] = 0;
 
         $successful = false;
-        $status     = Item::RESULT_STATUS_FAIL;
+        $status     = Item::STATUS_FAIL;
         $result     = 'array_combine() expects parameter 1 to be array, string given';
         $callback   = function () use ($result) {
             array_combine('String', 'String');
@@ -284,7 +284,7 @@ class ItemTest extends \PHPUnit_Framework_TestCase
 
         $successful = false;
         $code       = 101;
-        $status     = Item::RESULT_STATUS_ERROR;
+        $status     = Item::STATUS_ERROR;
         $result     = 'This is the exception message';
         $output     = '';
         $callback   = function () use ($result, $code) {

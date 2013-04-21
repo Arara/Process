@@ -5,9 +5,9 @@ namespace Arara\Process;
 class Item
 {
 
-    const RESULT_STATUS_SUCESS = 1;
-    const RESULT_STATUS_ERROR = 2;
-    const RESULT_STATUS_FAIL = 3;
+    const STATUS_SUCESS = 2;
+    const STATUS_ERROR = 4;
+    const STATUS_FAIL = 6;
 
     private $userId;
     private $groupId;
@@ -94,19 +94,19 @@ class Item
             try {
 
                 $result = call_user_func($this->callback);
-                $status = self::RESULT_STATUS_SUCESS;
+                $status = self::STATUS_SUCESS;
                 $code   = 0;
 
             } catch (\ErrorException $exception) {
 
                 $result = $exception->getMessage();
-                $status = self::RESULT_STATUS_FAIL;
+                $status = self::STATUS_FAIL;
                 $code   = $exception->getSeverity() ?: 255;
 
             } catch (\Exception $exception) {
 
                 $result = $exception->getMessage();
-                $status = self::RESULT_STATUS_ERROR;
+                $status = self::STATUS_ERROR;
                 $code   = $exception->getCode() ?: 254;
 
             }
@@ -179,7 +179,7 @@ class Item
 
     public function isSuccessful()
     {
-        return ($this->ipc->load('__status') == self::RESULT_STATUS_SUCESS);
+        return ($this->ipc->load('__status') == self::STATUS_SUCESS);
     }
 
     public function getPid()
