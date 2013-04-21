@@ -35,7 +35,6 @@ class Item
         }
 
         $ipc = $ipc ?: new Ipc\SharedMemory();
-        $ipc->destroy();
         $ipc->save('__running', false);
 
         $this->ipc = $ipc;
