@@ -5,27 +5,27 @@ namespace Arara\Process;
 class Item
 {
 
+    const ACTION = -1;
     const STATUS_SUCESS = 2;
     const STATUS_ERROR = 4;
-    const STATUS_FAIL = 6;
+    const STATUS_FAIL = 8;
 
     private $userId;
     private $groupId;
     private $pid;
     private $ipc;
+    private $ipcPrefix;
 
-    private $callback;
+    private $callbacks = array();
 
     public function __construct($callback, Ipc\Ipc $ipc = null, $userId = null, $groupId = null)
     {
+        $this->setCallback($callback, self::ACTION);
+
         $userId = $userId ?: posix_getuid();
         $groupId = $groupId ?: posix_getgid();
 
-        if (!is_callable($callback)) {
-            $message = 'Callback given is not a valid callable';
-            throw new \InvalidArgumentException($message);
-
-        } elseif (false === posix_getpwuid($userId)) {
+        if (false === posix_getpwuid($userId)) {
             $message = sprintf('The given UID "%s" is not valid', $userId);
             throw new \InvalidArgumentException($message);
 
@@ -40,7 +40,38 @@ class Item
         $this->ipc = $ipc;
         $this->userId = $userId;
         $this->groupId = $groupId;
-        $this->callback = $callback;
+        $this->ipcPrefix = uniqid();
+    }
+
+    public function setCallback($callback, $type)
+    {
+        if (!is_callable($callback)) {
+            $message = 'Callback given is not a valid callable';
+            throw new \InvalidArgumentException($message);
+
+        }
+
+        $this->callbacks[$type] = $callback;
+
+        return $this;
+    }
+
+    public function getCallback($type)
+    {
+        if ($type === self::ACTION) {
+            return $this->callbacks[self::ACTION];
+        }
+
+        $callbacks = $this->callbacks;
+        unset($callbacks[self::ACTION]);
+
+        foreach ($callbacks as $key => $callback) {
+            if ($type === ($key & $type)) {
+                return $callback;
+            }
+        }
+
+        return function () {};
     }
 
     public function start(SignalHandler $signalHandler)
@@ -92,7 +123,7 @@ class Item
 
             try {
 
-                $result = call_user_func($this->callback);
+                $result = call_user_func($this->getCallback(self::ACTION));
                 $status = self::STATUS_SUCESS;
                 $code   = 0;
 
@@ -110,12 +141,17 @@ class Item
 
             }
 
-            restore_error_handler();
+            $this->getIpc()->save('result', $result);
+            $this->getIpc()->save('output', ob_get_clean());
 
-            $this->getIpc()->save('__result', $result);
-            $this->getIpc()->save('__output', ob_get_clean());
+            try {
+                call_user_func($this->getCallback($status), $this->getIpc());
+            } catch (\Exception $e) {}
+
             $this->getIpc()->save('__status', $status);
             $this->getIpc()->save('__running', false);
+
+            restore_error_handler();
 
             $signalHandler->quit($code);
         }
@@ -143,12 +179,12 @@ class Item
 
     public function getResult()
     {
-        return $this->getIpc()->load('__result');
+        return $this->getIpc()->load('result');
     }
 
     public function getOutput()
     {
-        return $this->getIpc()->load('__output');
+        return $this->getIpc()->load('output');
     }
 
     public function getStatus()
