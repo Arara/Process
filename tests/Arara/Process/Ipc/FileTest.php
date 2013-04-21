@@ -10,6 +10,7 @@ function is_dir() { return $GLOBALS['is_dir']; }
 function is_writable() { return $GLOBALS['is_writable']; }
 function file_get_contents() { return @$GLOBALS['file_contents']; }
 function file_put_contents($filename, $content) { $GLOBALS['file_contents'] = $content; }
+function is_file() { return $GLOBALS['is_file']; }
 
 class FileTest extends \PHPUnit_Framework_TestCase
 {
@@ -18,6 +19,7 @@ class FileTest extends \PHPUnit_Framework_TestCase
     {
         $GLOBALS['uniqid'] = '39F';
         $GLOBALS['is_dir'] = true;
+        $GLOBALS['is_file'] = true;
         $GLOBALS['is_writable'] = true;
     }
 
@@ -119,6 +121,19 @@ class FileTest extends \PHPUnit_Framework_TestCase
         );
 
         $GLOBALS['file_contents'] = __DIR__ . serialize($data);
+
+        $this->assertSame(array(), $ipc->getData());
+    }
+
+    /**
+     * @covers Arara\Process\Ipc\File::getData
+     * @depends testShoudReturnAllDataFile
+     */
+    public function testShoudReturnAnEmptyArrayIfFileDoesNotExists()
+    {
+        $ipc = new File('/root');
+
+        $GLOBALS['is_file'] = false;
 
         $this->assertSame(array(), $ipc->getData());
     }

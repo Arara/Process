@@ -38,6 +38,10 @@ class File implements Ipc
 
     public function getData()
     {
+        if (!is_file($this->filename)) {
+            return array();
+        }
+
         $content    = file_get_contents($this->filename);
         $data       = @unserialize($content);
         if (false === $data) {
