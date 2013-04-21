@@ -15,7 +15,7 @@ try {
             continue;
         }
         list($username, $uid, $gid) = explode(' ', $user);
-        $fork = new Arara\Process\Item(
+        $process = new Arara\Process\Item(
             function () use ($key, $username) {
                 $key    = sprintf('%02d', $key);
                 $data   = "Doing work job {$key} for {$username}";
@@ -30,7 +30,13 @@ try {
             $uid,
             $gid
         );
-        $manager->addChild($fork);
+        $process->setCallback(
+            function (Arara\Process\Ipc $ipc) {
+                echo $ipc->load('output') . PHP_EOL;
+            },
+            Arara\Process\Item::STATUS_SUCESS | Arara\Process\Item::STATUS_ERROR | Arara\Process\Item::STATUS_FAIL
+        );
+        $manager->addChild($process);
     }
 
 } catch (Exception $exception) {

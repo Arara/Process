@@ -113,7 +113,7 @@ class ItemTest extends \PHPUnit_Framework_TestCase
 
         $item = new Item($callback, $ipc, $uid, $gid);
 
-        $this->assertAttributeSame($callback, 'callback', $item);
+        $this->assertAttributeSame(array(Item::ACTION => $callback), 'callbacks', $item);
         $this->assertAttributeSame($ipc, 'ipc', $item);
         $this->assertAttributeSame($uid, 'userId', $item);
         $this->assertAttributeSame($gid, 'groupId', $item);
@@ -138,6 +138,62 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($ipc, $item->getIpc());
         $this->assertSame($uid, $item->getUserId());
         $this->assertSame($gid, $item->getGroupId());
+    }
+
+    /**
+     * @covers Arara\Process\Item::setCallback
+     * @covers Arara\Process\Item::getCallback
+     */
+    public function testShouldDefineAndRestrieveASimpleCallbackType()
+    {
+        $action = function () {};
+        $success = function () {};
+        $error = function () {};
+        $fail = function () {};
+        $item = new Item($action, new ArrayIpc());
+        $item->setCallback($success, Item::STATUS_SUCESS);
+        $item->setCallback($error, Item::STATUS_ERROR);
+        $item->setCallback($fail, Item::STATUS_FAIL);
+
+        $this->assertSame($action, $item->getCallback(Item::ACTION));
+        $this->assertSame($success, $item->getCallback(Item::STATUS_SUCESS));
+        $this->assertSame($error, $item->getCallback(Item::STATUS_ERROR));
+        $this->assertSame($fail, $item->getCallback(Item::STATUS_FAIL));
+    }
+
+    /**
+     * @covers Arara\Process\Item::setCallback
+     * @covers Arara\Process\Item::getCallback
+     */
+    public function testShouldDefineAndRestrieveACombinedCallbackType()
+    {
+        $callback = function () {};
+        $item = new Item(function () {}, new ArrayIpc());
+        $item->setCallback($callback, Item::STATUS_ERROR | Item::STATUS_FAIL);
+
+        $this->assertSame($callback, $item->getCallback(Item::STATUS_FAIL));
+        $this->assertSame($callback, $item->getCallback(Item::STATUS_ERROR));
+    }
+
+    /**
+     * @covers Arara\Process\Item::getCallback
+     */
+    public function testShouldReturnAValidCallbackByDefault()
+    {
+        $item = new Item(function () {}, new ArrayIpc());
+
+        $this->assertTrue(is_callable($item->getCallback(Item::STATUS_FAIL)));
+    }
+
+    /**
+     * @covers Arara\Process\Item::setCallback
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Callback given is not a valid callable
+     */
+    public function testShouldThrowsAnExceptionWhenDefiningAnInvalidCallback()
+    {
+        $item = new Item(function () {}, new ArrayIpc());
+        $item->setCallback(array(), Item::STATUS_SUCESS);
     }
 
     /**
