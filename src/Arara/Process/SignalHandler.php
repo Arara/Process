@@ -37,9 +37,11 @@ class SignalHandler
         return $this;
     }
 
+    // @codeCoverageIgnoreStart
     public function quit($code)
     {
         exit($code);
     }
+    // @codeCoverageIgnoreEnd
 
 }
