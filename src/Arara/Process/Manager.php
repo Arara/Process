@@ -36,7 +36,7 @@ class Manager
     public function addChild(Item $process, $priority = 0)
     {
         if ($this->queue->count() == $this->getMaxChildren()) {
-            $this->queue->top()->wait();
+            $this->queue->extract()->wait();
         }
 
         $process->start($this->signalHandler);
