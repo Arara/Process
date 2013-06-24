@@ -78,7 +78,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
         $queue = $this
             ->getMockBuilder('Arara\Process\Queue')
-            ->setMethods(array('count', 'top'))
+            ->setMethods(array('count', 'extract'))
             ->getMock();
         $queue
             ->expects($this->once())
@@ -86,7 +86,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(0));
         $queue
             ->expects($this->never())
-            ->method('top');
+            ->method('extract');
 
         $manager = new Manager(1);
 
@@ -147,7 +147,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
         $queue = $this
             ->getMockBuilder('Arara\Process\Queue')
-            ->setMethods(array('count', 'top'))
+            ->setMethods(array('count', 'extract'))
             ->getMock();
         $queue
             ->expects($this->at(1))
@@ -159,7 +159,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(2));
         $queue
             ->expects($this->once())
-            ->method('top')
+            ->method('extract')
             ->will($this->returnValue($first));
 
         $manager = new Manager(1);
