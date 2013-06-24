@@ -354,7 +354,7 @@ class ItemTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($successful, $item->isSuccessful());
         $this->assertSame($status, $item->getStatus());
-        $this->assertSame($result, $item->getResult());
+        $this->assertContains($result, $item->getResult());
         $this->assertSame('', $item->getOutput());
     }
 
@@ -398,7 +398,7 @@ class ItemTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($successful, $item->isSuccessful());
         $this->assertSame($status, $item->getStatus());
-        $this->assertSame($result, $item->getResult());
+        $this->assertContains($result, $item->getResult());
         $this->assertSame('', $item->getOutput());
     }
 

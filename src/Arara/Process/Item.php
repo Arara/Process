@@ -109,6 +109,10 @@ class Item
             // Custom error hanlder
             set_error_handler(
                 function ($severity, $message, $filename, $line) {
+                    $levels = array(E_NOTICE, E_DEPRECATED, E_USER_NOTICE, E_USER_DEPRECATED);
+                    if (true === in_array($severity, $levels)) {
+                        return;
+                    }
                     throw new \ErrorException(
                         $message,
                         0,
@@ -129,13 +133,13 @@ class Item
 
             } catch (\ErrorException $exception) {
 
-                $result = $exception->getMessage();
+                $result = (string) $exception;
                 $status = self::STATUS_FAIL;
                 $code   = $exception->getSeverity() ?: 255;
 
             } catch (\Exception $exception) {
 
-                $result = $exception->getMessage();
+                $result = (string) $exception;
                 $status = self::STATUS_ERROR;
                 $code   = $exception->getCode() ?: 254;
 
