@@ -106,11 +106,9 @@ class Item
 
             set_error_handler(
                 function ($severity, $message, $filename, $line) {
-                    $levels = array(E_NOTICE, E_DEPRECATED, E_USER_NOTICE, E_USER_DEPRECATED);
-                    if (false === in_array($severity, $levels)) {
-                        throw new \ErrorException($message, 0, $severity, $filename, $line);
-                    }
-                }
+                    throw new \ErrorException($message, 0, $severity, $filename, $line);
+                },
+                E_ALL & ~E_NOTICE
             );
 
             ob_start();

@@ -38,15 +38,17 @@ class Manager
     public function addChild(Item $process, $priority = 0)
     {
         if ($this->pool->count() == $this->getMaxChildren()) {
-            $found = false;
+            $first = null;
             foreach ($this->pool as $poolProcess) {
-                if (false === $poolProcess->isRunning()) {
-                    $this->pool->detach($poolProcess);
-                } elseif (false === $found) {
-                    $poolProcess->wait();
-                    $found = true;
+                if (true === $poolProcess->isRunning()) {
+                    if ($first instanceof Item) {
+                        continue;
+                    }
+                    $first = $poolProcess;
                 }
+                $this->pool->detach($poolProcess);
             }
+            $first && $first->wait();
         }
 
         $this->pool->attach($process);
