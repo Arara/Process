@@ -74,6 +74,16 @@ class Item
         return function () {};
     }
 
+    public function setPriority($priority)
+    {
+        if (false === pcntl_setpriority($priority, $this->getPid(), PRIO_PROCESS)) {
+            $message = 'Unable to set the priority';
+            throw new \RuntimeException($message);
+        }
+
+        return $this;
+    }
+
     public function start(SignalHandler $signalHandler)
     {
         $pid = @pcntl_fork();
@@ -94,38 +104,29 @@ class Item
 
         } elseif ($pid === 0) {
 
-            // We are in the child process
-            posix_setgid($this->getGroupId());
-            posix_setuid($this->getUserId());
-
-            $userId = posix_getuid();
-            $groupId = posix_getgid();
-            if ($userId != $this->getUserId() || $groupId != $this->getGroupId()) {
-                $format = 'Unable to fork process as "%d:%d". "%d:%d" given';
-                $message = sprintf($format, $this->getUserId(), $this->getGroupId(), $userId, $groupId);
-                throw new \RuntimeException($message);
-            }
-
-            // Custom error hanlder
             set_error_handler(
                 function ($severity, $message, $filename, $line) {
                     $levels = array(E_NOTICE, E_DEPRECATED, E_USER_NOTICE, E_USER_DEPRECATED);
-                    if (true === in_array($severity, $levels)) {
-                        return;
+                    if (false === in_array($severity, $levels)) {
+                        throw new \ErrorException($message, 0, $severity, $filename, $line);
                     }
-                    throw new \ErrorException(
-                        $message,
-                        0,
-                        $severity,
-                        $filename,
-                        $line
-                    );
                 }
             );
 
             ob_start();
 
             try {
+
+                posix_setgid($this->getGroupId());
+                posix_setuid($this->getUserId());
+
+                $userId = posix_getuid();
+                $groupId = posix_getgid();
+                if ($userId != $this->getUserId() || $groupId != $this->getGroupId()) {
+                    $format = 'Unable to fork process as "%d:%d". "%d:%d" given';
+                    $message = sprintf($format, $this->getUserId(), $this->getGroupId(), $userId, $groupId);
+                    throw new \RuntimeException($message);
+                }
 
                 $result = call_user_func($this->getCallback(self::ACTION));
                 $status = self::STATUS_SUCESS;

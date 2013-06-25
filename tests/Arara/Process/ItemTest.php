@@ -2,13 +2,14 @@
 
 namespace Arara\Process;
 
-function posix_getuid() { return $GLOBALS['posix_getuid']; }
-function posix_getgid() { return $GLOBALS['posix_getgid']; }
-function posix_getpwuid() { return $GLOBALS['posix_getpwuid']; }
-function posix_getgrgid() { return $GLOBALS['posix_getgrgid']; }
 function pcntl_fork() { return $GLOBALS['pcntl_fork']; }
-function posix_kill() { return $GLOBALS['posix_kill']; }
+function pcntl_setpriority() { return $GLOBALS['pcntl_setpriority']; }
 function pcntl_waitpid($pid, &$status) { $status = $GLOBALS['pcntl_waitpid']; }
+function posix_getgid() { return $GLOBALS['posix_getgid']; }
+function posix_getgrgid() { return $GLOBALS['posix_getgrgid']; }
+function posix_getpwuid() { return $GLOBALS['posix_getpwuid']; }
+function posix_getuid() { return $GLOBALS['posix_getuid']; }
+function posix_kill() { return $GLOBALS['posix_kill']; }
 
 class ArrayIpc implements Ipc\Ipc
 {
@@ -23,23 +24,22 @@ class ArrayIpc implements Ipc\Ipc
 class ItemTest extends \PHPUnit_Framework_TestCase
 {
 
-
     protected function setUp()
     {
-        $GLOBALS['posix_getuid'] = 1000;
-        $GLOBALS['posix_getgid'] = 1000;
-        $GLOBALS['posix_getpwuid'] = true;
-        $GLOBALS['posix_getgrgid'] = true;
+        $GLOBALS['pcntl_setpriority'] = true;
         $GLOBALS['pcntl_signal'] = array();
-        $GLOBALS['posix_kill'] = true;
         $GLOBALS['pcntl_waitpid'] = 0;
+        $GLOBALS['posix_getgid'] = 1000;
+        $GLOBALS['posix_getgrgid'] = true;
+        $GLOBALS['posix_getpwuid'] = true;
+        $GLOBALS['posix_getuid'] = 1000;
+        $GLOBALS['posix_kill'] = true;
     }
 
     protected function tearDown()
     {
         $this->setUp();
     }
-
 
     /**
      * @covers Arara\Process\Item::__construct
@@ -255,8 +255,6 @@ class ItemTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Arara\Process\Item::start
-     * @expectedException RuntimeException
-     * @expectedExceptionMessage Unable to fork process as "1000:1000". "1001:1001" given
      */
     public function testShouldThrowsAnExceptionIfNotAbleToForkAsAnUser()
     {
@@ -268,7 +266,24 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['posix_getuid'] = 1001;
         $GLOBALS['posix_getgid'] = 1001;
 
-        $item->start(new SignalHandler());
+
+        $signalHandler = $this
+            ->getMockBuilder('Arara\Process\SignalHandler')
+            ->setMethods(array('quit'))
+            ->getMock();
+
+        $signalHandler
+            ->expects($this->once())
+            ->method('quit')
+            ->with(254);
+
+        $item->start($signalHandler);
+
+        $message = <<<EXCEPTION
+exception 'RuntimeException' with message 'Unable to fork process as "1000:1000". "1001:1001" given
+EXCEPTION;
+
+        $this->assertContains($message, $ipc->load('result'));
     }
 
     /**
@@ -450,6 +465,21 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($ipc->data);
     }
 
+    /**
+     * @covers Arara\Process\Item::setPriority
+     * @expectedException RuntimeException
+     * @expectedExceptionMessage Unable to set the priority
+     */
+    public function testShouldThrowsAnExceptionIfCouldNotSetChildPriority()
+    {
+        $GLOBALS['pcntl_fork'] = 7230;
+
+        $process = new Item(function () {}, new ArrayIpc());
+        $process->start(new SignalHandler());
+
+        $GLOBALS['pcntl_setpriority'] = false;
+        $process->setPriority(10);
+    }
 
 
 }
