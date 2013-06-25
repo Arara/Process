@@ -2,27 +2,19 @@
 
 namespace Arara\Process;
 
-$GLOBALS['posix_getpid'] = 1024;
-$GLOBALS['pcntl_setpriority'] = true;
-
-function posix_getpid()
-{
-    return $GLOBALS['posix_getpid'];
-}
-
-function pcntl_setpriority()
-{
-    return $GLOBALS['pcntl_setpriority'];
-}
+function posix_getpid() { return $GLOBALS['posix_getpid']; }
 
 class ManagerTest extends \PHPUnit_Framework_TestCase
 {
 
-
     protected function setUp()
     {
         $GLOBALS['posix_getpid'] = 1024;
-        $GLOBALS['pcntl_setpriority'] = true;
+    }
+
+    protected function tearDown()
+    {
+        $this->setUp();
     }
 
     /**
@@ -66,76 +58,52 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     {
         $process = $this
             ->getMockBuilder('Arara\Process\Item')
-            ->setMethods(array('start', 'wait'))
+            ->setMethods(array('start'))
             ->disableOriginalConstructor()
             ->getMock();
         $process
             ->expects($this->once())
             ->method('start');
-        $process
-            ->expects($this->once())
-            ->method('wait');
 
-        $queue = $this
-            ->getMockBuilder('Arara\Process\Queue')
-            ->setMethods(array('count', 'extract'))
+        $pool = $this
+            ->getMockBuilder('SplObjectStorage')
+            ->setMethods(array('count'))
             ->getMock();
-        $queue
+        $pool
             ->expects($this->once())
             ->method('count')
             ->will($this->returnValue(0));
-        $queue
-            ->expects($this->never())
-            ->method('extract');
 
         $manager = new Manager(1);
 
-        $reflection = new \ReflectionProperty($manager, 'queue');
+        $reflection = new \ReflectionProperty($manager, 'pool');
         $reflection->setAccessible(true);
-        $reflection->setValue($manager, $queue);
+        $reflection->setValue($manager, $pool);
 
         $manager->addChild($process);
     }
 
     /**
      * @covers Arara\Process\Manager::addChild
-     * @covers Arara\Process\Manager::__destruct
-     * @expectedException RuntimeException
-     * @expectedExceptionMessage Unable to set the priority
-     */
-    public function testShouldThrowsAnExceptionIfCouldNotSetChildPriority()
-    {
-        $process = $this
-            ->getMockBuilder('Arara\Process\Item')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $GLOBALS['pcntl_setpriority'] = false;
-        $manager = new Manager(1);
-        $manager->addChild($process);
-    }
-
-    /**
-     * @covers Arara\Process\Manager::addChild
-     * @covers Arara\Process\Manager::__destruct
      */
     public function testShouldAddAndStartChildAfterRemovingLastProcessQueueWhenNotRunningAboveTheLimit()
     {
         $first = $this
             ->getMockBuilder('Arara\Process\Item')
-            ->setMethods(array('start', 'wait'))
+            ->setMethods(array('start', 'isRunning'))
             ->disableOriginalConstructor()
             ->getMock();
         $first
             ->expects($this->once())
             ->method('start');
         $first
-            ->expects($this->exactly(2))
-            ->method('wait');
+            ->expects($this->once())
+            ->method('isRunning')
+            ->will($this->returnValue(false));
 
         $seccond = $this
             ->getMockBuilder('Arara\Process\Item')
-            ->setMethods(array('start', 'wait'))
+            ->setMethods(array('start', 'wait', 'isRunning'))
             ->disableOriginalConstructor()
             ->getMock();
         $seccond
@@ -143,33 +111,25 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
             ->method('start');
         $seccond
             ->expects($this->once())
+            ->method('isRunning')
+            ->will($this->returnValue(true));
+        $seccond
+            ->expects($this->once())
             ->method('wait');
 
-        $queue = $this
-            ->getMockBuilder('Arara\Process\Queue')
-            ->setMethods(array('count', 'extract'))
+        $third = $this
+            ->getMockBuilder('Arara\Process\Item')
+            ->setMethods(array('start'))
+            ->disableOriginalConstructor()
             ->getMock();
-        $queue
-            ->expects($this->at(1))
-            ->method('count')
-            ->will($this->returnValue(1));
-        $queue
-            ->expects($this->at(2))
-            ->method('count')
-            ->will($this->returnValue(2));
-        $queue
+        $third
             ->expects($this->once())
-            ->method('extract')
-            ->will($this->returnValue($first));
+            ->method('start');
 
         $manager = new Manager(1);
-
-        $reflection = new \ReflectionProperty($manager, 'queue');
-        $reflection->setAccessible(true);
-        $reflection->setValue($manager, $queue);
-
         $manager->addChild($first);
         $manager->addChild($seccond);
+        $manager->addChild($third);
     }
 
 

@@ -2,10 +2,12 @@
 
 namespace Arara\Process;
 
+use SplObjectStorage;
+
 class Manager
 {
 
-    private $queue;
+    private $pool;
     private $signalHandler;
     private $processId;
     private $getMaxChildren;
@@ -17,7 +19,7 @@ class Manager
             throw new \InvalidArgumentException('Children number is not valid');
         }
 
-        $this->queue = new Queue();
+        $this->pool = new SplObjectStorage();
         $this->signalHandler = new SignalHandler();
         $this->processId = posix_getpid();
         $this->getMaxChildren = $getMaxChildren;
@@ -35,27 +37,52 @@ class Manager
 
     public function addChild(Item $process, $priority = 0)
     {
-        if ($this->queue->count() == $this->getMaxChildren()) {
-            $this->queue->extract()->wait();
+        if ($this->pool->count() == $this->getMaxChildren()) {
+            $found = false;
+            foreach ($this->pool as $poolProcess) {
+                if (false === $poolProcess->isRunning()) {
+                    $this->pool->detach($poolProcess);
+                } elseif (false === $found) {
+                    $poolProcess->wait();
+                    $found = true;
+                }
+            }
         }
+
+        $this->pool->attach($process);
 
         $process->start($this->signalHandler);
 
-        if (!pcntl_setpriority($priority, $this->getPid(), PRIO_PROCESS)) {
-            $message = 'Unable to set the priority';
-            throw new \RuntimeException($message);
+        if (true === $process->hasPid()) {
+            $process->setPriority($priority);
         }
-
-        $this->queue->insert($process, $priority);
 
         return $this;
     }
 
-    public function __destruct()
+    public function wait()
     {
-        foreach ($this->queue as $process) {
+        foreach ($this->pool as $process) {
+            if (false === $process->hasPid()) {
+                continue;
+            }
             $process->wait();
         }
+    }
+
+    public function stop()
+    {
+        foreach ($this->pool as $process) {
+            if (false === $process->hasPid()) {
+                continue;
+            }
+            $process->stop();
+        }
+    }
+
+    public function __destruct()
+    {
+        $this->wait();
     }
 
 }
