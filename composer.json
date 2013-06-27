@@ -14,8 +14,10 @@
     "require": {
         "ext-pcntl": "*",
         "ext-posix": "*",
-        "ext-shmop": "*",
         "php": ">=5.3.0"
+    },
+    "suggest": {
+        "ext-shmop": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "@stable"
