@@ -34,7 +34,7 @@ class Item
             throw new \InvalidArgumentException($message);
         }
 
-        $ipc = $ipc ?: new Ipc\SharedMemory();
+        $ipc = $ipc ?: new Ipc\File();
         $ipc->save('__running', false);
 
         $this->ipc = $ipc;
