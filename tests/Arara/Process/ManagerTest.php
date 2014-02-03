@@ -2,6 +2,8 @@
 
 namespace Arara\Process;
 
+use Arara\Process\Ipc\Arr;
+
 function posix_getpid() { return $GLOBALS['posix_getpid']; }
 
 class ManagerTest extends \PHPUnit_Framework_TestCase
@@ -63,16 +65,17 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $process
             ->expects($this->once())
-            ->method('start');
+            ->method('start')
+            ->will($this->returnValue(true));
 
         $pool = $this
-            ->getMockBuilder('SplObjectStorage')
-            ->setMethods(array('count'))
+            ->getMockBuilder('Arara\Process\Pool')
+            ->setMethods(array('getFirstRunning'))
             ->getMock();
         $pool
             ->expects($this->once())
-            ->method('count')
-            ->will($this->returnValue(0));
+            ->method('getFirstRunning')
+            ->will($this->returnValue(null));
 
         $manager = new Manager(1);
 
@@ -88,34 +91,50 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
      */
     public function testShouldAddAndStartChildAfterRemovingLastProcessQueueWhenNotRunningAboveTheLimit()
     {
+        $ipc = new Arr;
         $first = $this
             ->getMockBuilder('Arara\Process\Item')
-            ->setMethods(array('start', 'isRunning'))
+            ->setMethods(array('start', 'isRunning', 'wait', 'getIpc'))
             ->disableOriginalConstructor()
             ->getMock();
         $first
             ->expects($this->once())
-            ->method('start');
+            ->method('getIpc')
+            ->will($this->returnValue($ipc));
         $first
             ->expects($this->once())
+            ->method('start')
+            ->will($this->returnValue(true));
+        $first
+            ->expects($this->once())
+            ->method('wait')
+            ->will($this->returnValue(true));
+        $first
+            ->expects($this->any())
             ->method('isRunning')
             ->will($this->returnValue(false));
 
         $seccond = $this
             ->getMockBuilder('Arara\Process\Item')
-            ->setMethods(array('start', 'wait', 'isRunning'))
+            ->setMethods(array('start', 'isRunning', 'wait', 'getIpc'))
             ->disableOriginalConstructor()
             ->getMock();
         $seccond
             ->expects($this->once())
-            ->method('start');
+            ->method('getIpc')
+            ->will($this->returnValue($ipc));
         $seccond
             ->expects($this->once())
-            ->method('isRunning')
+            ->method('start')
             ->will($this->returnValue(true));
         $seccond
             ->expects($this->once())
-            ->method('wait');
+            ->method('wait')
+            ->will($this->returnValue(true));
+        $seccond
+            ->expects($this->any())
+            ->method('isRunning')
+            ->will($this->returnValue(false));
 
         $third = $this
             ->getMockBuilder('Arara\Process\Item')
@@ -124,14 +143,13 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $third
             ->expects($this->once())
-            ->method('start');
+            ->method('start')
+            ->will($this->returnValue(true));
 
         $manager = new Manager(1);
         $manager->addChild($first);
         $manager->addChild($seccond);
         $manager->addChild($third);
     }
-
-
 }
 

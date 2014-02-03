@@ -43,12 +43,12 @@ class ItemTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Arara\Process\Item::__construct
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Callback given is not a valid callable
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Action must be a valid callback
      */
     public function testShouldThrowsAnExceptionIfCallbackIsNotCallable()
     {
-        new Item(new \stdClass());
+        new Item(new \stdClass(), new ArrayIpc());
     }
 
     /**
@@ -113,7 +113,7 @@ class ItemTest extends \PHPUnit_Framework_TestCase
 
         $item = new Item($callback, $ipc, $uid, $gid);
 
-        $this->assertAttributeSame(array(Item::ACTION => $callback), 'callbacks', $item);
+        $this->assertAttributeSame($callback, 'action', $item);
         $this->assertAttributeSame($ipc, 'ipc', $item);
         $this->assertAttributeSame($uid, 'userId', $item);
         $this->assertAttributeSame($gid, 'groupId', $item);
@@ -155,7 +155,6 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $item->setCallback($error, Item::STATUS_ERROR);
         $item->setCallback($fail, Item::STATUS_FAIL);
 
-        $this->assertSame($action, $item->getCallback(Item::ACTION));
         $this->assertSame($success, $item->getCallback(Item::STATUS_SUCESS));
         $this->assertSame($error, $item->getCallback(Item::STATUS_ERROR));
         $this->assertSame($fail, $item->getCallback(Item::STATUS_FAIL));
@@ -210,15 +209,14 @@ class ItemTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Arara\Process\Item::start
-     * @expectedException RuntimeException
-     * @expectedExceptionMessage Unable to fork process
      */
-    public function testShouldThrowsAnExceptionWhenCanNotFork()
+    public function testShouldReturnFalseWhenCanNotFork()
     {
         $ipc = new ArrayIpc();
         $item = new Item('trim', $ipc);
         $GLOBALS['pcntl_fork'] = -1;
-        $item->start(new SignalHandler());
+
+        $this->assertFalse($item->start(new SignalHandler()));
     }
 
     /**
@@ -239,8 +237,8 @@ class ItemTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Arara\Process\Item::start
-     * @expectedException UnexpectedValueException
-     * @expectedExceptionMessage Process already forked
+     * @expectedException UnderflowException
+     * @expectedExceptionMessage Process already started
      */
     public function testShouldThrowsAnExceptionWhenTryingToForkMoreThanOce()
     {
@@ -275,15 +273,11 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $signalHandler
             ->expects($this->once())
             ->method('quit')
-            ->with(254);
+            ->with(2);
 
         $item->start($signalHandler);
 
-        $message = <<<EXCEPTION
-exception 'RuntimeException' with message 'Unable to fork process as "1000:1000". "1001:1001" given
-EXCEPTION;
-
-        $this->assertContains($message, $ipc->load('result'));
+        $this->assertInstanceOf('RuntimeException', $ipc->load('result'));
     }
 
     /**
@@ -343,10 +337,8 @@ EXCEPTION;
 
         $successful = false;
         $status     = Item::STATUS_FAIL;
-        $result     = 'array_combine() expects parameter 1 to be array, string given';
-        $callback   = function () use ($result) {
+        $callback   = function () {
             array_combine('String', 'String');
-            return $result;
         };
 
         $ipc = new ArrayIpc();
@@ -363,13 +355,13 @@ EXCEPTION;
         $signalHandler
             ->expects($this->once())
             ->method('quit')
-            ->with(E_WARNING);
+            ->with(1);
 
         $item->start($signalHandler);
 
         $this->assertSame($successful, $item->isSuccessful());
         $this->assertSame($status, $item->getStatus());
-        $this->assertContains($result, $item->getResult());
+        $this->assertInstanceOf('ErrorException', $item->getResult());
         $this->assertSame('', $item->getOutput());
     }
 
@@ -385,12 +377,11 @@ EXCEPTION;
         $GLOBALS['pcntl_fork'] = 0;
 
         $successful = false;
-        $code       = 101;
         $status     = Item::STATUS_ERROR;
-        $result     = 'This is the exception message';
         $output     = '';
-        $callback   = function () use ($result, $code) {
-            throw new \Exception($result, $code);
+        $exception  = new \Exception('This is the exception message');
+        $callback   = function () use ($exception) {
+            throw $exception;
         };
 
         $ipc = new ArrayIpc();
@@ -407,13 +398,13 @@ EXCEPTION;
         $signalHandler
             ->expects($this->once())
             ->method('quit')
-            ->with($code);
+            ->with(2);
 
         $item->start($signalHandler);
 
         $this->assertSame($successful, $item->isSuccessful());
         $this->assertSame($status, $item->getStatus());
-        $this->assertContains($result, $item->getResult());
+        $this->assertSame($exception, $item->getResult());
         $this->assertSame('', $item->getOutput());
     }
 
@@ -446,23 +437,6 @@ EXCEPTION;
 
         $item->start($signalHandler);
         $this->assertTrue($item->stop());
-    }
-
-    /**
-     * @covers Arara\Process\Item::stop
-     */
-    public function testShouldCleanIpcAfterStopAProcess()
-    {
-        $GLOBALS['pcntl_fork'] = 7230;
-
-        $ipc = new ArrayIpc();
-        $ipc->save('foo', 123);
-        $item = new Item(function () {}, $ipc);
-        $signalHandler = new SignalHandler();
-
-        $item->start($signalHandler);
-        $this->assertTrue($item->stop());
-        $this->assertEmpty($ipc->data);
     }
 
     /**

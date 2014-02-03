@@ -13,12 +13,12 @@ class File implements Ipc
             $dirname = sys_get_temp_dir();
         }
 
-        if (!is_string($dirname) || (is_string($dirname) && !is_dir($dirname))) {
+        if (! is_string($dirname) || (is_string($dirname) && ! is_dir($dirname))) {
             $message = '"%s" is not a valid directory';
             throw new \InvalidArgumentException(sprintf($message, print_r($dirname, true)));
         }
 
-        if (!is_writable($dirname)) {
+        if (! is_writable($dirname)) {
             $message = '"%s" is not writable';
             throw new \InvalidArgumentException(sprintf($message, print_r($dirname, true)));
         }
@@ -33,12 +33,14 @@ class File implements Ipc
 
     public function destroy()
     {
-        unlink($this->filename);
+        if (is_file($this->filename)) {
+            unlink($this->filename);
+        }
     }
 
     public function getData()
     {
-        if (!is_file($this->filename)) {
+        if (! is_file($this->filename)) {
             return array();
         }
 
