@@ -2,168 +2,147 @@
 
 namespace Arara\Process;
 
+use ErrorException;
+use Exception;
+use InvalidArgumentException;
+use RuntimeException;
+use UnderflowException;
+
 class Item
 {
-
-    const ACTION = -1;
     const STATUS_SUCESS = 2;
     const STATUS_ERROR = 4;
     const STATUS_FAIL = 8;
 
+    private $action;
+    private $ipc;
     private $userId;
     private $groupId;
     private $pid;
-    private $ipc;
-    private $ipcPrefix;
-
     private $callbacks = array();
 
-    public function __construct($callback, Ipc\Ipc $ipc = null, $userId = null, $groupId = null)
+    public function __construct($action, Ipc\Ipc $ipc = null, $userId = null, $groupId = null)
     {
-        $this->setCallback($callback, self::ACTION);
+        $this->action = $action;
+        $this->ipc = $ipc ?: new Ipc\File();
+        $this->userId = $userId ?: posix_getuid();
+        $this->groupId = $groupId ?: posix_getgid();
 
-        $userId = $userId ?: posix_getuid();
-        $groupId = $groupId ?: posix_getgid();
-
-        if (false === posix_getpwuid($userId)) {
-            $message = sprintf('The given UID "%s" is not valid', $userId);
-            throw new \InvalidArgumentException($message);
-
-        } elseif (false === posix_getgrgid($groupId)) {
-            $message = sprintf('The given GID "%s" is not valid', $groupId);
-            throw new \InvalidArgumentException($message);
+        if (! is_callable($action)) {
+            throw new InvalidArgumentException('Action must be a valid callback');
         }
 
-        $ipc = $ipc ?: new Ipc\File();
-        $ipc->save('__running', false);
+        if (! posix_getpwuid($this->userId)) {
+            throw new InvalidArgumentException(sprintf('The given UID "%s" is not valid', $this->userId));
+        }
 
-        $this->ipc = $ipc;
-        $this->userId = $userId;
-        $this->groupId = $groupId;
-        $this->ipcPrefix = uniqid();
+        if (! posix_getgrgid($this->groupId)) {
+            throw new InvalidArgumentException(sprintf('The given GID "%s" is not valid', $this->groupId));
+        }
     }
 
-    public function setCallback($callback, $type)
+    public function setCallback($callback, $status)
     {
-        if (!is_callable($callback)) {
+        if (! is_callable($callback)) {
             $message = 'Callback given is not a valid callable';
-            throw new \InvalidArgumentException($message);
-
+            throw new InvalidArgumentException($message);
         }
 
-        $this->callbacks[$type] = $callback;
+        $this->callbacks[$status] = $callback;
 
         return $this;
     }
 
-    public function getCallback($type)
+    public function getCallback($status)
     {
-        if ($type === self::ACTION) {
-            return $this->callbacks[self::ACTION];
-        }
-
-        $callbacks = $this->callbacks;
-        unset($callbacks[self::ACTION]);
-
-        foreach ($callbacks as $key => $callback) {
-            if ($type === ($key & $type)) {
-                return $callback;
+        $returnCallback = function () {};
+        foreach ($this->callbacks as $key => $callback) {
+            if ($status !== ($key & $status)) {
+                continue;
             }
+            $returnCallback = $callback;
+            break;
         }
 
-        return function () {};
-    }
-
-    public function setPriority($priority)
-    {
-        if (false === pcntl_setpriority($priority, $this->getPid(), PRIO_PROCESS)) {
-            $message = 'Unable to set the priority';
-            throw new \RuntimeException($message);
-        }
-
-        return $this;
+        return $returnCallback;
     }
 
     public function start(SignalHandler $signalHandler)
     {
-        $pid = @pcntl_fork();
-
-        if ($pid === -1) {
-            $message = 'Unable to fork process';
-            throw new \RuntimeException($message);
-
-        } elseif ($pid > 0) {
-
-            if (null !== $this->pid) {
-                $message = 'Process already forked';
-                throw new \UnexpectedValueException($message);
-            }
-
-            $this->pid = $pid;
-            $this->getIpc()->save('__running', true);
-
-        } elseif ($pid === 0) {
-
-            set_error_handler(
-                function ($severity, $message, $filename, $line) {
-                    throw new \ErrorException($message, 0, $severity, $filename, $line);
-                },
-                E_ALL & ~E_NOTICE
-            );
-
-            ob_start();
-
-            try {
-
-                posix_setgid($this->getGroupId());
-                posix_setuid($this->getUserId());
-
-                $userId = posix_getuid();
-                $groupId = posix_getgid();
-                if ($userId != $this->getUserId() || $groupId != $this->getGroupId()) {
-                    $format = 'Unable to fork process as "%d:%d". "%d:%d" given';
-                    $message = sprintf($format, $this->getUserId(), $this->getGroupId(), $userId, $groupId);
-                    throw new \RuntimeException($message);
-                }
-
-                $result = call_user_func($this->getCallback(self::ACTION));
-                $status = self::STATUS_SUCESS;
-                $code   = 0;
-
-            } catch (\ErrorException $exception) {
-
-                $result = (string) $exception;
-                $status = self::STATUS_FAIL;
-                $code   = $exception->getSeverity() ?: 255;
-
-            } catch (\Exception $exception) {
-
-                $result = (string) $exception;
-                $status = self::STATUS_ERROR;
-                $code   = $exception->getCode() ?: 254;
-
-            }
-
-            $this->getIpc()->save('result', $result);
-            $this->getIpc()->save('output', ob_get_clean());
-
-            try {
-                call_user_func($this->getCallback($status), $this->getIpc());
-            } catch (\Exception $e) {}
-
-            $this->getIpc()->save('__status', $status);
-            $this->getIpc()->save('__running', false);
-
-            restore_error_handler();
-
-            $signalHandler->quit($code);
+        if (true === $this->hasPid()) {
+            throw new UnderflowException('Process already started');
         }
+
+        $pid = @pcntl_fork();
+        if ($pid === -1) {
+            return false;
+        }
+
+        if ($pid > 0) {
+            $this->pid = $pid;
+
+            return true;
+        }
+
+        set_error_handler(
+            function ($severity, $message, $filename, $line) {
+                throw new ErrorException($message, 0, $severity, $filename, $line);
+            },
+            E_ALL & ~E_NOTICE
+        );
+
+        ob_start();
+
+        try {
+            posix_setgid($this->getGroupId());
+            posix_setuid($this->getUserId());
+
+            $userId = posix_getuid();
+            $groupId = posix_getgid();
+            if ($userId != $this->getUserId() || $groupId != $this->getGroupId()) {
+                $format = 'Unable to fork process as "%d:%d". "%d:%d" given';
+                $message = sprintf($format, $this->getUserId(), $this->getGroupId(), $userId, $groupId);
+                throw new RuntimeException($message);
+            }
+
+            $result = call_user_func($this->action, $this->getIpc());
+            $status = self::STATUS_SUCESS;
+            $exitCode = 0;
+        } catch (ErrorException $exception) {
+            $result = $exception;
+            $status = self::STATUS_FAIL;
+            $exitCode = 1;
+        } catch (Exception $exception) {
+            $result = $exception;
+            $status = self::STATUS_ERROR;
+            $exitCode = 2;
+        }
+
+        $this->getIpc()->save('result', $result);
+        $this->getIpc()->save('status', $status);
+        $this->getIpc()->save('output', ob_get_clean());
+
+        try {
+            call_user_func($this->getCallback($status), $this->getIpc(), $result);
+        } catch (Exception $exception) {
+            // Pokémon Exception Handling
+        }
+
+        restore_error_handler();
+
+        $signalHandler->quit($exitCode);
     }
 
     public function stop()
     {
+        $return = posix_kill($this->getPid(), SIGTERM);
+
+        return $return;
+    }
+
+    public function kill()
+    {
         $return = posix_kill($this->getPid(), SIGKILL);
-        $this->getIpc()->destroy();
 
         return $return;
     }
@@ -177,27 +156,7 @@ class Item
 
     public function isRunning()
     {
-        return (bool) $this->getIpc()->load('__running');
-    }
-
-    public function getResult()
-    {
-        return $this->getIpc()->load('result');
-    }
-
-    public function getOutput()
-    {
-        return $this->getIpc()->load('output');
-    }
-
-    public function getStatus()
-    {
-        return $this->getIpc()->load('__status');
-    }
-
-    public function isSuccessful()
-    {
-        return ($this->getIpc()->load('__status') == self::STATUS_SUCESS);
+        return ($this->hasPid() && posix_kill($this->getPid(), 0));
     }
 
     public function hasPid()
@@ -209,7 +168,7 @@ class Item
     {
         if (false === $this->hasPid()) {
             $message = 'There is not defined process';
-            throw new \UnderflowException($message);
+            throw new UnderflowException($message);
         }
 
         return $this->pid;
@@ -230,4 +189,33 @@ class Item
         return $this->ipc;
     }
 
+    public function getResult()
+    {
+        return $this->getIpc()->load('result');
+    }
+
+    public function getOutput()
+    {
+        return $this->getIpc()->load('output');
+    }
+
+    public function getStatus()
+    {
+        return $this->getIpc()->load('status');
+    }
+
+    public function isSuccessful()
+    {
+        return ($this->getIpc()->load('status') == self::STATUS_SUCESS);
+    }
+
+    public function setPriority($priority)
+    {
+        if (false === pcntl_setpriority($priority, $this->getPid(), PRIO_PROCESS)) {
+            $message = 'Unable to set the priority';
+            throw new RuntimeException($message);
+        }
+
+        return $this;
+    }
 }

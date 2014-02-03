@@ -2,11 +2,10 @@
 
 namespace Arara\Process;
 
-use SplObjectStorage;
+use RuntimeException;
 
 class Manager
 {
-
     private $pool;
     private $signalHandler;
     private $processId;
@@ -14,12 +13,12 @@ class Manager
 
     public function __construct($getMaxChildren)
     {
-        if (!filter_var($getMaxChildren, FILTER_VALIDATE_INT)
+        if (! filter_var($getMaxChildren, FILTER_VALIDATE_INT)
                 || $getMaxChildren < 1) {
             throw new \InvalidArgumentException('Children number is not valid');
         }
 
-        $this->pool = new SplObjectStorage();
+        $this->pool = new Pool();
         $this->signalHandler = new SignalHandler();
         $this->processId = posix_getpid();
         $this->getMaxChildren = $getMaxChildren;
@@ -37,25 +36,18 @@ class Manager
 
     public function addChild(Item $process, $priority = 0)
     {
-        if ($this->pool->count() == $this->getMaxChildren()) {
-            $first = null;
-            foreach ($this->pool as $poolProcess) {
-                if (true === $poolProcess->isRunning()) {
-                    if ($first instanceof Item) {
-                        continue;
-                    }
-                    $first = $poolProcess;
-                }
-                $this->pool->detach($poolProcess);
-            }
-            $first && $first->wait();
+        $firstProcess = $this->pool->getFirstRunning();
+        if (null !== $firstProcess
+            && $this->pool->count() > $this->getMaxChildren()) {
+            $this->pool->detach($firstProcess);
         }
 
         $this->pool->attach($process);
+        if (! $process->start($this->signalHandler)) {
+            throw new RuntimeException('Could not start process');
+        }
 
-        $process->start($this->signalHandler);
-
-        if (true === $process->hasPid()) {
+        if ($priority != 0) {
             $process->setPriority($priority);
         }
 
@@ -65,20 +57,33 @@ class Manager
     public function wait()
     {
         foreach ($this->pool as $process) {
-            if (false === $process->hasPid()) {
+            if (false === $process->isRunning()) {
                 continue;
             }
             $process->wait();
+            $process->getIpc()->destroy();
         }
     }
 
     public function stop()
     {
         foreach ($this->pool as $process) {
-            if (false === $process->hasPid()) {
+            if (false === $process->isRunning()) {
                 continue;
             }
             $process->stop();
+            $process->getIpc()->destroy();
+        }
+    }
+
+    public function kill()
+    {
+        foreach ($this->pool as $process) {
+            if (false === $process->isRunning()) {
+                continue;
+            }
+            $process->kill();
+            $process->getIpc()->destroy();
         }
     }
 
