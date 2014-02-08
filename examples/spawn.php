@@ -1,7 +1,7 @@
 <?php
 
 /* Bootstrap */
-require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/../bootstrap.php';
 
 use Arara\Process\Ipc\File as Ipc;
 use Arara\Process\Process;
