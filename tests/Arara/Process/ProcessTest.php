@@ -2,6 +2,8 @@
 
 namespace Arara\Process;
 
+use Arara\Process\Ipc\Arr;
+
 function pcntl_fork() { return $GLOBALS['pcntl_fork']; }
 function pcntl_setpriority() { return $GLOBALS['pcntl_setpriority']; }
 function pcntl_waitpid($pid, &$status) { $status = $GLOBALS['pcntl_waitpid']; }
@@ -10,16 +12,6 @@ function posix_getgrgid() { return $GLOBALS['posix_getgrgid']; }
 function posix_getpwuid() { return $GLOBALS['posix_getpwuid']; }
 function posix_getuid() { return $GLOBALS['posix_getuid']; }
 function posix_kill() { return $GLOBALS['posix_kill']; }
-
-class ArrayIpc implements Ipc\Ipc
-{
-    public $data = array();
-    public function save($name, $value) { $this->data[$name] = $value; }
-    public function load($name) { if (isset($this->data[$name])) { return $this->data[$name]; } }
-    public function destroy() { $this->data = array(); }
-
-}
-
 
 class ProcessTest extends \PHPUnit_Framework_TestCase
 {
@@ -48,7 +40,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
      */
     public function testShouldThrowsAnExceptionIfCallbackIsNotCallable()
     {
-        new Process(new \stdClass(), new ArrayIpc());
+        new Process(new \stdClass(), new Arr());
     }
 
     /**
@@ -58,7 +50,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
      */
     public function testShouldThrowsAnExceptionIfPidIsNotDefined()
     {
-        $item = new Process(function () {}, new ArrayIpc());
+        $item = new Process(function () {}, new Arr());
         $item->getPid();
     }
 
@@ -70,7 +62,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
     {
         $GLOBALS['pcntl_fork'] = 7230;
 
-        $item = new Process(function () {}, new ArrayIpc());
+        $item = new Process(function () {}, new Arr());
         $signal = new Signal();
 
         $this->assertFalse($item->hasPid());
@@ -87,7 +79,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
     public function testShouldThrowsAnExceptionIfUserIdIsNotValid()
     {
         $GLOBALS['posix_getpwuid'] = false;
-        new Process('trim', new ArrayIpc(), 159789);
+        new Process('trim', new Arr(), 159789);
     }
 
     /**
@@ -98,7 +90,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
     public function testShouldThrowsAnExceptionIfGroupIdIsNotValid()
     {
         $GLOBALS['posix_getgrgid'] = false;
-        new Process('trim', new ArrayIpc(), 159789, 987159);
+        new Process('trim', new Arr(), 159789, 987159);
     }
 
     /**
@@ -107,7 +99,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
     public function testShouldDefinePropertiesOnConstructor()
     {
         $callback   = function () {};
-        $ipc        = new ArrayIpc();
+        $ipc        = new Arr();
         $uid        = 1024;
         $gid        = 1024;
 
@@ -129,7 +121,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
     public function testShouldRetrieveDefinedPropertiesOnConstructor()
     {
         $callback   = function () {};
-        $ipc        = new ArrayIpc();
+        $ipc        = new Arr();
         $uid        = 1024;
         $gid        = 1024;
 
@@ -150,7 +142,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
         $success = function () {};
         $error = function () {};
         $fail = function () {};
-        $item = new Process($action, new ArrayIpc());
+        $item = new Process($action, new Arr());
         $item->setCallback($success, Process::STATUS_SUCESS);
         $item->setCallback($error, Process::STATUS_ERROR);
         $item->setCallback($fail, Process::STATUS_FAIL);
@@ -167,7 +159,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
     public function testShouldDefineAndRestrieveACombinedCallbackType()
     {
         $callback = function () {};
-        $item = new Process(function () {}, new ArrayIpc());
+        $item = new Process(function () {}, new Arr());
         $item->setCallback($callback, Process::STATUS_ERROR | Process::STATUS_FAIL);
 
         $this->assertSame($callback, $item->getCallback(Process::STATUS_FAIL));
@@ -179,7 +171,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
      */
     public function testShouldReturnAValidCallbackByDefault()
     {
-        $item = new Process(function () {}, new ArrayIpc());
+        $item = new Process(function () {}, new Arr());
 
         $this->assertTrue(is_callable($item->getCallback(Process::STATUS_FAIL)));
     }
@@ -191,7 +183,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
      */
     public function testShouldThrowsAnExceptionWhenDefiningAnInvalidCallback()
     {
-        $item = new Process(function () {}, new ArrayIpc());
+        $item = new Process(function () {}, new Arr());
         $item->setCallback(array(), Process::STATUS_SUCESS);
     }
 
@@ -200,7 +192,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
      */
     public function testShouldDefineAsNotRunningInTheBegining()
     {
-        $ipc = new ArrayIpc();
+        $ipc = new Arr();
 
         $item = new Process('trim', $ipc);
 
@@ -212,7 +204,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
      */
     public function testShouldReturnFalseWhenCanNotFork()
     {
-        $ipc = new ArrayIpc();
+        $ipc = new Arr();
         $item = new Process('trim', $ipc);
         $GLOBALS['pcntl_fork'] = -1;
 
@@ -226,7 +218,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
      */
     public function testShouldMarkAsRunningAndStorePidOnParentAfterFork()
     {
-        $ipc = new ArrayIpc();
+        $ipc = new Arr();
         $item = new Process('trim', $ipc);
         $GLOBALS['pcntl_fork'] = 159;
         $item->start(new Signal());
@@ -242,7 +234,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
      */
     public function testShouldThrowsAnExceptionWhenTryingToForkMoreThanOce()
     {
-        $ipc = new ArrayIpc();
+        $ipc = new Arr();
         $item = new Process('trim', $ipc);
         $GLOBALS['pcntl_fork'] = 159;
         $item->start(new Signal());
@@ -258,7 +250,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
     {
         $GLOBALS['pcntl_fork'] = 0;
 
-        $ipc = new ArrayIpc();
+        $ipc = new Arr();
         $item = new Process('trim', $ipc, 1000, 1000);
 
         $GLOBALS['posix_getuid'] = 1001;
@@ -300,7 +292,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
             return $result;
         };
 
-        $ipc = new ArrayIpc();
+        $ipc = new Arr();
         $item = new Process($callback, $ipc, 1000, 1000);
 
         $GLOBALS['posix_getuid'] = 1000;
@@ -341,7 +333,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
             array_combine('String', 'String');
         };
 
-        $ipc = new ArrayIpc();
+        $ipc = new Arr();
         $item = new Process($callback, $ipc, 1000, 1000);
 
         $GLOBALS['posix_getuid'] = 1000;
@@ -384,7 +376,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
             throw $exception;
         };
 
-        $ipc = new ArrayIpc();
+        $ipc = new Arr();
         $item = new Process($callback, $ipc, 1000, 1000);
 
         $GLOBALS['posix_getuid'] = 1000;
@@ -417,7 +409,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['pcntl_fork'] = 7230;
         $GLOBALS['pcntl_waitpid'] = -1;
 
-        $item = new Process(function () {}, new ArrayIpc());
+        $item = new Process(function () {}, new Arr());
         $signal = new Signal();
 
         $item->start($signal);
@@ -432,7 +424,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['pcntl_fork'] = 7230;
         $GLOBALS['posix_kill'] = true;
 
-        $item = new Process(function () {}, new ArrayIpc());
+        $item = new Process(function () {}, new Arr());
         $signal = new Signal();
 
         $item->start($signal);
@@ -448,7 +440,7 @@ class ProcessTest extends \PHPUnit_Framework_TestCase
     {
         $GLOBALS['pcntl_fork'] = 7230;
 
-        $process = new Process(function () {}, new ArrayIpc());
+        $process = new Process(function () {}, new Arr());
         $process->start(new Signal());
 
         $GLOBALS['pcntl_setpriority'] = false;

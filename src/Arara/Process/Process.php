@@ -2,6 +2,7 @@
 
 namespace Arara\Process;
 
+use Arara\Process\Ipc\Ipc;
 use ErrorException;
 use Exception;
 use InvalidArgumentException;
@@ -21,24 +22,24 @@ class Process
     private $pid;
     private $callbacks = array();
 
-    public function __construct($action, Ipc\Ipc $ipc = null, $userId = null, $groupId = null)
+    public function __construct($action, Ipc $ipc, $userId = null, $groupId = null)
     {
-        $this->action = $action;
-        $this->ipc = $ipc ?: new Ipc\File();
-        $this->userId = $userId ?: posix_getuid();
-        $this->groupId = $groupId ?: posix_getgid();
-
         if (! is_callable($action)) {
             throw new InvalidArgumentException('Action must be a valid callback');
         }
 
-        if (! posix_getpwuid($this->userId)) {
-            throw new InvalidArgumentException(sprintf('The given UID "%s" is not valid', $this->userId));
+        if (null !== $userId && ! posix_getpwuid($userId)) {
+            throw new InvalidArgumentException(sprintf('The given UID "%s" is not valid', $userId));
         }
 
-        if (! posix_getgrgid($this->groupId)) {
-            throw new InvalidArgumentException(sprintf('The given GID "%s" is not valid', $this->groupId));
+        if (null !== $groupId && ! posix_getgrgid($groupId)) {
+            throw new InvalidArgumentException(sprintf('The given GID "%s" is not valid', $groupId));
         }
+
+        $this->action = $action;
+        $this->ipc = $ipc;
+        $this->userId = $userId ?: posix_getuid();
+        $this->groupId = $groupId ?: posix_getgid();
     }
 
     public function setCallback($callback, $status)
