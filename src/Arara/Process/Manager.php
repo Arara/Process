@@ -2,36 +2,37 @@
 
 namespace Arara\Process;
 
+use InvalidArgumentException;
 use RuntimeException;
 
 class Manager
 {
+    private $maxChildren;
+    private $pid;
     private $pool;
-    private $signalHandler;
-    private $processId;
-    private $getMaxChildren;
+    private $signal;
 
-    public function __construct($getMaxChildren)
+    public function __construct($maxChildren)
     {
-        if (! filter_var($getMaxChildren, FILTER_VALIDATE_INT)
-                || $getMaxChildren < 1) {
-            throw new \InvalidArgumentException('Children number is not valid');
+        if (! filter_var($maxChildren, FILTER_VALIDATE_INT)
+                || $maxChildren < 1) {
+            throw new InvalidArgumentException('Children number is not valid');
         }
 
+        $this->maxChildren = $maxChildren;
+        $this->pid = posix_getpid();
         $this->pool = new Pool();
-        $this->signalHandler = new SignalHandler();
-        $this->processId = posix_getpid();
-        $this->getMaxChildren = $getMaxChildren;
+        $this->signal = new Signal();
     }
 
     public function getMaxChildren()
     {
-        return $this->getMaxChildren;
+        return $this->maxChildren;
     }
 
     public function getPid()
     {
-        return $this->processId;
+        return $this->pid;
     }
 
     public function addChild(Item $process, $priority = 0)
@@ -43,7 +44,7 @@ class Manager
         }
 
         $this->pool->attach($process);
-        if (! $process->start($this->signalHandler)) {
+        if (! $process->start($this->signal)) {
             throw new RuntimeException('Could not start process');
         }
 
@@ -91,5 +92,4 @@ class Manager
     {
         $this->wait();
     }
-
 }

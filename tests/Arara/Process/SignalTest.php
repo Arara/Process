@@ -22,7 +22,7 @@ function usleep($time)
     $GLOBALS['usleep'] = $time;
 }
 
-class SignalHandlerTest extends \PHPUnit_Framework_TestCase
+class SignalTest extends \PHPUnit_Framework_TestCase
 {
 
     protected function setUp()
@@ -33,11 +33,11 @@ class SignalHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Arara\Process\SignalHandler::__construct
+     * @covers Arara\Process\Signal::__construct
      */
     public function testShouldDefinedSignalsOnConstructor()
     {
-        $handler = new SignalHandler();
+        $handler = new Signal();
         $expected = array(
             SIGINT => array($handler, 'handle'),
             SIGQUIT => array($handler, 'handle'),
@@ -49,12 +49,12 @@ class SignalHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Arara\Process\SignalHandler::handle
+     * @covers Arara\Process\Signal::handle
      */
     public function testShouldHandleInt()
     {
         $handler = $this
-            ->getMockBuilder('Arara\Process\SignalHandler')
+            ->getMockBuilder('Arara\Process\Signal')
             ->setMethods(array('quit'))
             ->getMock();
         $handler->expects($this->once())
@@ -64,12 +64,12 @@ class SignalHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Arara\Process\SignalHandler::handle
+     * @covers Arara\Process\Signal::handle
      */
     public function testShouldHandleQuit()
     {
         $handler = $this
-            ->getMockBuilder('Arara\Process\SignalHandler')
+            ->getMockBuilder('Arara\Process\Signal')
             ->setMethods(array('quit'))
             ->getMock();
         $handler->expects($this->once())
@@ -79,12 +79,12 @@ class SignalHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Arara\Process\SignalHandler::handle
+     * @covers Arara\Process\Signal::handle
      */
     public function testShouldHandleTerm()
     {
         $handler = $this
-            ->getMockBuilder('Arara\Process\SignalHandler')
+            ->getMockBuilder('Arara\Process\Signal')
             ->setMethods(array('quit'))
             ->getMock();
         $handler->expects($this->once())
@@ -94,23 +94,23 @@ class SignalHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Arara\Process\SignalHandler::handle
+     * @covers Arara\Process\Signal::handle
      */
     public function testShouldHandleAChildThatAlreadyDies()
     {
-        $handler = new SignalHandler();
+        $handler = new Signal();
         $handler->handle(SIGCHLD);
 
         $this->assertNull($GLOBALS['usleep']);
     }
     /**
-     * @covers Arara\Process\SignalHandler::handle
+     * @covers Arara\Process\Signal::handle
      */
     public function testShouldHandleAChildThatIdDaying()
     {
         $GLOBALS['pcntl_wait'] = true;
 
-        $handler = new SignalHandler();
+        $handler = new Signal();
         $handler->handle(SIGCHLD);
 
         $this->assertEquals($GLOBALS['usleep'], 1000);

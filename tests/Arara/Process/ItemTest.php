@@ -71,10 +71,10 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['pcntl_fork'] = 7230;
 
         $item = new Item(function () {}, new ArrayIpc());
-        $signalHandler = new SignalHandler();
+        $signal = new Signal();
 
         $this->assertFalse($item->hasPid());
-        $item->start($signalHandler);
+        $item->start($signal);
         $this->assertSame($GLOBALS['pcntl_fork'], $item->getPid());
         $this->asserttrue($item->hasPid());
     }
@@ -216,7 +216,7 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $item = new Item('trim', $ipc);
         $GLOBALS['pcntl_fork'] = -1;
 
-        $this->assertFalse($item->start(new SignalHandler()));
+        $this->assertFalse($item->start(new Signal()));
     }
 
     /**
@@ -229,7 +229,7 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $ipc = new ArrayIpc();
         $item = new Item('trim', $ipc);
         $GLOBALS['pcntl_fork'] = 159;
-        $item->start(new SignalHandler());
+        $item->start(new Signal());
 
         $this->assertSame($GLOBALS['pcntl_fork'], $item->getPid());
         $this->assertTrue($item->isRunning());
@@ -245,10 +245,10 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $ipc = new ArrayIpc();
         $item = new Item('trim', $ipc);
         $GLOBALS['pcntl_fork'] = 159;
-        $item->start(new SignalHandler());
+        $item->start(new Signal());
 
         // Second time
-        $item->start(new SignalHandler());
+        $item->start(new Signal());
     }
 
     /**
@@ -265,17 +265,17 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['posix_getgid'] = 1001;
 
 
-        $signalHandler = $this
-            ->getMockBuilder('Arara\Process\SignalHandler')
+        $signal = $this
+            ->getMockBuilder('Arara\Process\Signal')
             ->setMethods(array('quit'))
             ->getMock();
 
-        $signalHandler
+        $signal
             ->expects($this->once())
             ->method('quit')
             ->with(2);
 
-        $item->start($signalHandler);
+        $item->start($signal);
 
         $this->assertInstanceOf('RuntimeException', $ipc->load('result'));
     }
@@ -306,17 +306,17 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['posix_getuid'] = 1000;
         $GLOBALS['posix_getgid'] = 1000;
 
-        $signalHandler = $this
-            ->getMockBuilder('Arara\Process\SignalHandler')
+        $signal = $this
+            ->getMockBuilder('Arara\Process\Signal')
             ->setMethods(array('quit'))
             ->getMock();
 
-        $signalHandler
+        $signal
             ->expects($this->once())
             ->method('quit')
             ->with(0);
 
-        $item->start($signalHandler);
+        $item->start($signal);
 
         $this->assertSame($successful, $item->isSuccessful());
         $this->assertSame($status, $item->getStatus());
@@ -347,17 +347,17 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['posix_getuid'] = 1000;
         $GLOBALS['posix_getgid'] = 1000;
 
-        $signalHandler = $this
-            ->getMockBuilder('Arara\Process\SignalHandler')
+        $signal = $this
+            ->getMockBuilder('Arara\Process\Signal')
             ->setMethods(array('quit'))
             ->getMock();
 
-        $signalHandler
+        $signal
             ->expects($this->once())
             ->method('quit')
             ->with(1);
 
-        $item->start($signalHandler);
+        $item->start($signal);
 
         $this->assertSame($successful, $item->isSuccessful());
         $this->assertSame($status, $item->getStatus());
@@ -390,17 +390,17 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['posix_getuid'] = 1000;
         $GLOBALS['posix_getgid'] = 1000;
 
-        $signalHandler = $this
-            ->getMockBuilder('Arara\Process\SignalHandler')
+        $signal = $this
+            ->getMockBuilder('Arara\Process\Signal')
             ->setMethods(array('quit'))
             ->getMock();
 
-        $signalHandler
+        $signal
             ->expects($this->once())
             ->method('quit')
             ->with(2);
 
-        $item->start($signalHandler);
+        $item->start($signal);
 
         $this->assertSame($successful, $item->isSuccessful());
         $this->assertSame($status, $item->getStatus());
@@ -418,9 +418,9 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['pcntl_waitpid'] = -1;
 
         $item = new Item(function () {}, new ArrayIpc());
-        $signalHandler = new SignalHandler();
+        $signal = new Signal();
 
-        $item->start($signalHandler);
+        $item->start($signal);
         $this->assertSame($GLOBALS['pcntl_waitpid'], $item->wait());
     }
 
@@ -433,9 +433,9 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['posix_kill'] = true;
 
         $item = new Item(function () {}, new ArrayIpc());
-        $signalHandler = new SignalHandler();
+        $signal = new Signal();
 
-        $item->start($signalHandler);
+        $item->start($signal);
         $this->assertTrue($item->stop());
     }
 
@@ -449,7 +449,7 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['pcntl_fork'] = 7230;
 
         $process = new Item(function () {}, new ArrayIpc());
-        $process->start(new SignalHandler());
+        $process->start(new Signal());
 
         $GLOBALS['pcntl_setpriority'] = false;
         $process->setPriority(10);

@@ -67,7 +67,7 @@ class Item
         return $returnCallback;
     }
 
-    public function start(SignalHandler $signalHandler)
+    public function start(Signal $signal)
     {
         if (true === $this->hasPid()) {
             throw new UnderflowException('Process already started');
@@ -130,7 +130,7 @@ class Item
 
         restore_error_handler();
 
-        $signalHandler->quit($exitCode);
+        $signal->quit($exitCode);
     }
 
     public function stop()

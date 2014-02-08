@@ -2,7 +2,7 @@
 
 namespace Arara\Process;
 
-class SignalHandler
+class Signal
 {
 
     public function __construct()
