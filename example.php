@@ -4,7 +4,7 @@
 require_once __DIR__ . '/bootstrap.php';
 
 use Arara\Process\Ipc\File as Ipc;
-use Arara\Process\Item;
+use Arara\Process\Process;
 use Arara\Process\Manager;
 
 $manager = new Manager(15);
@@ -19,7 +19,7 @@ foreach($users as $key => $user) {
         continue;
     }
     list($username, $uid, $gid) = explode(' ', $user);
-    $process = new Item(
+    $process = new Process(
         function (Ipc $ipc) use ($job, $username) {
             $ipc->save('startedAt', date('Y-m-d H:i:s'));
             echo "Running job for {$username}";
@@ -35,7 +35,7 @@ foreach($users as $key => $user) {
             echo "[{$job}] Finished at: {$ipc->load('finishedAt')}" . PHP_EOL;
             echo "[{$job}] Output:      {$ipc->load('output')}" . PHP_EOL;
         },
-        Item::STATUS_SUCESS | Item::STATUS_ERROR | Item::STATUS_FAIL
+        Process::STATUS_SUCESS | Process::STATUS_ERROR | Process::STATUS_FAIL
     );
 
     try {

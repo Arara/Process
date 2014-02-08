@@ -59,7 +59,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     public function testShouldAddAndStartChildWhenNotRunningAboveTheLimit()
     {
         $process = $this
-            ->getMockBuilder('Arara\Process\Item')
+            ->getMockBuilder('Arara\Process\Process')
             ->setMethods(array('start'))
             ->disableOriginalConstructor()
             ->getMock();
@@ -93,7 +93,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     {
         $ipc = new Arr;
         $first = $this
-            ->getMockBuilder('Arara\Process\Item')
+            ->getMockBuilder('Arara\Process\Process')
             ->setMethods(array('start', 'isRunning', 'wait', 'getIpc'))
             ->disableOriginalConstructor()
             ->getMock();
@@ -115,7 +115,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(false));
 
         $seccond = $this
-            ->getMockBuilder('Arara\Process\Item')
+            ->getMockBuilder('Arara\Process\Process')
             ->setMethods(array('start', 'isRunning', 'wait', 'getIpc'))
             ->disableOriginalConstructor()
             ->getMock();
@@ -137,7 +137,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(false));
 
         $third = $this
-            ->getMockBuilder('Arara\Process\Item')
+            ->getMockBuilder('Arara\Process\Process')
             ->setMethods(array('start'))
             ->disableOriginalConstructor()
             ->getMock();

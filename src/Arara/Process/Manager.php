@@ -35,7 +35,7 @@ class Manager
         return $this->pid;
     }
 
-    public function addChild(Item $process, $priority = 0)
+    public function addChild(Process $process, $priority = 0)
     {
         $firstProcess = $this->pool->getFirstRunning();
         if (null !== $firstProcess
