@@ -35,14 +35,15 @@ class SignalTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers Arara\Process\Signal::__construct
      */
-    public function testShouldDefinedSignalsOnConstructor()
+    public function testShouldDefinedSignalsOnSetDefaultHandlers()
     {
         $handler = new Signal();
+        $handler->setDefaultHandlers();
         $expected = array(
-            SIGINT => array($handler, 'handle'),
-            SIGQUIT => array($handler, 'handle'),
-            SIGTERM => array($handler, 'handle'),
-            SIGCHLD => array($handler, 'handle'),
+            SIGINT => array($handler, 'defaultHandler'),
+            SIGQUIT => array($handler, 'defaultHandler'),
+            SIGTERM => array($handler, 'defaultHandler'),
+            SIGCHLD => array($handler, 'defaultHandler'),
         );
 
         $this->assertSame($expected, $GLOBALS['pcntl_signal']);
@@ -60,7 +61,7 @@ class SignalTest extends \PHPUnit_Framework_TestCase
         $handler->expects($this->once())
                 ->method('quit')
                 ->with(1);
-        $handler->handle(SIGINT);
+        $handler->defaultHandler(SIGINT);
     }
 
     /**
@@ -75,7 +76,7 @@ class SignalTest extends \PHPUnit_Framework_TestCase
         $handler->expects($this->once())
                 ->method('quit')
                 ->with(1);
-        $handler->handle(SIGQUIT);
+        $handler->defaultHandler(SIGQUIT);
     }
 
     /**
@@ -90,7 +91,7 @@ class SignalTest extends \PHPUnit_Framework_TestCase
         $handler->expects($this->once())
                 ->method('quit')
                 ->with(0);
-        $handler->handle(SIGTERM);
+        $handler->defaultHandler(SIGTERM);
     }
 
     /**
@@ -99,7 +100,7 @@ class SignalTest extends \PHPUnit_Framework_TestCase
     public function testShouldHandleAChildThatAlreadyDies()
     {
         $handler = new Signal();
-        $handler->handle(SIGCHLD);
+        $handler->defaultHandler(SIGCHLD);
 
         $this->assertNull($GLOBALS['usleep']);
     }
@@ -111,7 +112,7 @@ class SignalTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['pcntl_wait'] = true;
 
         $handler = new Signal();
-        $handler->handle(SIGCHLD);
+        $handler->defaultHandler(SIGCHLD);
 
         $this->assertEquals($GLOBALS['usleep'], 1000);
     }

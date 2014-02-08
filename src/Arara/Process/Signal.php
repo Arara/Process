@@ -4,16 +4,25 @@ namespace Arara\Process;
 
 class Signal
 {
-
     public function __construct()
     {
-        pcntl_signal(SIGINT, array($this, 'handle'));
-        pcntl_signal(SIGQUIT, array($this, 'handle'));
-        pcntl_signal(SIGTERM, array($this, 'handle'));
-        pcntl_signal(SIGCHLD, array($this, 'handle'));
+        declare(ticks = 1);
     }
 
-    public function handle($signal)
+    public function setDefaultHandlers()
+    {
+        $this->handle(SIGINT, array($this, 'defaultHandler'));
+        $this->handle(SIGQUIT, array($this, 'defaultHandler'));
+        $this->handle(SIGTERM, array($this, 'defaultHandler'));
+        $this->handle(SIGCHLD, array($this, 'defaultHandler'));
+    }
+
+    public function handle($signal, $handler)
+    {
+        pcntl_signal($signal, $handler);
+    }
+
+    public function defaultHandler($signal)
     {
         switch ($signal) {
             case SIGINT:
@@ -43,5 +52,4 @@ class Signal
         exit($code);
     }
     // @codeCoverageIgnoreEnd
-
 }

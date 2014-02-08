@@ -23,6 +23,7 @@ class Manager
         $this->pid = posix_getpid();
         $this->pool = new Pool();
         $this->signal = new Signal();
+        $this->signal->setDefaultHandlers();
     }
 
     public function getMaxChildren()
