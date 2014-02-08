@@ -22,6 +22,11 @@ class Signal
         pcntl_signal($signal, $handler);
     }
 
+    public function alarm($seconds)
+    {
+        pcntl_alarm($seconds);
+    }
+
     public function defaultHandler($signal)
     {
         switch ($signal) {
