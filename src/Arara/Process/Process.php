@@ -150,6 +150,10 @@ class Process
 
     public function wait()
     {
+        if (! $this->hasPid()) {
+            return true;
+        }
+
         pcntl_waitpid($this->getPid(), $status);
 
         return $status;
