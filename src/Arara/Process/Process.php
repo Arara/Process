@@ -63,10 +63,6 @@ class Process
 
     public function getCallback($status)
     {
-        if ($this->hasPid()) {
-            throw new UnderflowException('Process already started');
-        }
-
         $returnCallback = function () {};
         foreach ($this->callbacks as $key => $callback) {
             if ($status !== ($key & $status)) {
