@@ -2,43 +2,51 @@
 
 namespace Arara\Process;
 
+use Arara\Process\Ipc\Ipc;
 use ErrorException;
 use Exception;
 use InvalidArgumentException;
 use RuntimeException;
 use UnderflowException;
 
-class Item
+class Process
 {
     const STATUS_SUCESS = 2;
     const STATUS_ERROR = 4;
     const STATUS_FAIL = 8;
+    const STATUS_TIMEOUT = 16;
 
     private $action;
     private $ipc;
     private $userId;
     private $groupId;
     private $pid;
+    private $timeout = 0;
     private $callbacks = array();
 
-    public function __construct($action, Ipc\Ipc $ipc = null, $userId = null, $groupId = null)
+    public function __construct($action, Ipc $ipc, $userId = null, $groupId = null)
     {
-        $this->action = $action;
-        $this->ipc = $ipc ?: new Ipc\File();
-        $this->userId = $userId ?: posix_getuid();
-        $this->groupId = $groupId ?: posix_getgid();
-
         if (! is_callable($action)) {
             throw new InvalidArgumentException('Action must be a valid callback');
         }
 
-        if (! posix_getpwuid($this->userId)) {
-            throw new InvalidArgumentException(sprintf('The given UID "%s" is not valid', $this->userId));
+        if (null !== $userId && ! posix_getpwuid($userId)) {
+            throw new InvalidArgumentException(sprintf('The given UID "%s" is not valid', $userId));
         }
 
-        if (! posix_getgrgid($this->groupId)) {
-            throw new InvalidArgumentException(sprintf('The given GID "%s" is not valid', $this->groupId));
+        if (null !== $groupId && ! posix_getgrgid($groupId)) {
+            throw new InvalidArgumentException(sprintf('The given GID "%s" is not valid', $groupId));
         }
+
+        $this->action = $action;
+        $this->ipc = $ipc;
+        $this->userId = $userId ?: posix_getuid();
+        $this->groupId = $groupId ?: posix_getgid();
+    }
+
+    public function setTimeout($timeout)
+    {
+        $this->timeout = $timeout;
     }
 
     public function setCallback($callback, $status)
@@ -67,7 +75,7 @@ class Item
         return $returnCallback;
     }
 
-    public function start(SignalHandler $signalHandler)
+    public function start(Signal $signal)
     {
         if (true === $this->hasPid()) {
             throw new UnderflowException('Process already started');
@@ -83,6 +91,14 @@ class Item
 
             return true;
         }
+
+        $ipc = $this->getIpc();
+        $callbackTimeout = $this->getCallback(self::STATUS_TIMEOUT);
+        $signal->handle(SIGALRM, function () use ($callbackTimeout, $ipc, $signal) {
+            call_user_func($callbackTimeout, $ipc);
+            $signal->quit(142);
+        });
+        $signal->alarm($this->timeout);
 
         set_error_handler(
             function ($severity, $message, $filename, $line) {
@@ -105,7 +121,7 @@ class Item
                 throw new RuntimeException($message);
             }
 
-            $result = call_user_func($this->action, $this->getIpc());
+            $result = call_user_func($this->action, $ipc);
             $status = self::STATUS_SUCESS;
             $exitCode = 0;
         } catch (ErrorException $exception) {
@@ -118,19 +134,19 @@ class Item
             $exitCode = 2;
         }
 
-        $this->getIpc()->save('result', $result);
-        $this->getIpc()->save('status', $status);
-        $this->getIpc()->save('output', ob_get_clean());
+        $ipc->save('result', $result);
+        $ipc->save('status', $status);
+        $ipc->save('output', ob_get_clean());
 
         try {
-            call_user_func($this->getCallback($status), $this->getIpc(), $result);
+            call_user_func($this->getCallback($status), $ipc, $result);
         } catch (Exception $exception) {
             // Pokémon Exception Handling
         }
 
         restore_error_handler();
 
-        $signalHandler->quit($exitCode);
+        $signal->quit($exitCode);
     }
 
     public function stop()
@@ -149,6 +165,10 @@ class Item
 
     public function wait()
     {
+        if (! $this->hasPid()) {
+            return true;
+        }
+
         pcntl_waitpid($this->getPid(), $status);
 
         return $status;

@@ -8,8 +8,8 @@ class Pool extends \SplObjectStorage
 {
     public function attach($process, $information = null)
     {
-        if (! $process instanceof Item) {
-            throw new InvalidArgumentException('Object must be instance of Arara\\Process\\Item');
+        if (! $process instanceof Process) {
+            throw new InvalidArgumentException('Object must be instance of Arara\\Process\\Process');
         }
 
         return parent::attach($process, $information);
@@ -35,8 +35,8 @@ class Pool extends \SplObjectStorage
 
     public function detach($process)
     {
-        if (! $process instanceof Item) {
-            throw new InvalidArgumentException('Object must be instance of Arara\\Process\\Item');
+        if (! $process instanceof Process) {
+            throw new InvalidArgumentException('Object must be instance of Arara\\Process\\Process');
         }
         $process->wait();
         $process->getIpc()->destroy();

@@ -2,6 +2,8 @@
 
 namespace Arara\Process;
 
+use Arara\Process\Ipc\Arr;
+
 function pcntl_fork() { return $GLOBALS['pcntl_fork']; }
 function pcntl_setpriority() { return $GLOBALS['pcntl_setpriority']; }
 function pcntl_waitpid($pid, &$status) { $status = $GLOBALS['pcntl_waitpid']; }
@@ -11,17 +13,7 @@ function posix_getpwuid() { return $GLOBALS['posix_getpwuid']; }
 function posix_getuid() { return $GLOBALS['posix_getuid']; }
 function posix_kill() { return $GLOBALS['posix_kill']; }
 
-class ArrayIpc implements Ipc\Ipc
-{
-    public $data = array();
-    public function save($name, $value) { $this->data[$name] = $value; }
-    public function load($name) { if (isset($this->data[$name])) { return $this->data[$name]; } }
-    public function destroy() { $this->data = array(); }
-
-}
-
-
-class ItemTest extends \PHPUnit_Framework_TestCase
+class ProcessTest extends \PHPUnit_Framework_TestCase
 {
 
     protected function setUp()
@@ -42,76 +34,76 @@ class ItemTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Arara\Process\Item::__construct
+     * @covers Arara\Process\Process::__construct
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Action must be a valid callback
      */
     public function testShouldThrowsAnExceptionIfCallbackIsNotCallable()
     {
-        new Item(new \stdClass(), new ArrayIpc());
+        new Process(new \stdClass(), new Arr());
     }
 
     /**
-     * @covers Arara\Process\Item::getPid
+     * @covers Arara\Process\Process::getPid
      * @expectedException UnderflowException
      * @expectedExceptionMessage There is not defined process
      */
     public function testShouldThrowsAnExceptionIfPidIsNotDefined()
     {
-        $item = new Item(function () {}, new ArrayIpc());
+        $item = new Process(function () {}, new Arr());
         $item->getPid();
     }
 
     /**
-     * @covers Arara\Process\Item::getPid
-     * @covers Arara\Process\Item::hasPid
+     * @covers Arara\Process\Process::getPid
+     * @covers Arara\Process\Process::hasPid
      */
     public function testShouldDefineAPid()
     {
         $GLOBALS['pcntl_fork'] = 7230;
 
-        $item = new Item(function () {}, new ArrayIpc());
-        $signalHandler = new SignalHandler();
+        $item = new Process(function () {}, new Arr());
+        $signal = new Signal();
 
         $this->assertFalse($item->hasPid());
-        $item->start($signalHandler);
+        $item->start($signal);
         $this->assertSame($GLOBALS['pcntl_fork'], $item->getPid());
         $this->asserttrue($item->hasPid());
     }
 
     /**
-     * @covers Arara\Process\Item::__construct
+     * @covers Arara\Process\Process::__construct
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage The given UID "159789" is not valid
      */
     public function testShouldThrowsAnExceptionIfUserIdIsNotValid()
     {
         $GLOBALS['posix_getpwuid'] = false;
-        new Item('trim', new ArrayIpc(), 159789);
+        new Process('trim', new Arr(), 159789);
     }
 
     /**
-     * @covers Arara\Process\Item::__construct
+     * @covers Arara\Process\Process::__construct
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage The given GID "987159" is not valid
      */
     public function testShouldThrowsAnExceptionIfGroupIdIsNotValid()
     {
         $GLOBALS['posix_getgrgid'] = false;
-        new Item('trim', new ArrayIpc(), 159789, 987159);
+        new Process('trim', new Arr(), 159789, 987159);
     }
 
     /**
-     * @covers Arara\Process\Item::__construct
+     * @covers Arara\Process\Process::__construct
      */
     public function testShouldDefinePropertiesOnConstructor()
     {
         $callback   = function () {};
-        $ipc        = new ArrayIpc();
+        $ipc        = new Arr();
         $uid        = 1024;
         $gid        = 1024;
 
-        $item = new Item($callback, $ipc, $uid, $gid);
+        $item = new Process($callback, $ipc, $uid, $gid);
 
         $this->assertAttributeSame($callback, 'action', $item);
         $this->assertAttributeSame($ipc, 'ipc', $item);
@@ -121,19 +113,19 @@ class ItemTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @depends testShouldDefinePropertiesOnConstructor
-     * @covers Arara\Process\Item::__construct
-     * @covers Arara\Process\Item::getIpc
-     * @covers Arara\Process\Item::getUserId
-     * @covers Arara\Process\Item::getGroupId
+     * @covers Arara\Process\Process::__construct
+     * @covers Arara\Process\Process::getIpc
+     * @covers Arara\Process\Process::getUserId
+     * @covers Arara\Process\Process::getGroupId
      */
     public function testShouldRetrieveDefinedPropertiesOnConstructor()
     {
         $callback   = function () {};
-        $ipc        = new ArrayIpc();
+        $ipc        = new Arr();
         $uid        = 1024;
         $gid        = 1024;
 
-        $item = new Item($callback, $ipc, $uid, $gid);
+        $item = new Process($callback, $ipc, $uid, $gid);
 
         $this->assertSame($ipc, $item->getIpc());
         $this->assertSame($uid, $item->getUserId());
@@ -141,8 +133,8 @@ class ItemTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Arara\Process\Item::setCallback
-     * @covers Arara\Process\Item::getCallback
+     * @covers Arara\Process\Process::setCallback
+     * @covers Arara\Process\Process::getCallback
      */
     public function testShouldDefineAndRestrieveASimpleCallbackType()
     {
@@ -150,149 +142,149 @@ class ItemTest extends \PHPUnit_Framework_TestCase
         $success = function () {};
         $error = function () {};
         $fail = function () {};
-        $item = new Item($action, new ArrayIpc());
-        $item->setCallback($success, Item::STATUS_SUCESS);
-        $item->setCallback($error, Item::STATUS_ERROR);
-        $item->setCallback($fail, Item::STATUS_FAIL);
+        $item = new Process($action, new Arr());
+        $item->setCallback($success, Process::STATUS_SUCESS);
+        $item->setCallback($error, Process::STATUS_ERROR);
+        $item->setCallback($fail, Process::STATUS_FAIL);
 
-        $this->assertSame($success, $item->getCallback(Item::STATUS_SUCESS));
-        $this->assertSame($error, $item->getCallback(Item::STATUS_ERROR));
-        $this->assertSame($fail, $item->getCallback(Item::STATUS_FAIL));
+        $this->assertSame($success, $item->getCallback(Process::STATUS_SUCESS));
+        $this->assertSame($error, $item->getCallback(Process::STATUS_ERROR));
+        $this->assertSame($fail, $item->getCallback(Process::STATUS_FAIL));
     }
 
     /**
-     * @covers Arara\Process\Item::setCallback
-     * @covers Arara\Process\Item::getCallback
+     * @covers Arara\Process\Process::setCallback
+     * @covers Arara\Process\Process::getCallback
      */
     public function testShouldDefineAndRestrieveACombinedCallbackType()
     {
         $callback = function () {};
-        $item = new Item(function () {}, new ArrayIpc());
-        $item->setCallback($callback, Item::STATUS_ERROR | Item::STATUS_FAIL);
+        $item = new Process(function () {}, new Arr());
+        $item->setCallback($callback, Process::STATUS_ERROR | Process::STATUS_FAIL);
 
-        $this->assertSame($callback, $item->getCallback(Item::STATUS_FAIL));
-        $this->assertSame($callback, $item->getCallback(Item::STATUS_ERROR));
+        $this->assertSame($callback, $item->getCallback(Process::STATUS_FAIL));
+        $this->assertSame($callback, $item->getCallback(Process::STATUS_ERROR));
     }
 
     /**
-     * @covers Arara\Process\Item::getCallback
+     * @covers Arara\Process\Process::getCallback
      */
     public function testShouldReturnAValidCallbackByDefault()
     {
-        $item = new Item(function () {}, new ArrayIpc());
+        $item = new Process(function () {}, new Arr());
 
-        $this->assertTrue(is_callable($item->getCallback(Item::STATUS_FAIL)));
+        $this->assertTrue(is_callable($item->getCallback(Process::STATUS_FAIL)));
     }
 
     /**
-     * @covers Arara\Process\Item::setCallback
+     * @covers Arara\Process\Process::setCallback
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Callback given is not a valid callable
      */
     public function testShouldThrowsAnExceptionWhenDefiningAnInvalidCallback()
     {
-        $item = new Item(function () {}, new ArrayIpc());
-        $item->setCallback(array(), Item::STATUS_SUCESS);
+        $item = new Process(function () {}, new Arr());
+        $item->setCallback(array(), Process::STATUS_SUCESS);
     }
 
     /**
-     * @covers Arara\Process\Item::isRunning
+     * @covers Arara\Process\Process::isRunning
      */
     public function testShouldDefineAsNotRunningInTheBegining()
     {
-        $ipc = new ArrayIpc();
+        $ipc = new Arr();
 
-        $item = new Item('trim', $ipc);
+        $item = new Process('trim', $ipc);
 
         $this->assertFalse($item->isRunning());
     }
 
     /**
-     * @covers Arara\Process\Item::start
+     * @covers Arara\Process\Process::start
      */
     public function testShouldReturnFalseWhenCanNotFork()
     {
-        $ipc = new ArrayIpc();
-        $item = new Item('trim', $ipc);
+        $ipc = new Arr();
+        $item = new Process('trim', $ipc);
         $GLOBALS['pcntl_fork'] = -1;
 
-        $this->assertFalse($item->start(new SignalHandler()));
+        $this->assertFalse($item->start(new Signal()));
     }
 
     /**
-     * @covers Arara\Process\Item::start
-     * @covers Arara\Process\Item::getPid
-     * @covers Arara\Process\Item::isRunning
+     * @covers Arara\Process\Process::start
+     * @covers Arara\Process\Process::getPid
+     * @covers Arara\Process\Process::isRunning
      */
     public function testShouldMarkAsRunningAndStorePidOnParentAfterFork()
     {
-        $ipc = new ArrayIpc();
-        $item = new Item('trim', $ipc);
+        $ipc = new Arr();
+        $item = new Process('trim', $ipc);
         $GLOBALS['pcntl_fork'] = 159;
-        $item->start(new SignalHandler());
+        $item->start(new Signal());
 
         $this->assertSame($GLOBALS['pcntl_fork'], $item->getPid());
         $this->assertTrue($item->isRunning());
     }
 
     /**
-     * @covers Arara\Process\Item::start
+     * @covers Arara\Process\Process::start
      * @expectedException UnderflowException
      * @expectedExceptionMessage Process already started
      */
     public function testShouldThrowsAnExceptionWhenTryingToForkMoreThanOce()
     {
-        $ipc = new ArrayIpc();
-        $item = new Item('trim', $ipc);
+        $ipc = new Arr();
+        $item = new Process('trim', $ipc);
         $GLOBALS['pcntl_fork'] = 159;
-        $item->start(new SignalHandler());
+        $item->start(new Signal());
 
         // Second time
-        $item->start(new SignalHandler());
+        $item->start(new Signal());
     }
 
     /**
-     * @covers Arara\Process\Item::start
+     * @covers Arara\Process\Process::start
      */
     public function testShouldThrowsAnExceptionIfNotAbleToForkAsAnUser()
     {
         $GLOBALS['pcntl_fork'] = 0;
 
-        $ipc = new ArrayIpc();
-        $item = new Item('trim', $ipc, 1000, 1000);
+        $ipc = new Arr();
+        $item = new Process('trim', $ipc, 1000, 1000);
 
         $GLOBALS['posix_getuid'] = 1001;
         $GLOBALS['posix_getgid'] = 1001;
 
 
-        $signalHandler = $this
-            ->getMockBuilder('Arara\Process\SignalHandler')
+        $signal = $this
+            ->getMockBuilder('Arara\Process\Signal')
             ->setMethods(array('quit'))
             ->getMock();
 
-        $signalHandler
+        $signal
             ->expects($this->once())
             ->method('quit')
             ->with(2);
 
-        $item->start($signalHandler);
+        $item->start($signal);
 
         $this->assertInstanceOf('RuntimeException', $ipc->load('result'));
     }
 
     /**
-     * @covers Arara\Process\Item::start
-     * @covers Arara\Process\Item::isSuccessful
-     * @covers Arara\Process\Item::getStatus
-     * @covers Arara\Process\Item::getResult
-     * @covers Arara\Process\Item::getOutput
+     * @covers Arara\Process\Process::start
+     * @covers Arara\Process\Process::isSuccessful
+     * @covers Arara\Process\Process::getStatus
+     * @covers Arara\Process\Process::getResult
+     * @covers Arara\Process\Process::getOutput
      */
     public function testShouldRunSuccessfulProcess()
     {
         $GLOBALS['pcntl_fork'] = 0;
 
         $successful = true;
-        $status     = Item::STATUS_SUCESS;
+        $status     = Process::STATUS_SUCESS;
         $result     = 'This is the result';
         $output     = 'This is the output';
         $callback   = function () use ($result, $output) {
@@ -300,23 +292,23 @@ class ItemTest extends \PHPUnit_Framework_TestCase
             return $result;
         };
 
-        $ipc = new ArrayIpc();
-        $item = new Item($callback, $ipc, 1000, 1000);
+        $ipc = new Arr();
+        $item = new Process($callback, $ipc, 1000, 1000);
 
         $GLOBALS['posix_getuid'] = 1000;
         $GLOBALS['posix_getgid'] = 1000;
 
-        $signalHandler = $this
-            ->getMockBuilder('Arara\Process\SignalHandler')
+        $signal = $this
+            ->getMockBuilder('Arara\Process\Signal')
             ->setMethods(array('quit'))
             ->getMock();
 
-        $signalHandler
+        $signal
             ->expects($this->once())
             ->method('quit')
             ->with(0);
 
-        $item->start($signalHandler);
+        $item->start($signal);
 
         $this->assertSame($successful, $item->isSuccessful());
         $this->assertSame($status, $item->getStatus());
@@ -325,39 +317,39 @@ class ItemTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Arara\Process\Item::start
-     * @covers Arara\Process\Item::isSuccessful
-     * @covers Arara\Process\Item::getStatus
-     * @covers Arara\Process\Item::getResult
-     * @covers Arara\Process\Item::getOutput
+     * @covers Arara\Process\Process::start
+     * @covers Arara\Process\Process::isSuccessful
+     * @covers Arara\Process\Process::getStatus
+     * @covers Arara\Process\Process::getResult
+     * @covers Arara\Process\Process::getOutput
      */
     public function testShouldRunProcessWithPHPErros()
     {
         $GLOBALS['pcntl_fork'] = 0;
 
         $successful = false;
-        $status     = Item::STATUS_FAIL;
+        $status     = Process::STATUS_FAIL;
         $callback   = function () {
             array_combine('String', 'String');
         };
 
-        $ipc = new ArrayIpc();
-        $item = new Item($callback, $ipc, 1000, 1000);
+        $ipc = new Arr();
+        $item = new Process($callback, $ipc, 1000, 1000);
 
         $GLOBALS['posix_getuid'] = 1000;
         $GLOBALS['posix_getgid'] = 1000;
 
-        $signalHandler = $this
-            ->getMockBuilder('Arara\Process\SignalHandler')
+        $signal = $this
+            ->getMockBuilder('Arara\Process\Signal')
             ->setMethods(array('quit'))
             ->getMock();
 
-        $signalHandler
+        $signal
             ->expects($this->once())
             ->method('quit')
             ->with(1);
 
-        $item->start($signalHandler);
+        $item->start($signal);
 
         $this->assertSame($successful, $item->isSuccessful());
         $this->assertSame($status, $item->getStatus());
@@ -366,41 +358,41 @@ class ItemTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Arara\Process\Item::start
-     * @covers Arara\Process\Item::isSuccessful
-     * @covers Arara\Process\Item::getStatus
-     * @covers Arara\Process\Item::getResult
-     * @covers Arara\Process\Item::getOutput
+     * @covers Arara\Process\Process::start
+     * @covers Arara\Process\Process::isSuccessful
+     * @covers Arara\Process\Process::getStatus
+     * @covers Arara\Process\Process::getResult
+     * @covers Arara\Process\Process::getOutput
      */
     public function testShouldRunProcessWithExceptions()
     {
         $GLOBALS['pcntl_fork'] = 0;
 
         $successful = false;
-        $status     = Item::STATUS_ERROR;
+        $status     = Process::STATUS_ERROR;
         $output     = '';
         $exception  = new \Exception('This is the exception message');
         $callback   = function () use ($exception) {
             throw $exception;
         };
 
-        $ipc = new ArrayIpc();
-        $item = new Item($callback, $ipc, 1000, 1000);
+        $ipc = new Arr();
+        $item = new Process($callback, $ipc, 1000, 1000);
 
         $GLOBALS['posix_getuid'] = 1000;
         $GLOBALS['posix_getgid'] = 1000;
 
-        $signalHandler = $this
-            ->getMockBuilder('Arara\Process\SignalHandler')
+        $signal = $this
+            ->getMockBuilder('Arara\Process\Signal')
             ->setMethods(array('quit'))
             ->getMock();
 
-        $signalHandler
+        $signal
             ->expects($this->once())
             ->method('quit')
             ->with(2);
 
-        $item->start($signalHandler);
+        $item->start($signal);
 
         $this->assertSame($successful, $item->isSuccessful());
         $this->assertSame($status, $item->getStatus());
@@ -410,37 +402,37 @@ class ItemTest extends \PHPUnit_Framework_TestCase
 
 
     /**
-     * @covers Arara\Process\Item::wait
+     * @covers Arara\Process\Process::wait
      */
     public function testShouldWaitAProcess()
     {
         $GLOBALS['pcntl_fork'] = 7230;
         $GLOBALS['pcntl_waitpid'] = -1;
 
-        $item = new Item(function () {}, new ArrayIpc());
-        $signalHandler = new SignalHandler();
+        $item = new Process(function () {}, new Arr());
+        $signal = new Signal();
 
-        $item->start($signalHandler);
+        $item->start($signal);
         $this->assertSame($GLOBALS['pcntl_waitpid'], $item->wait());
     }
 
     /**
-     * @covers Arara\Process\Item::stop
+     * @covers Arara\Process\Process::stop
      */
     public function testShouldStopAProcess()
     {
         $GLOBALS['pcntl_fork'] = 7230;
         $GLOBALS['posix_kill'] = true;
 
-        $item = new Item(function () {}, new ArrayIpc());
-        $signalHandler = new SignalHandler();
+        $item = new Process(function () {}, new Arr());
+        $signal = new Signal();
 
-        $item->start($signalHandler);
+        $item->start($signal);
         $this->assertTrue($item->stop());
     }
 
     /**
-     * @covers Arara\Process\Item::setPriority
+     * @covers Arara\Process\Process::setPriority
      * @expectedException RuntimeException
      * @expectedExceptionMessage Unable to set the priority
      */
@@ -448,8 +440,8 @@ class ItemTest extends \PHPUnit_Framework_TestCase
     {
         $GLOBALS['pcntl_fork'] = 7230;
 
-        $process = new Item(function () {}, new ArrayIpc());
-        $process->start(new SignalHandler());
+        $process = new Process(function () {}, new Arr());
+        $process->start(new Signal());
 
         $GLOBALS['pcntl_setpriority'] = false;
         $process->setPriority(10);
