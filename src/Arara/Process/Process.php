@@ -14,12 +14,14 @@ class Process
     const STATUS_SUCESS = 2;
     const STATUS_ERROR = 4;
     const STATUS_FAIL = 8;
+    const STATUS_TIMEOUT = 16;
 
     private $action;
     private $ipc;
     private $userId;
     private $groupId;
     private $pid;
+    private $timeout = 0;
     private $callbacks = array();
 
     public function __construct($action, Ipc $ipc, $userId = null, $groupId = null)
@@ -42,6 +44,11 @@ class Process
         $this->groupId = $groupId ?: posix_getgid();
     }
 
+    public function setTimeout($timeout)
+    {
+        $this->timeout = $timeout;
+    }
+
     public function setCallback($callback, $status)
     {
         if (! is_callable($callback)) {
@@ -56,6 +63,10 @@ class Process
 
     public function getCallback($status)
     {
+        if ($this->hasPid()) {
+            throw new UnderflowException('Process already started');
+        }
+
         $returnCallback = function () {};
         foreach ($this->callbacks as $key => $callback) {
             if ($status !== ($key & $status)) {
@@ -85,6 +96,14 @@ class Process
             return true;
         }
 
+        $ipc = $this->getIpc();
+        $callbackTimeout = $this->getCallback(self::STATUS_TIMEOUT);
+        $signal->handle(SIGALRM, function () use ($callbackTimeout, $ipc, $signal) {
+            call_user_func($callbackTimeout, $ipc);
+            $signal->quit(142);
+        });
+        $signal->alarm($this->timeout);
+
         set_error_handler(
             function ($severity, $message, $filename, $line) {
                 throw new ErrorException($message, 0, $severity, $filename, $line);
@@ -106,7 +125,7 @@ class Process
                 throw new RuntimeException($message);
             }
 
-            $result = call_user_func($this->action, $this->getIpc());
+            $result = call_user_func($this->action, $ipc);
             $status = self::STATUS_SUCESS;
             $exitCode = 0;
         } catch (ErrorException $exception) {
@@ -119,12 +138,12 @@ class Process
             $exitCode = 2;
         }
 
-        $this->getIpc()->save('result', $result);
-        $this->getIpc()->save('status', $status);
-        $this->getIpc()->save('output', ob_get_clean());
+        $ipc->save('result', $result);
+        $ipc->save('status', $status);
+        $ipc->save('output', ob_get_clean());
 
         try {
-            call_user_func($this->getCallback($status), $this->getIpc(), $result);
+            call_user_func($this->getCallback($status), $ipc, $result);
         } catch (Exception $exception) {
             // Pokémon Exception Handling
         }
