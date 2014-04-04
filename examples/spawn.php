@@ -35,7 +35,7 @@ foreach($users as $key => $user) {
             echo "[{$job}] Finished at: {$ipc->load('finishedAt')}" . PHP_EOL;
             echo "[{$job}] Output:      {$ipc->load('output')}" . PHP_EOL;
         },
-        Process::STATUS_SUCESS | Process::STATUS_ERROR | Process::STATUS_FAIL
+        Process::STATUS_ERROR | Process::STATUS_FAIL | Process::STATUS_SUCESS | Process::STATUS_TIMEOUT
     );
 
     try {
