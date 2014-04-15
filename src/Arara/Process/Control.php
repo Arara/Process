@@ -11,6 +11,10 @@ class Control
     public function __construct()
     {
         $this->signal = new Control\Signal();
+        $this->signal->handle('child', new Control\Signal\ChildHandler($this));
+        $this->signal->handle('interrupt', new Control\Signal\InterruptHandler($this));
+        $this->signal->handle('quit', new Control\Signal\QuitHandler($this));
+        $this->signal->handle('terminate', new Control\Signal\TerminateHandler($this));
     }
 
     /**

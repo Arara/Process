@@ -66,6 +66,14 @@ class ControlTest extends \TestCase
         $this->assertInstanceOf(__NAMESPACE__ . '\\Control\\Signal', $control->signal());
     }
 
+    public function testShouldDefineSignalHandlersByDefault()
+    {
+        $control = new Control();
+        $control->signal();
+
+        $this->assertEquals(4, $GLOBALS['arara']['pcntl_signal']['count']);
+    }
+
     public function testShouldWaitAndReturn()
     {
         $GLOBALS['arara']['pcntl_wait']['return'] = -1;
