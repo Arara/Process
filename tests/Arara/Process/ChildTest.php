@@ -1,0 +1,723 @@
+<?php
+
+namespace Arara\Process;
+
+use Arara\Process\Action\Action;
+
+/**
+ * @covers Arara\Process\Child
+ */
+class ChildTest extends \TestCase
+{
+    private $control;
+    private $action;
+
+    protected function init()
+    {
+        $this->action = $this
+            ->getMockBuilder('Arara\Process\Action\Action')
+            ->disableOriginalConstructor();
+
+        $this->control = $this
+            ->getMockBuilder('Arara\Process\Control')
+            ->disableOriginalConstructor();
+
+        $this->controlInfo = $this
+            ->getMockBuilder('Arara\Process\Control\Info')
+            ->disableOriginalConstructor();
+
+        $this->controlSignal = $this
+            ->getMockBuilder('Arara\Process\Control\Signal')
+            ->disableOriginalConstructor();
+    }
+
+    protected function finish()
+    {
+        $this->action = null;
+        $this->control = null;
+    }
+
+    public function testShouldAcceptAnActionAndAControlOnConstructor()
+    {
+        $action = $this->action->getMock();
+        $control = $this->control->getMock();
+
+        $child = new Child($action, $control);
+
+        $this->assertAttributeSame($action, 'action', $child);
+        $this->assertAttributeSame($control, 'control', $child);
+    }
+
+    public function testShouldAcceptATimeoutOnConstructor()
+    {
+        $action = $this->action->getMock();
+        $control = $this->control->getMock();
+        $timeout = 10;
+
+        $child = new Child($action, $control, $timeout);
+
+        $this->assertAttributeSame($timeout, 'timeout', $child);
+    }
+
+    public function testShouldHaveZeroAsDefaultTimeout()
+    {
+        $action = $this->action->getMock();
+        $control = $this->control->getMock();
+        $child = new Child($action, $control);
+
+        $this->assertAttributeSame(0, 'timeout', $child);
+    }
+
+    public function testShoulReturnIsHasId()
+    {
+        $child = new Child($this->action->getMock(), $this->control->getMock());
+        $this->setObjectPropertyValue($child, 'processId', 12345);
+
+        $this->assertTrue($child->hasId());
+    }
+
+    public function testShoulReturnIsHasNoId()
+    {
+        $child = new Child($this->action->getMock(), $this->control->getMock());
+
+        $this->assertFalse($child->hasId());
+    }
+
+    public function testShoulReturnNullAsProcessId()
+    {
+        $child = new Child($this->action->getMock(), $this->control->getMock());
+        $this->setObjectPropertyValue($child, 'processId', 12345);
+
+        $this->assertEquals(12345, $child->getId());
+    }
+
+    /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage There is no defined process identifier
+     */
+    public function testShouldThrowsAnExceptionWhenThereIsNoDefinedId()
+    {
+        $child = new Child($this->action->getMock(), $this->control->getMock());
+        $child->getId();
+    }
+
+    public function testShouldReturnAsIsNotRunningWhenThereIsNoDefinedProcess()
+    {
+        $child = new Child($this->action->getMock(), $this->control->getMock());
+
+        $this->assertFalse($child->isRunning());
+    }
+
+    public function testShouldReturnAsIsNotRunningWhenThereIsNoDefinedRunningProperty()
+    {
+        $child = new Child($this->action->getMock(), $this->control->getMock());
+        $this->setObjectPropertyValue($child, 'processId', 123456);
+
+        $this->assertFalse($child->isRunning());
+    }
+
+    public function testShouldReturnTheRealRunningStatusWhenThereIsDefinedProcessAndRunningProperty()
+    {
+        $processId = 123456;
+
+        $controlSignalMock = $this->controlSignal
+            ->setMethods(array('send'))
+            ->getMock();
+        $controlSignalMock
+            ->expects($this->once())
+            ->method('send')
+            ->with(0, $processId)
+            ->will($this->returnValue(true));
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('signal')
+            ->will($this->returnValue($controlSignalMock));
+
+        $child = new Child($this->action->getMock(), $controlMock);
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $this->setObjectPropertyValue($child, 'running', true);
+
+        $this->assertTrue($child->isRunning());
+    }
+
+    public function testShouldReturnUpdateRunningStatusPropertyAfterCheckIfProcessIsRunning()
+    {
+        $processId = 123456;
+
+        $controlSignalMock = $this->controlSignal
+            ->setMethods(array('send'))
+            ->getMock();
+        $controlSignalMock
+            ->expects($this->once())
+            ->method('send')
+            ->with(0, $processId)
+            ->will($this->returnValue(false));
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('signal')
+            ->will($this->returnValue($controlSignalMock));
+
+        $child = new Child($this->action->getMock(), $controlMock);
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $this->setObjectPropertyValue($child, 'running', true);
+        $child->isRunning();
+
+        $this->assertAttributeSame(false, 'running', $child);
+    }
+
+    public function testShouldKillProcess()
+    {
+        $processId = 123456;
+
+        $controlSignalMock = $this->controlSignal
+            ->setMethods(array('send'))
+            ->getMock();
+        $controlSignalMock
+            ->expects($this->once())
+            ->method('send')
+            ->with(SIGKILL, $processId)
+            ->will($this->returnValue(true));
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('signal')
+            ->will($this->returnValue($controlSignalMock));
+
+        $child = new Child($this->action->getMock(), $controlMock);
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $child->kill();
+    }
+
+    /**
+     * @expectedException RuntimeException
+     * @expectedExceptionMessage Could not kill the process
+     */
+    public function testShouldThrowsAnExceptionWhenKillOfProcessFails()
+    {
+        $processId = 123456;
+
+        $controlSignalMock = $this->controlSignal
+            ->setMethods(array('send'))
+            ->getMock();
+        $controlSignalMock
+            ->expects($this->once())
+            ->method('send')
+            ->with(SIGKILL, $processId)
+            ->will($this->returnValue(false));
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('signal')
+            ->will($this->returnValue($controlSignalMock));
+
+        $child = new Child($this->action->getMock(), $controlMock);
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $child->kill();
+    }
+
+    public function testShouldUpdateRunningStatusAfterKillTheProcess()
+    {
+        $processId = 123456;
+
+        $controlSignalMock = $this->controlSignal
+            ->setMethods(array('send'))
+            ->getMock();
+        $controlSignalMock
+            ->expects($this->once())
+            ->method('send')
+            ->with(SIGKILL, $processId)
+            ->will($this->returnValue(true));
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('signal')
+            ->will($this->returnValue($controlSignalMock));
+
+        $child = new Child($this->action->getMock(), $controlMock);
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $child->kill();
+
+        $this->assertFalse($child->isRunning());
+    }
+
+    public function testShouldTerminateProcess()
+    {
+        $processId = 123456;
+
+        $controlSignalMock = $this->controlSignal
+            ->setMethods(array('send'))
+            ->getMock();
+        $controlSignalMock
+            ->expects($this->once())
+            ->method('send')
+            ->with(SIGTERM, $processId)
+            ->will($this->returnValue(true));
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('signal')
+            ->will($this->returnValue($controlSignalMock));
+
+        $child = new Child($this->action->getMock(), $controlMock);
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $child->terminate();
+    }
+
+    /**
+     * @expectedException RuntimeException
+     * @expectedExceptionMessage Could not terminate the process
+     */
+    public function testShouldThrowsAnExceptionWhenTerminateOfProcessFails()
+    {
+        $processId = 123456;
+
+        $controlSignalMock = $this->controlSignal
+            ->setMethods(array('send'))
+            ->getMock();
+        $controlSignalMock
+            ->expects($this->once())
+            ->method('send')
+            ->with(SIGTERM, $processId)
+            ->will($this->returnValue(false));
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('signal')
+            ->will($this->returnValue($controlSignalMock));
+
+        $child = new Child($this->action->getMock(), $controlMock);
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $child->terminate();
+    }
+
+    public function testShouldUpdateRunningStatusAfterTerminateTheProcess()
+    {
+        $processId = 123456;
+
+        $controlSignalMock = $this->controlSignal
+            ->setMethods(array('send'))
+            ->getMock();
+        $controlSignalMock
+            ->expects($this->once())
+            ->method('send')
+            ->with(SIGTERM, $processId)
+            ->will($this->returnValue(true));
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('signal')
+            ->will($this->returnValue($controlSignalMock));
+
+        $child = new Child($this->action->getMock(), $controlMock);
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $child->terminate();
+
+        $this->assertFalse($child->isRunning());
+    }
+
+    public function testShouldWaitProcess()
+    {
+        $processId = 123456;
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('waitProcessId')
+            ->will($this->returnValue($processId));
+
+        $child = new Child($this->action->getMock(), $controlMock);
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $child->wait();
+    }
+
+    /**
+     * @expectedException RuntimeException
+     * @expectedExceptionMessage An error occurred while waiting for the process
+     */
+    public function testShouldThrowsAnExceptionWhenWaitFails()
+    {
+        $processId = 123456;
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('waitProcessId')
+            ->will($this->returnValue(-1));
+
+        $child = new Child($this->action->getMock(), $controlMock);
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $child->wait();
+    }
+
+    public function testShouldNotHaveAnStatusByDefault()
+    {
+        $child = new Child($this->action->getMock(), $this->control->getMock());
+
+        $this->assertAttributeEmpty('status', $child);
+    }
+
+    /**
+     * @depends testShouldNotHaveAnStatusByDefault
+     */
+    public function testShouldUpdateProcessStatusAfterWait()
+    {
+        $processId = 123456;
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('waitProcessId')
+            ->will($this->returnValue($processId));
+
+        $child = new Child($this->action->getMock(), $controlMock);
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $child->wait();
+
+        $this->assertAttributeInstanceOf('Arara\Process\Control\Status', 'status', $child);
+    }
+
+    /**
+     * @depends testShouldUpdateProcessStatusAfterWait
+     */
+    public function testShouldReturnCurrentProcessStatus()
+    {
+        $processId = 123456;
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('waitProcessId')
+            ->will($this->returnValue($processId));
+
+        $child = new Child($this->action->getMock(), $controlMock);
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+
+        $this->assertInstanceOf('Arara\Process\Control\Status', $child->getStatus());
+    }
+
+    /**
+     * @expectedException RuntimeException
+     * @expectedExceptionMessage Process already started
+     */
+    public function testShouldNotStartActionIfThereIsADefinedProcessId()
+    {
+        $processId = 123456;
+        $child = new Child($this->action->getMock(), $this->control->getMock());
+        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $child->start();
+    }
+
+    public function testShouldMarkAsRunningWhenStart()
+    {
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->once())
+            ->method('fork')
+            ->will($this->returnValue(123456));
+        $child = new Child($this->action->getMock(), $control);
+        $child->start();
+
+        $this->assertAttributeSame(true, 'running', $child);
+    }
+
+    public function testShouldDefineProcessIdAfterStart()
+    {
+        $processId = 123456;
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->once())
+            ->method('fork')
+            ->will($this->returnValue($processId));
+        $child = new Child($this->action->getMock(), $control);
+        $child->start();
+
+        $this->assertEquals($processId, $child->getId());
+    }
+
+    public function testShouldDefinePidForChildProcessWhenStart()
+    {
+        $processId = 123456;
+
+        $controlInfo = $this->controlInfo->getMock();
+        $controlInfo
+            ->expects($this->once())
+            ->method('getId')
+            ->will($this->returnValue($processId));
+
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->any())
+            ->method('fork')
+            ->will($this->returnValue(0));
+        $control
+            ->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue($controlInfo));
+        $control
+            ->expects($this->any())
+            ->method('signal')
+            ->will($this->returnValue($this->controlSignal->getMock()));
+
+        $child = new Child($this->action->getMock(), $control);
+        $child->start();
+
+        $this->assertEquals($processId, $child->getId());
+    }
+
+    public function testShouldDefineTimeoutHandleWhenStart()
+    {
+        $signal = $this->controlSignal->getMock();
+        $signal
+            ->expects($this->once())
+            ->method('handle')
+            ->with('alarm');
+
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue($this->controlInfo->getMock()));
+        $control
+            ->expects($this->any())
+            ->method('signal')
+            ->will($this->returnValue($signal));
+
+        $child = new Child($this->action->getMock(), $control);
+        $child->start();
+    }
+
+    public function testShouldExecuteActionWhenStart()
+    {
+        $action = $this->action->getMock();
+        $action
+            ->expects($this->once())
+            ->method('execute');
+
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue($this->controlInfo->getMock()));
+        $control
+            ->expects($this->any())
+            ->method('signal')
+            ->will($this->returnValue($this->controlSignal->getMock()));
+
+        $child = new Child($action, $control);
+        $child->start();
+    }
+
+    public function testShouldTriggerStartEventWhenStart()
+    {
+        $action = $this->action->getMock();
+        $action
+            ->expects($this->at(0))
+            ->method('trigger')
+            ->with(Action::EVENT_START);
+
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue($this->controlInfo->getMock()));
+        $control
+            ->expects($this->any())
+            ->method('signal')
+            ->will($this->returnValue($this->controlSignal->getMock()));
+
+        $child = new Child($action, $control);
+        $child->start();
+    }
+
+    public function testShouldTriggerSuccessEventWhenExecuteHasNotReturnValue()
+    {
+        $action = $this->action->getMock();
+        $action
+            ->expects($this->any())
+            ->method('execute')
+            ->will($this->returnValue(null));
+        $action
+            ->expects($this->at(2))
+            ->method('trigger')
+            ->with(Action::EVENT_SUCCESS);
+
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue($this->controlInfo->getMock()));
+        $control
+            ->expects($this->any())
+            ->method('signal')
+            ->will($this->returnValue($this->controlSignal->getMock()));
+
+        $child = new Child($action, $control);
+        $child->start();
+    }
+
+    public function testShouldTriggerErrorEventWhenExecuteHasPhpErrors()
+    {
+        $action = $this->action->getMock();
+        $action
+            ->expects($this->any())
+            ->method('execute')
+            ->will($this->returnCallback(function () {
+                trim(array());
+            }));
+        $action
+            ->expects($this->at(2))
+            ->method('trigger')
+            ->with(Action::EVENT_ERROR);
+
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue($this->controlInfo->getMock()));
+        $control
+            ->expects($this->any())
+            ->method('signal')
+            ->will($this->returnValue($this->controlSignal->getMock()));
+
+        $child = new Child($action, $control);
+        $child->start();
+    }
+
+    public function testShouldTriggerFailureEventWhenExecuteThrowsAnException()
+    {
+        $action = $this->action->getMock();
+        $action
+            ->expects($this->any())
+            ->method('execute')
+            ->will($this->throwException(new \Exception('Whatever')));
+        $action
+            ->expects($this->at(2))
+            ->method('trigger')
+            ->with(Action::EVENT_FAILURE);
+
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue($this->controlInfo->getMock()));
+        $control
+            ->expects($this->any())
+            ->method('signal')
+            ->will($this->returnValue($this->controlSignal->getMock()));
+
+        $child = new Child($action, $control);
+        $child->start();
+    }
+
+    public function testShouldTriggerFinishEventAfterRunAction()
+    {
+        $action = $this->action->getMock();
+        $action
+            ->expects($this->at(3))
+            ->method('trigger')
+            ->with(Action::EVENT_FINISH);
+
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue($this->controlInfo->getMock()));
+        $control
+            ->expects($this->any())
+            ->method('signal')
+            ->will($this->returnValue($this->controlSignal->getMock()));
+
+        $child = new Child($action, $control);
+        $child->start();
+    }
+
+    public function testShouldExitAsZeroWhenExecuteHasNotReturnValue()
+    {
+        $action = $this->action->getMock();
+        $action
+            ->expects($this->any())
+            ->method('execute')
+            ->will($this->returnValue(null));
+
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue($this->controlInfo->getMock()));
+        $control
+            ->expects($this->any())
+            ->method('signal')
+            ->will($this->returnValue($this->controlSignal->getMock()));
+        $control
+            ->expects($this->once())
+            ->method('quit')
+            ->with(0);
+
+        $child = new Child($action, $control);
+        $child->start();
+    }
+
+    public function testShouldExitAsTwoWhenExecuteHasPhpErrors()
+    {
+        $action = $this->action->getMock();
+        $action
+            ->expects($this->any())
+            ->method('execute')
+            ->will($this->returnCallback(function () {
+                trim(array());
+            }));
+
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue($this->controlInfo->getMock()));
+        $control
+            ->expects($this->any())
+            ->method('signal')
+            ->will($this->returnValue($this->controlSignal->getMock()));
+        $control
+            ->expects($this->once())
+            ->method('quit')
+            ->with(2);
+
+        $child = new Child($action, $control);
+        $child->start();
+    }
+
+    public function testShouldExitAsOneWhenExecuteThrowsAnException()
+    {
+        $action = $this->action->getMock();
+        $action
+            ->expects($this->any())
+            ->method('execute')
+            ->will($this->throwException(new \Exception('Whatever')));
+
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue($this->controlInfo->getMock()));
+        $control
+            ->expects($this->any())
+            ->method('signal')
+            ->will($this->returnValue($this->controlSignal->getMock()));
+        $control
+            ->expects($this->once())
+            ->method('quit')
+            ->with(1);
+
+        $child = new Child($action, $control);
+        $child->start();
+    }
+}
