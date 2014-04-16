@@ -59,6 +59,13 @@ class ControlTest extends \TestCase
         $control->fork();
     }
 
+    public function testShouldReturnAValidInfoController()
+    {
+        $control = new Control();
+
+        $this->assertInstanceOf(__NAMESPACE__ . '\\Control\\Info', $control->info());
+    }
+
     public function testShouldReturnAValidSignalController()
     {
         $control = new Control();

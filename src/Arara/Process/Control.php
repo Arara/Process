@@ -6,10 +6,12 @@ use RuntimeException;
 
 class Control
 {
+    protected $info;
     protected $signal;
 
     public function __construct()
     {
+        $this->info = new Control\Info();
         $this->signal = new Control\Signal();
         $this->signal->handle('child', new Control\Signal\ChildHandler($this));
         $this->signal->handle('interrupt', new Control\Signal\InterruptHandler($this));
@@ -58,6 +60,16 @@ class Control
         }
 
         return $processId;
+    }
+
+    /**
+     * Returns a info controller.
+     *
+     * @return Control\Info
+     */
+    public function info()
+    {
+        return $this->info;
     }
 
     /**
