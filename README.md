@@ -8,3 +8,12 @@
 This library was created aiming to create a better API to work with process.
 It uses [PCNTL](http://php.net/pcntl) and [POSIX](http://php.net/posix) native
 PHP functions.
+
+## Installation
+
+Package is available on [Packagist](https://packagist.org/packages/arara/process), you can install it
+using [Composer](http://getcomposer.org).
+
+```bash
+composer install arara/process
+```
