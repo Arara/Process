@@ -6,6 +6,13 @@ use RuntimeException;
 
 class Control
 {
+    protected $signal;
+
+    public function __construct()
+    {
+        $this->signal = new Control\Signal();
+    }
+
     /**
      * @link   http://php.net/pcntl_exec
      * @param  string $path
@@ -47,6 +54,16 @@ class Control
         }
 
         return $processId;
+    }
+
+    /**
+     * Returns a signal controller.
+     *
+     * @return Control\Signal
+     */
+    public function signal()
+    {
+        return $this->signal;
     }
 
     /**

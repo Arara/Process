@@ -59,6 +59,13 @@ class ControlTest extends \TestCase
         $control->fork();
     }
 
+    public function testShouldReturnAValidSignalController()
+    {
+        $control = new Control();
+
+        $this->assertInstanceOf(__NAMESPACE__ . '\\Control\\Signal', $control->signal());
+    }
+
     public function testShouldWaitAndReturn()
     {
         $GLOBALS['arara']['pcntl_wait']['return'] = -1;
