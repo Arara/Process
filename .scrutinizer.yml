@@ -1,0 +1,17 @@
+before_commands:
+    - composer install --prefer-source
+
+tools:
+    php_analyzer: true
+    php_code_coverage: true
+    php_code_sniffer:
+        filter:
+            paths: ["src"]
+        config:
+            standard: "PSR2"
+    php_mess_detector:
+        filter:
+            paths: ["src"]
+    php_mess_detector:
+        filter:
+            paths: ["src"]
