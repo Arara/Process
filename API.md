@@ -83,3 +83,9 @@
 ### Arara/Process/Control/Signal/InterruptHandler extends Arara/Process/Control/Signal/Handlers/AbstractHandler
 ### Arara/Process/Control/Signal/QuitHandler extends Arara/Process/Control/Signal/Handlers/AbstractHandler
 ### Arara/Process/Control/Signal/TerminateHandler extends Arara/Process/Control/Signal/Handlers/AbstractHandler
+
+### Arara/Process/Pidfile
+- __construct(Arara/Process/Control $control, string $applicationName = 'arara', $lockDirectory = '/var/run')
+- isActive() : bool
+- initialize() : void
+- finalize() : void
