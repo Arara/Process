@@ -16,7 +16,7 @@ interface Action
     /**
      * Must be triggered when action starts.
      *
-     * Be careful: This action will be always run before the execute() method.
+     * This event will always be triggered before the execute() method be executed.
      */
     const EVENT_START = 2;
 
@@ -24,9 +24,10 @@ interface Action
      * Must be triggered when action is finished with success.
      *
      * We consider an error when:
-     * - Action returns EVENT_SUCCESS value;
-     * - Action does not return any value;
-     * - Action does not throws an exception.
+     * - Action does not get a PHP error
+     * - Action does not throws an exception
+     * - Action does not return any value
+     * - Action returns EVENT_SUCCESS value
      */
     const EVENT_SUCCESS = 4;
 
@@ -34,16 +35,16 @@ interface Action
      * Must be triggered when action is finished with an error.
      *
      * We consider an error when:
-     * - Action throws an exception;
-     * - Action does not return EVENT_SUCCESS value;
+     * - Action get a PHP error
      * - Action returns EVENT_ERROR value.
      */
     const EVENT_ERROR = 8;
 
     /**
-     * Must be triggered when action is finished with an error.
+     * Must be triggered when action is finished with a failure.
      *
      * We consider a failure when:
+     * - Action throws an exception;
      * - Action returns EVENT_FAILURE value.
      */
     const EVENT_FAILURE = 16;
@@ -56,7 +57,7 @@ interface Action
     /**
      * Must be triggered when action finish.
      *
-     * Be careful: This action will be always run bofore the child finish, whatever the current event is.
+     * This event will always be triggered after the execute() method be executed.
      */
     const EVENT_FINISH = 64;
 

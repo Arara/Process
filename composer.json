@@ -1,7 +1,7 @@
 {
     "name": "arara/process",
     "type": "library",
-    "description": "Simple package for fork process",
+    "description": "Provides a better API to work process on Unix-like systems using PHP",
     "keywords": ["fork", "multitasking", "pcntl", "posix", "process", "spawn"],
     "homepage": "https://github.com/Arara/Process",
     "license" : "MIT",
