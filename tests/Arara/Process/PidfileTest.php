@@ -247,32 +247,44 @@ class PidfileTest extends \TestCase
         $this->assertTrue($pidfile->isActive());
     }
 
-    public function testShouldCheckOnlyTheFirstLineOfThePidWhenPidfileIsNotEmpty()
+    public function testShouldReturnPidWhenHasPidOnPidfile()
+    {
+        $processId = 123456;
+        $GLOBALS['arara']['fgets']['return'] = $processId;
+
+        $control = $this->getMock('Arara\Process\Control');
+
+        $pidfile = new Pidfile($control);
+
+        $this->assertEquals($processId, $pidfile->getPid());
+    }
+
+    public function testShouldReturnNullWhenThereIsNoPidOnPidfile()
+    {
+        $GLOBALS['arara']['fgets']['return'] = '';
+
+        $control = $this->getMock('Arara\Process\Control');
+
+        $pidfile = new Pidfile($control);
+
+        $this->assertNull($pidfile->getPid());
+    }
+
+    public function testShouldReturnOnlyTheFirstLineOfThePidWhenPidfileIsNotEmpty()
     {
         $processId = 123456;
         $GLOBALS['arara']['fgets']['return'] = $processId . PHP_EOL . 987981723 . 12387687;
 
-        $signal = $this->getMock('Arara\Process\Control\Signal');
-        $signal
-            ->expects($this->once())
-            ->method('send')
-            ->with(0, $processId)
-            ->will($this->returnValue(true));
-
         $control = $this->getMock('Arara\Process\Control');
-        $control
-            ->expects($this->any())
-            ->method('signal')
-            ->will($this->returnValue($signal));
 
         $pidfile = new Pidfile($control);
 
-        $this->assertTrue($pidfile->isActive());
+        $this->assertEquals($processId, $pidfile->getPid());
     }
 
     /**
      * @expectedException RuntimeException
-     * @expectedExceptionMessage Pidfile is already active
+     * @expectedExceptionMessage Process is already active
      */
     public function testShouldThrowsAnExceptionIfIsIsAlreadyActiveWhenInitializing()
     {
