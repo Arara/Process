@@ -60,7 +60,7 @@ class Child implements Process
     /**
      * Return the process status.
      *
-     * @return Arara/Control/Status
+     * @return Arara\Control\Status
      */
     public function getStatus()
     {

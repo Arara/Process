@@ -158,6 +158,6 @@ class Info
      */
     public function getSessionId()
     {
-        return posix_getsid();
+        return posix_getsid($this->getId());
     }
 }
