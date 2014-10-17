@@ -15,6 +15,11 @@ namespace Arara\Process;
  * @property resource $stdout
  * @property resource $stderr
  * @property Pidfile $pidfile
+ * @property string $command
+ * @property string $outputTail
+ * @property string $outputString
+ * @property array $outputLines
+ * @property int $returnValue
  */
 class Context
 {

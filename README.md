@@ -82,7 +82,7 @@ to the constructor of this class.
 ```php
 use Arara\Process\Action\Callback;
 
-$action = new Callback(function () {
+$callback = new Callback(function () {
     echo "This will be executed in the background!" . PHP_EOL;
 });
 ```
@@ -90,7 +90,7 @@ $action = new Callback(function () {
 The Callback action provides a way to bind callbacks to be triggered by specific events:
 
 ```php
-$action->bind(Callback::EVENT_SUCCESS, function () {
+$callback->bind(Callback::EVENT_SUCCESS, function () {
     echo "This will be executed if the action callback was successful!" . PHP_EOL;
 });
 ```
@@ -98,10 +98,36 @@ $action->bind(Callback::EVENT_SUCCESS, function () {
 Also, one can bind a callback to multiple events:
 
 ```php
-$action->bind(Callback::EVENT_ERROR | Callback::EVENT_FAILURE, function () {
+$callback->bind(Callback::EVENT_ERROR | Callback::EVENT_FAILURE, function () {
     echo "It is going to be executed if the action fails or get an error" . PHP_EOL;
 });
 ```
+
+### Command action
+
+You may want to run just a Linux command, for that reason there is Command action.
+```php
+$command = new Command('whoami');
+```
+
+Using Command action you can define arguments as second param:
+```php
+$command = new Command('cp', array('/path/to/source', '/path/to/destination'));
+```
+
+If you prefer arguments can be defined by a key => value array:
+```php
+$command = new Command(
+    'find',
+    array(
+        '/path/to/dir',
+        '-name' => '*',
+        '-type' => 'f',
+    )
+);
+```
+
+Command action is based on Callback action so you can also bind triggers for events.
 
 ### Daemon action
 
