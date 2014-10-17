@@ -7,11 +7,11 @@
 [![Latest Stable Version](https://poser.pugx.org/arara/process/v/stable.png)](https://packagist.org/packages/arara/process)
 [![Latest Unstable Version](https://poser.pugx.org/arara/process/v/unstable.png)](https://packagist.org/packages/arara/process)
 
-This library provides a better API to work process on Unix-like systems using PHP.
+This library provides a better API to work with processes on Unix-like systems using PHP.
 
 ## Installation
 
-Package is available on [Packagist](https://packagist.org/packages/arara/process), you can install it using
+The package is available on [Packagist](https://packagist.org/packages/arara/process). You can install it using
 [Composer](http://getcomposer.org).
 
 ```bash
@@ -26,18 +26,18 @@ composer require arara/process
 
 ## Usage
 
-Besides this document there are a bunch of usage examples in "examples/" directory you can use as reference.
+Along with this document, there are many usage examples in the "examples/" directory which may be used for reference.
 
-All examples of this document are assuming you have the following statement at the beginning of the file:
+All examples within this document assume you have the following statement at the beginning of the file:
 
 ```php
 declare(ticks=1);
 ```
 
-Without this statement there is no guarantee PHP can handle signals, so this is very important for PCNTL works properly.
-It is required since version 4.3.0 of PHP, so it's not a request of the library but of the language.
+Without this statement, there is no guarantee PHP will handle signals; this is very important for PCNTL to work properly.
+It has been required since version 4.3.0 of PHP, so this is not a request of the library but of the PHP language itself.
 
-If you want to know more about _ticks_ we recommend you read http://php.net/declare#control-structures.declare.ticks.
+If you want to know more about _ticks_, we recommend you read http://php.net/declare#control-structures.declare.ticks.
 
 ### Action interface
 
@@ -47,51 +47,51 @@ All classes that implements this interface must implement two methods:
 - `execute(..)`: may contain the action performed in the background
 - `trigger(...)`: may contain specific actions to events
 
-Using this interface you can create your own actions and run them in background.
+Using this interface you can create your own actions and run them in the background.
 
 ### Events
 
-The `Arara\Process\Action\Action::trigger(..)` method, as was already written, may contain specific actions to events,
-those events can be:
+The `Arara\Process\Action\Action::trigger(..)` method, as it is written, associates specific actions with events.
+Those events can be:
 
-- `Action::EVENT_START`: triggered before the execute() method be executed
-- `Action::EVENT_SUCCESS`: triggered when action is finished with success
-    - When action does not get a PHP error
-    - When action does not throws an exception
-    - When action does not return any value
-    - When action returns `Action::EVENT_SUCCESS` value
-- `Action::EVENT_ERROR`: triggered when action is finished with an error
-    - When action get a PHP error
-    - When action returns `Action:EVENT_ERROR` value
-- `Action::EVENT_FAILURE`: triggered when action is finished with a failure
-    - When action throws an exception
-    - When action returns `Action::EVENT_FAILURE` value
-- `Action::EVENT_TIMEOUT`: triggered when action get a timeout
-- `Action::EVENT_FINISH `: triggered after the execute() method be executed.
+- `Action::EVENT_START`: triggered before the execute() method is executed
+- `Action::EVENT_SUCCESS`: triggered when the action is finished with success, that is:
+    - When the action does not encounter a PHP error
+    - When the action does not throw an exception
+    - When the action does not return any value
+    - When the action returns an `Action::EVENT_SUCCESS` value
+- `Action::EVENT_ERROR`: triggered when the action is encounters an error, that is:
+    - When the action encounters a PHP error
+    - When the action returns an `Action:EVENT_ERROR` value
+- `Action::EVENT_FAILURE`: triggered after the action has finished and failed, that is:
+    - When the action throws an exception
+    - When the action returns an `Action::EVENT_FAILURE` value
+- `Action::EVENT_TIMEOUT`: triggered when the action experiences a timeout
+- `Action::EVENT_FINISH `: triggered after the execute() method has executed.
 
 ### Callback action
 
-In order to make easy to execute forks with no need to create an specific class to execute something in background there
-is a generic implementation that allows to run a callback in background, the only thing you have to do is to define this
-callback on the constructor of this class.
+In order to make it easy to execute forks with no need to create a specific class to execute something in the background, there
+is a generic implementation that allows a callback to be run in the background; the only thing one must do is pass the callback
+to the constructor of this class.
 
 ```php
 use Arara\Process\Action\Callback;
 
 $action = new Callback(function () {
-    echo "It is going to be executed in background!" . PHP_EOL;
+    echo "This will be executed in the background!" . PHP_EOL;
 });
 ```
 
-The Callback action provides a way to bind callbacks to be triggered on specific events:
+The Callback action provides a way to bind callbacks to be triggered by specific events:
 
 ```php
 $action->bind(Callback::EVENT_SUCCESS, function () {
-    echo "It is going to be executed if the action callback was successful!" . PHP_EOL;
+    echo "This will be executed if the action callback was successful!" . PHP_EOL;
 });
 ```
 
-Also, you can combine events when you're binding:
+Also, one can bind a callback to multiple events:
 
 ```php
 $action->bind(Callback::EVENT_ERROR | Callback::EVENT_FAILURE, function () {
@@ -99,36 +99,36 @@ $action->bind(Callback::EVENT_ERROR | Callback::EVENT_FAILURE, function () {
 });
 ```
 
-### Starting a process in background
+### Starting a process in the background
 
-The class `Arara\Process\Child` allows you to execute any action in background.
+The class `Arara\Process\Child` allows you to execute any action in the background.
 
 ```php
 $child = new Child(
     new Callback(function (Control $control) {
-        echo 'PID ' . $control->info()->getId() . ' is running in background' . PHP_EOL;
+        echo 'PID ' . $control->info()->getId() . ' is running in the background' . PHP_EOL;
     }),
     new Control()
 );
-$child->start(); // Runs the callback in background
+$child->start(); // Runs the callback in the background
 ```
 
-This example above runs the Callback action in background but you can use any class that implements
-`Arara\Process\Action\Action` interface.
+The above example runs the Callback action in the background, but one can use any class which implements
+the `Arara\Process\Action\Action` interface.
 
-### Check if process is running
+### Check if the process is running
 
-Check if a process is running is a very common routine, to do it using this library you may call:
+Checking to see if a process is running is a very common routine; to perform this using this library you may call:
 
 ```php
-$child->isRunning(); // Returns TRUE if is running or FALSE if is not
+$child->isRunning(); // Returns TRUE if it is running or FALSE if it is not
 ```
 
-This method not only check the state of the object but also check if the process is already running on the system.
+This method not only checks the state of the object, but also checks to see if the process is already running on the system.
 
 ### Terminating the process
 
-If already started, tells the process to terminate but do not forces it.
+If the process has already started, this tells the process to terminate, but does not force it.
 
 ```php
 $child->terminate(); // Sends a SIGTERM to the process
@@ -136,32 +136,32 @@ $child->terminate(); // Sends a SIGTERM to the process
 
 ### Killing the process
 
-If already started, forces the process to terminate immediately.
+If it has already started, this forces the process to terminate immediately.
 
 ```php
 $child->kill(); // Sends a SIGKILL to the process
 ```
 
-### Waiting the process
+### Waiting on the process
 
-If you want to wait the process to finish instead of just start the process in background you can call:
+If you want to wait on the process to finish, instead of just starting the process in the background, you can call:
 
 ```php
 $child->wait();
 ```
 
-The next line of code will just be executed after the process finish.
+The next line of code will be executed after the process finishes.
 
-### Getting process status
+### Getting a process' status
 
-It is possible to get the status of a process after wait it finish.
-`Arara\Process\Child` class has a method called `getStatus()` that allows you to check the status of a process.
+It is possible to get the status of a process after waiting for it finish.
+The `Arara\Process\Child` class has a method `getStatus()` which allows you to check the status of a process.
 
 ```php
-$child->getStatus(); // Returns a Arara\Process\Control\Status instance
+$child->getStatus(); // Returns an Arara\Process\Control\Status instance
 ```
 
-Internally it calls the `wait()` method in order wait the process finish and then get its status.
+Internally, this calls the `wait()` method, in order to wait for the process to finish - and then get its status.
 
 #### Get the exit code of the process
 
@@ -181,7 +181,7 @@ $child->getStatus()->getStopSignal();
 $child->getStatus()->getTerminateSignal();
 ```
 
-#### Checks if status code represents a normal exit
+#### Checks if the status code represents a normal exit
 
 ```php
 $child->getStatus()->isExited();
@@ -199,7 +199,7 @@ $child->getStatus()->isSignaled();
 $child->getStatus()->isStopped();
 ```
 
-#### Checks if the process was finished successful
+#### Checks if the process was finished successfully
 
 ```php
 $child->getStatus()->isSuccessful();
@@ -211,7 +211,7 @@ Since you are working with forks you are able work with spawn as well. The `Arar
 way to work with it.
 
 This class handles the queue of process dynamically, the only thing you have to do is provide the limit of children you
-want on the constructor and then attach the children.
+want in the constructor and then attach the children.
 
 ```php
 $maxConcurrentChildren = 2;
@@ -225,10 +225,10 @@ $pool->attach(new Child(/* ... */));
 // ...
 ```
 
-Does not matter the number of children it has it will only run 2 process simultaneously, when one of those process is
-finished it is removed from the queue and a new slot is opened.
+The number of children it has does not matter; it will only run 2 process simultaneously; when one of those process is
+finished, it is removed from the queue and a new slot is opened.
 
-The `Arara\Process\Pool` class contains most methods of `Arara\Process\Child` class:
+The `Arara\Process\Pool` class contains most of the methods of `Arara\Process\Child` class:
 
 - `isRunning()`
 - `kill()`
@@ -236,20 +236,20 @@ The `Arara\Process\Pool` class contains most methods of `Arara\Process\Child` cl
 - `terminate()`
 - `wait()`
 
-It's pretty much the same behaviour for all methods.
+This behaves similarly for all methods.
 
 ### Control class
 
 You can also handle processes without using Pool, Child or the Action classes.
 
-We provide a simple API to work with the `pcntl_*` and `posix_*` functions, you can get more information reading the
-code of `Arara\Process\Control` and its dependencies but here is an example of how to use it.
+We provide a simple API to work with the `pcntl_*` and `posix_*` functions. You can learn more by reading the
+code of `Arara\Process\Control` and its dependencies, but here is an example:
 
 ```php
 $control = new Control();
 $pid = $control->fork();// Throws RuntimeException when pcntl_fork() returns -1
 if ($pid > 0) {
-    echo 'Waiting child...' . PHP_EOL;
+    echo 'Waiting on child...' . PHP_EOL;
     $control->waitProcessId($pid);
     echo 'Child finished' . PHP_EOL;
     $control->quit();
@@ -263,8 +263,8 @@ $control->signal()->send('kill'); // Will send SIGKILL to the current process (t
 
 ### Pidfile class
 
-If you are working with background tasks you may want to create a lock to avoid people run your script twice, for that
-reason there is the class `Arara\Process\Pidfile`.
+If you are working with background tasks you may want to create a lock to avoid people running your script twice. For this
+purpose there is the class `Arara\Process\Pidfile`.
 
 ```php
 $control = new Control();
@@ -277,4 +277,4 @@ $pidfile->initialize();
 $pidfile->finalize();
 ```
 
-The second time someone runs it an exception is throwed. We recommend you put your code into a `try..catch` statement.
+The second time someone runs it an exception is thrown. We recommend you put this code into a `try..catch` statement.
