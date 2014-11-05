@@ -12,6 +12,7 @@ function time()
 }
 
 use Arara\Process\Action\Action;
+use Arara\Process\Context;
 
 /**
  * @covers Arara\Process\Handler\SignalAlarm
@@ -33,6 +34,8 @@ class SignalAlarmTest extends \TestCase
 
     public function testShouldHandleAlarm()
     {
+        $context = new Context();
+
         $control = $this
             ->getMockBuilder('Arara\Process\Control')
             ->setMethods(array('quit'))
@@ -51,9 +54,36 @@ class SignalAlarmTest extends \TestCase
         $action
             ->expects($this->once())
             ->method('trigger')
-            ->with(Action::EVENT_TIMEOUT, $control, array('finishTime' => self::TIMESTAMP));
+            ->with(Action::EVENT_TIMEOUT, $control, $context);
 
-        $handler = new SignalAlarm($control, $action, array());
+        $handler = new SignalAlarm($control, $action, $context);
         $handler(SIGALRM);
+    }
+
+    public function testShouldUpdateContext()
+    {
+        $context = new Context();
+
+        $control = $this
+            ->getMockBuilder('Arara\Process\Control')
+            ->setMethods(array('quit'))
+            ->getMock();
+
+        $action = $this
+            ->getMockBuilder('Arara\Process\Action\Action')
+            ->setMethods(array('execute', 'trigger'))
+            ->getMock();
+
+        $handler = new SignalAlarm($control, $action, $context);
+        $handler(SIGALRM);
+
+        $actualData = $context->toArray();
+        $expectedData = array(
+            'event' => Action::EVENT_TIMEOUT,
+            'exitCode' => 3,
+            'finishTime' => self::TIMESTAMP,
+        );
+
+        $this->assertEquals($expectedData, $actualData);
     }
 }

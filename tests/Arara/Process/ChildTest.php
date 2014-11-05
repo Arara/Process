@@ -10,6 +10,7 @@ use Arara\Process\Action\Action;
 class ChildTest extends \TestCase
 {
     private $control;
+    private $context;
     private $action;
 
     protected function init()
@@ -20,6 +21,10 @@ class ChildTest extends \TestCase
 
         $this->control = $this
             ->getMockBuilder('Arara\Process\Control')
+            ->disableOriginalConstructor();
+
+        $this->context = $this
+            ->getMockBuilder('Arara\Process\Context')
             ->disableOriginalConstructor();
 
         $this->controlInfo = $this
@@ -35,6 +40,7 @@ class ChildTest extends \TestCase
     {
         $this->action = null;
         $this->control = null;
+        $this->context = null;
     }
 
     public function testShouldAcceptAnActionAndAControlOnConstructor()
@@ -55,8 +61,9 @@ class ChildTest extends \TestCase
         $timeout = 10;
 
         $child = new Child($action, $control, $timeout);
+        $context = $this->getObjectPropertyValue($child, 'context');
 
-        $this->assertAttributeSame($timeout, 'timeout', $child);
+        $this->assertSame($timeout, $context->timeout);
     }
 
     public function testShouldHaveZeroAsDefaultTimeout()
@@ -64,14 +71,16 @@ class ChildTest extends \TestCase
         $action = $this->action->getMock();
         $control = $this->control->getMock();
         $child = new Child($action, $control);
+        $context = $this->getObjectPropertyValue($child, 'context');
 
-        $this->assertAttributeSame(0, 'timeout', $child);
+        $this->assertSame(0, $context->timeout);
     }
 
     public function testShoulReturnIsHasId()
     {
         $child = new Child($this->action->getMock(), $this->control->getMock());
-        $this->setObjectPropertyValue($child, 'processId', 12345);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = 12345;
 
         $this->assertTrue($child->hasId());
     }
@@ -86,7 +95,8 @@ class ChildTest extends \TestCase
     public function testShoulReturnNullAsProcessId()
     {
         $child = new Child($this->action->getMock(), $this->control->getMock());
-        $this->setObjectPropertyValue($child, 'processId', 12345);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = 12345;
 
         $this->assertEquals(12345, $child->getId());
     }
@@ -111,7 +121,8 @@ class ChildTest extends \TestCase
     public function testShouldReturnAsIsNotRunningWhenThereIsNoDefinedRunningProperty()
     {
         $child = new Child($this->action->getMock(), $this->control->getMock());
-        $this->setObjectPropertyValue($child, 'processId', 123456);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = 12345;
 
         $this->assertFalse($child->isRunning());
     }
@@ -136,8 +147,9 @@ class ChildTest extends \TestCase
             ->will($this->returnValue($controlSignalMock));
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $this->setObjectPropertyValue($child, 'processId', $processId);
-        $this->setObjectPropertyValue($child, 'running', true);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
+        $context->isRunning = true;
 
         $this->assertTrue($child->isRunning());
     }
@@ -162,11 +174,12 @@ class ChildTest extends \TestCase
             ->will($this->returnValue($controlSignalMock));
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $this->setObjectPropertyValue($child, 'processId', $processId);
-        $this->setObjectPropertyValue($child, 'running', true);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
+        $context->isRunning = true;
         $child->isRunning();
 
-        $this->assertAttributeSame(false, 'running', $child);
+        $this->assertFalse($context->isRunning);
     }
 
     public function testShouldKillProcess()
@@ -189,7 +202,8 @@ class ChildTest extends \TestCase
             ->will($this->returnValue($controlSignalMock));
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
         $child->kill();
     }
 
@@ -217,7 +231,8 @@ class ChildTest extends \TestCase
             ->will($this->returnValue($controlSignalMock));
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
         $child->kill();
     }
 
@@ -241,7 +256,8 @@ class ChildTest extends \TestCase
             ->will($this->returnValue($controlSignalMock));
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
         $child->kill();
 
         $this->assertFalse($child->isRunning());
@@ -267,7 +283,8 @@ class ChildTest extends \TestCase
             ->will($this->returnValue($controlSignalMock));
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
         $child->terminate();
     }
 
@@ -295,7 +312,8 @@ class ChildTest extends \TestCase
             ->will($this->returnValue($controlSignalMock));
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
         $child->terminate();
     }
 
@@ -319,7 +337,8 @@ class ChildTest extends \TestCase
             ->will($this->returnValue($controlSignalMock));
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
         $child->terminate();
 
         $this->assertFalse($child->isRunning());
@@ -336,7 +355,8 @@ class ChildTest extends \TestCase
             ->will($this->returnValue($processId));
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
         $child->wait();
     }
 
@@ -355,7 +375,8 @@ class ChildTest extends \TestCase
             ->will($this->returnValue(-1));
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
         $child->wait();
     }
 
@@ -380,7 +401,8 @@ class ChildTest extends \TestCase
             ->will($this->returnValue($processId));
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
         $child->wait();
 
         $this->assertAttributeInstanceOf('Arara\Process\Control\Status', 'status', $child);
@@ -400,7 +422,8 @@ class ChildTest extends \TestCase
             ->will($this->returnValue($processId));
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
 
         $this->assertInstanceOf('Arara\Process\Control\Status', $child->getStatus());
     }
@@ -413,7 +436,8 @@ class ChildTest extends \TestCase
     {
         $processId = 123456;
         $child = new Child($this->action->getMock(), $this->control->getMock());
-        $this->setObjectPropertyValue($child, 'processId', $processId);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
         $child->start();
     }
 
@@ -427,7 +451,9 @@ class ChildTest extends \TestCase
         $child = new Child($this->action->getMock(), $control);
         $child->start();
 
-        $this->assertAttributeSame(true, 'running', $child);
+        $context = $this->getObjectPropertyValue($child, 'context');
+
+        $this->assertTrue($context->isRunning);
     }
 
     public function testShouldDefineProcessIdAfterStart()

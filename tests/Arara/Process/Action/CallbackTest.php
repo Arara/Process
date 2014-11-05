@@ -2,6 +2,7 @@
 
 namespace Arara\Process\Action;
 
+use Arara\Process\Context;
 use Arara\Process\Control;
 
 /**
@@ -30,12 +31,13 @@ class CallbackTest extends \TestCase
     public function testShouldRunDefinedCallback()
     {
         $control = new Control();
+        $context = new Context();
         $counter = 0;
         $action = function () use (&$counter) {
             $counter++;
         };
         $callback = new Callback($action);
-        $callback->execute($control);
+        $callback->execute($control, $context);
 
         $this->assertEquals(1, $counter);
     }
@@ -65,6 +67,7 @@ class CallbackTest extends \TestCase
     public function testShouldRunDefinedEventHandler()
     {
         $control = new Control();
+        $context = new Context();
         $event = Callback::EVENT_SUCCESS;
         $counter = 0;
         $handler = function () use (&$counter) {
@@ -73,7 +76,7 @@ class CallbackTest extends \TestCase
 
         $callback = new Callback(function() {});
         $callback->bind($event, $handler);
-        $callback->trigger($event, $control, array());
+        $callback->trigger($event, $control, $context);
 
         $this->assertEquals(1, $counter);
     }
@@ -81,6 +84,7 @@ class CallbackTest extends \TestCase
     public function testShouldRunDefinedEventHandlerEvenWhenMultipleEventsAreDescribed()
     {
         $control = new Control();
+        $context = new Context();
         $counter = 0;
         $handler = function () use (&$counter) {
             $counter++;
@@ -88,8 +92,8 @@ class CallbackTest extends \TestCase
 
         $callback = new Callback(function() {});
         $callback->bind(Callback::EVENT_ERROR | Callback::EVENT_FAILURE, $handler);
-        $callback->trigger(Callback::EVENT_ERROR, $control, array());
-        $callback->trigger(Callback::EVENT_FAILURE, $control, array());
+        $callback->trigger(Callback::EVENT_ERROR, $control, $context);
+        $callback->trigger(Callback::EVENT_FAILURE, $control, $context);
 
         $this->assertEquals(2, $counter);
     }
@@ -97,6 +101,7 @@ class CallbackTest extends \TestCase
     public function testShouldNotRunEventHandlerWhenEventIsNotTriggered()
     {
         $control = new Control();
+        $context = new Context();
         $counter = 0;
         $handler = function () use (&$counter) {
             $counter++;
@@ -104,7 +109,7 @@ class CallbackTest extends \TestCase
 
         $callback = new Callback(function() {});
         $callback->bind(Callback::EVENT_ERROR, $handler);
-        $callback->trigger(Callback::EVENT_FAILURE, $control, array());
+        $callback->trigger(Callback::EVENT_FAILURE, $control, $context);
 
         $this->assertEquals(0, $counter);
     }

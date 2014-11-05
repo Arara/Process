@@ -1,6 +1,7 @@
 <?php
 
 use Arara\Process\Action\Action;
+use Arara\Process\Context;
 use Arara\Process\Control;
 
 class ActionClass implements Action
@@ -18,7 +19,7 @@ class ActionClass implements Action
         sleep(1);
     }
 
-    public function trigger($event, Control $control, array $context)
+    public function trigger($event, Control $control, Context $context)
     {
         $eventName = null;
         switch ($event) {

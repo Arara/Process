@@ -2,6 +2,7 @@
 
 namespace Arara\Process\Action;
 
+use Arara\Process\Context;
 use Arara\Process\Control;
 use InvalidArgumentException;
 
@@ -28,15 +29,15 @@ class Callback implements Action
     /**
      * {@inheritDoc}
      */
-    public function execute(Control $control)
+    public function execute(Control $control, Context $context)
     {
-        return call_user_func($this->callback, $control);
+        return call_user_func($this->callback, $control, $context);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function trigger($event, Control $control, array $context)
+    public function trigger($event, Control $control, Context $context)
     {
         foreach ($this->handlers as $key => $handler) {
             if ($event !== ($key & $event)) {
