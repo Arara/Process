@@ -1,8 +1,8 @@
 <?php
 
-namespace Arara\Process\Control\Signal;
+namespace Arara\Process\Handler;
 
-class ChildHandler extends AbstractHandler
+class SignalChild extends SignalAbstract
 {
     public function __invoke($signal)
     {

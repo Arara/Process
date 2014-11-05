@@ -1,11 +1,11 @@
 <?php
 
-namespace Arara\Process\Control\Signal;
+namespace Arara\Process\Handler;
 
 /**
- * @covers Arara\Process\Control\Signal\ChildHandler
+ * @covers Arara\Process\Handler\SignalChild
  */
-class ChildHandlerTest extends \TestCase
+class SignalChildTest extends \TestCase
 {
     public function testShouldWaitChildrenFinish()
     {
@@ -20,7 +20,7 @@ class ChildHandlerTest extends \TestCase
             ->with(0, (WNOHANG | WUNTRACED))
             ->will($this->returnValue(0));
 
-        $handler = new ChildHandler($control);
+        $handler = new SignalChild($control);
         $handler(SIGCHLD);
     }
 
@@ -37,7 +37,7 @@ class ChildHandlerTest extends \TestCase
             ->with(0, (WNOHANG | WUNTRACED))
             ->will($this->onConsecutiveCalls(999, 0));
 
-        $handler = new ChildHandler($control);
+        $handler = new SignalChild($control);
         $handler(SIGCHLD);
     }
 }
