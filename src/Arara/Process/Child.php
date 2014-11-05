@@ -106,18 +106,11 @@ class Child implements Process
      *
      * @return void
      */
-    protected function setTimeoutHandler(array $context)
+    protected function setHandlerAlarm(array $context)
     {
-        $action = $this->action;
-        $control = $this->control;
-        $control->signal()->handle('alarm', function () use ($action, $control, $context) {
-            // @codeCoverageIgnoreStart
-            $context['finishTime'] = time();
-            $action->trigger(Action::EVENT_TIMEOUT, $control, $context);
-            $control->quit(3);
-            // @codeCoverageIgnoreEnd
-        });
-        $control->signal()->alarm($this->timeout);
+        $handler = new Handler\SignalAlarm($this->control, $this->action, $context);
+        $this->control->signal()->handle('alarm', $handler);
+        $this->control->signal()->alarm($this->timeout);
     }
 
     /**
@@ -196,11 +189,11 @@ class Child implements Process
 
         $context = array(
             'processId' => $this->processId,
-            'startTime' => time(),
             'timeout' => $this->timeout,
+            'startTime' => time(),
         );
 
-        $this->setTimeoutHandler($context);
+        $this->setHandlerAlarm($context);
         $this->setPhpErrorHandler();
         $this->run($context);
         restore_error_handler();
