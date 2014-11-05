@@ -66,16 +66,17 @@ interface Action
      * This is the action to be runned.
      *
      * @param  Control $control Process controller.
+     * @param  Context $context Process context.
      * @return int Event status.
      */
-    public function execute(Control $control);
+    public function execute(Control $control, Context $context);
 
     /**
      * Must be called after action is finished to trigger possible defined events.
      *
      * @param  int $event Event to be triggered.
      * @param  Control $control Process controller.
-     * @param  Context $context Event context.
+     * @param  Context $context Process context.
      * @return void No return value is expected.
      */
     public function trigger($event, Control $control, Context $context);

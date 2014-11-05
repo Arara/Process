@@ -29,9 +29,9 @@ class Callback implements Action
     /**
      * {@inheritDoc}
      */
-    public function execute(Control $control)
+    public function execute(Control $control, Context $context)
     {
-        return call_user_func($this->callback, $control);
+        return call_user_func($this->callback, $control, $context);
     }
 
     /**

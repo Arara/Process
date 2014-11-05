@@ -146,7 +146,7 @@ class Child implements Process
     {
         $this->silentRunActionTrigger(Action::EVENT_START);
         try {
-            $this->context->event = $this->action->execute($this->control) ?: Action::EVENT_SUCCESS;
+            $this->context->event = $this->action->execute($this->control, $this->context) ?: Action::EVENT_SUCCESS;
             $this->context->exitCode = 0;
         } catch (ErrorException $errorException) {
             $this->context->event = Action::EVENT_ERROR;

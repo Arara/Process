@@ -31,12 +31,13 @@ class CallbackTest extends \TestCase
     public function testShouldRunDefinedCallback()
     {
         $control = new Control();
+        $context = new Context();
         $counter = 0;
         $action = function () use (&$counter) {
             $counter++;
         };
         $callback = new Callback($action);
-        $callback->execute($control);
+        $callback->execute($control, $context);
 
         $this->assertEquals(1, $counter);
     }
