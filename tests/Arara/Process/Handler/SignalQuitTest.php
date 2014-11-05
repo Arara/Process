@@ -1,11 +1,11 @@
 <?php
 
-namespace Arara\Process\Control\Signal;
+namespace Arara\Process\Handler;
 
 /**
- * @covers Arara\Process\Control\Signal\QuitHandler
+ * @covers Arara\Process\Handler\SignalQuit
  */
-class QuitHandlerTest extends \TestCase
+class SignalQuitTest extends \TestCase
 {
     public function testShouldExitAs4()
     {
@@ -19,7 +19,7 @@ class QuitHandlerTest extends \TestCase
             ->method('quit')
             ->with(4);
 
-        $handler = new QuitHandler($control);
+        $handler = new SignalQuit($control);
         $handler(SIGQUIT);
     }
 }

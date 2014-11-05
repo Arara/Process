@@ -1,10 +1,10 @@
 <?php
 
-namespace Arara\Process\Control\Signal;
+namespace Arara\Process\Handler;
 
 use Arara\Process\Control;
 
-abstract class AbstractHandler
+abstract class SignalAbstract
 {
     protected $control;
 

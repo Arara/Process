@@ -106,18 +106,11 @@ class Child implements Process
      *
      * @return void
      */
-    protected function setTimeoutHandler(array $context)
+    protected function setHandlerAlarm(array $context)
     {
-        $action = $this->action;
-        $control = $this->control;
-        $control->signal()->handle('alarm', function () use ($action, $control, $context) {
-            // @codeCoverageIgnoreStart
-            $context['finishTime'] = time();
-            $action->trigger(Action::EVENT_TIMEOUT, $control, $context);
-            $control->quit(3);
-            // @codeCoverageIgnoreEnd
-        });
-        $control->signal()->alarm($this->timeout);
+        $handler = new Handler\SignalAlarm($this->control, $this->action, $context);
+        $this->control->signal()->handle('alarm', $handler);
+        $this->control->signal()->alarm($this->timeout);
     }
 
     /**
@@ -125,14 +118,9 @@ class Child implements Process
      *
      * @return void
      */
-    protected function setPhpErrorHandler()
+    protected function setHandlerErrorException()
     {
-        set_error_handler(
-            function ($severity, $message, $filename, $line) {
-                throw new ErrorException($message, 0, $severity, $filename, $line);
-            },
-            E_ALL & ~E_NOTICE
-        );
+        set_error_handler(new Handler\ErrorException(), E_ALL & ~E_NOTICE);
     }
 
     /**
@@ -196,12 +184,12 @@ class Child implements Process
 
         $context = array(
             'processId' => $this->processId,
-            'startTime' => time(),
             'timeout' => $this->timeout,
+            'startTime' => time(),
         );
 
-        $this->setTimeoutHandler($context);
-        $this->setPhpErrorHandler();
+        $this->setHandlerAlarm($context);
+        $this->setHandlerErrorException();
         $this->run($context);
         restore_error_handler();
     }

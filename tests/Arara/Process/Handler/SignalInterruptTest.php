@@ -1,11 +1,11 @@
 <?php
 
-namespace Arara\Process\Control\Signal;
+namespace Arara\Process\Handler;
 
 /**
- * @covers Arara\Process\Control\Signal\InterruptHandler
+ * @covers Arara\Process\Handler\SignalInterrupt
  */
-class InterruptHandlerTest extends \TestCase
+class SignalInterruptTest extends \TestCase
 {
     public function testShouldExitAs3()
     {
@@ -19,7 +19,7 @@ class InterruptHandlerTest extends \TestCase
             ->method('quit')
             ->with(3);
 
-        $handler = new InterruptHandler($control);
+        $handler = new SignalInterrupt($control);
         $handler(SIGINT);
     }
 }

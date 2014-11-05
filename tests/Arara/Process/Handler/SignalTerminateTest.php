@@ -1,11 +1,11 @@
 <?php
 
-namespace Arara\Process\Control\Signal;
+namespace Arara\Process\Handler;
 
 /**
- * @covers Arara\Process\Control\Signal\TerminateHandler
+ * @covers Arara\Process\Handler\SignalTerminate
  */
-class TerminateHandlerTest extends \TestCase
+class SignalTerminateTest extends \TestCase
 {
     public function testShouldExitAs0()
     {
@@ -19,7 +19,7 @@ class TerminateHandlerTest extends \TestCase
             ->method('quit')
             ->with(0);
 
-        $handler = new TerminateHandler($control);
+        $handler = new SignalTerminate($control);
         $handler(SIGTERM);
     }
 }
