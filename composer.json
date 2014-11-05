@@ -2,7 +2,7 @@
     "name": "arara/process",
     "type": "library",
     "description": "Provides a better API to work with processes on Unix-like systems",
-    "keywords": ["fork", "multitasking", "pcntl", "posix", "process", "spawn"],
+    "keywords": ["fork", "daemon", "multitasking", "pcntl", "posix", "process", "spawn"],
     "homepage": "https://github.com/Arara/Process",
     "license" : "MIT",
     "authors" : [

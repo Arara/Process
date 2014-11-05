@@ -103,22 +103,89 @@ $action->bind(Callback::EVENT_ERROR | Callback::EVENT_FAILURE, function () {
 });
 ```
 
+### Daemon action
+
+You can create daemons using the `Arara\Process\Action\Daemon` class:
+
+```php
+$daemon = new Daemon(
+    function (Control $control, Context $context, Daemon $daemon) {
+        while (! $daemon->isDying()) {
+            // Do whatever you want =)
+        }
+    }
+);
+```
+
+This action will:
+
+1. Detach process session from the parent
+2. Update process umask
+3. Update process work directory
+4. Define process GID (if defined)
+5. Define process UID (if defined)
+6. Recreate standards file descriptors (STDIN, STDOUT and STDERR)
+7. Create Pidfile
+8. Run the defined payload callback
+
+Daemon action is based on Callback action thus you can also bind triggers for events.
+
+#### Daemon options
+
+Daemon action class has some options that allows you to change some behaviours:
+
+- `name`: Name used by pidfile (default _arara_)
+- `lock_dir`: Lock directory for pidfile (default _/var_/run)
+- `work_dir`: Work directory (default _/_)
+- `umask`: Default umask value (default _0_)
+- `user_id`: When defined changed the daemon UID (default _NULL_)
+- `group_id`: When defined changed the daemon GID (default _NULL_)
+- `stdin`: File to use as `STDIN` (default _/dev/null_)
+- `stdout`: File to use as `STDOUT` (default _/dev/null_)
+- `stderr`: File to use as `STDERR` (default _/dev/null_)
+
+You can change default daemon options by defining it on class constructor:
+```php
+$daemon = new Daemon(
+    $callback,
+    array(
+        'name' => 'mydaemonname',
+        'lock_dir' => __DIR__,
+    )
+);
+```
+
+After the object is created you may change all options:
+```php
+$daemon->setOptions(
+    array(
+        'stdout' => '/tmp/daemon.stdout',
+        'stderr' => '/tmp/daemon.stderr',
+    )
+);
+```
+
+Also you can change just an option:
+```php
+$daemon->setOption('work_dir', __DIR__);
+```
+
 ### Starting a process in the background
 
 The class `Arara\Process\Child` allows you to execute any action in the background.
 
 ```php
 $child = new Child(
-    new Callback(function (Control $control) {
-        echo 'PID ' . $control->info()->getId() . ' is running in the background' . PHP_EOL;
+    new Daemon(function () {
+        // What my daemon does...
     }),
     new Control()
 );
 $child->start(); // Runs the callback in the background
 ```
 
-The above example runs the Callback action in the background, but one can use any class which implements
-the `Arara\Process\Action\Action` interface.
+The above example runs the Daemon action in the background, but one can use any class which implements
+the `Arara\Process\Action\Action` interface like Callback action.
 
 ### Check if the process is running
 
