@@ -75,19 +75,26 @@ class Pidfile
 
     public function isActive()
     {
-        $content = fgets($this->getFileResource());
-        $pieces = explode(PHP_EOL, trim($content));
-        if (! isset($pieces[0]) || (isset($pieces[0]) && empty($pieces[0]))) {
+        $pid = $this->getPid();
+        if (null === $pid) {
             return false;
         }
 
-        return $this->control->signal()->send(0, $pieces[0]);
+        return $this->control->signal()->send(0, $pid);
+    }
+
+    public function getPid()
+    {
+        $content = fgets($this->getFileResource());
+        $pieces = explode(PHP_EOL, trim($content));
+
+        return reset($pieces) ?: null;
     }
 
     public function initialize()
     {
         if ($this->isActive()) {
-            throw new RuntimeException('Pidfile is already active');
+            throw new RuntimeException('Process is already active');
         }
 
         if (! @flock($this->getFileResource(), (LOCK_EX | LOCK_NB))) {
