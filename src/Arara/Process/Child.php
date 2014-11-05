@@ -118,14 +118,9 @@ class Child implements Process
      *
      * @return void
      */
-    protected function setPhpErrorHandler()
+    protected function setHandlerErrorException()
     {
-        set_error_handler(
-            function ($severity, $message, $filename, $line) {
-                throw new ErrorException($message, 0, $severity, $filename, $line);
-            },
-            E_ALL & ~E_NOTICE
-        );
+        set_error_handler(new Handler\ErrorException(), E_ALL & ~E_NOTICE);
     }
 
     /**
@@ -194,7 +189,7 @@ class Child implements Process
         );
 
         $this->setHandlerAlarm($context);
-        $this->setPhpErrorHandler();
+        $this->setHandlerErrorException();
         $this->run($context);
         restore_error_handler();
     }
