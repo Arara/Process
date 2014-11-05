@@ -2,6 +2,7 @@
 
 namespace Arara\Process\Action;
 
+use Arara\Process\Context;
 use Arara\Process\Control;
 
 /**
@@ -74,8 +75,8 @@ interface Action
      *
      * @param  int $event Event to be triggered.
      * @param  Control $control Process controller.
-     * @param  array $control Event context.
+     * @param  Context $context Event context.
      * @return void No return value is expected.
      */
-    public function trigger($event, Control $control, array $context);
+    public function trigger($event, Control $control, Context $context);
 }

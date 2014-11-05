@@ -11,13 +11,10 @@ use UnexpectedValueException;
 
 class Child implements Process
 {
-    protected $processId;
-    protected $startTime;
     protected $action;
+    protected $context;
     protected $control;
     protected $status;
-    protected $timeout;
-    protected $running = false;
 
     /**
      * Create a child process.
@@ -30,7 +27,10 @@ class Child implements Process
     {
         $this->action = $action;
         $this->control = $control;
-        $this->timeout = $timeout;
+        $this->context = new Context();
+        $this->context->isRunning = false;
+        $this->context->processId = null;
+        $this->context->timeout = $timeout;
     }
 
     /**
@@ -44,7 +44,7 @@ class Child implements Process
             throw new UnexpectedValueException('There is no defined process identifier');
         }
 
-        return $this->processId;
+        return $this->context->processId;
     }
 
     /**
@@ -54,7 +54,7 @@ class Child implements Process
      */
     public function hasId()
     {
-        return (null !== $this->processId);
+        return (null !== $this->context->processId);
     }
 
     /**
@@ -80,13 +80,13 @@ class Child implements Process
             return false;
         }
 
-        if (! $this->running) {
+        if (! $this->context->isRunning) {
             return false;
         }
 
-        $this->running = $this->control->signal()->send(0, $this->getId());
+        $this->context->isRunning = $this->control->signal()->send(0, $this->getId());
 
-        return $this->running;
+        return $this->context->isRunning;
     }
 
     /**
@@ -98,7 +98,7 @@ class Child implements Process
             throw new RuntimeException('Could not kill the process');
         }
 
-        $this->running = false;
+        $this->context->isRunning = false;
     }
 
     /**
@@ -106,11 +106,11 @@ class Child implements Process
      *
      * @return void
      */
-    protected function setHandlerAlarm(array $context)
+    protected function setHandlerAlarm()
     {
-        $handler = new Handler\SignalAlarm($this->control, $this->action, $context);
+        $handler = new Handler\SignalAlarm($this->control, $this->action, $this->context);
         $this->control->signal()->handle('alarm', $handler);
-        $this->control->signal()->alarm($this->timeout);
+        $this->control->signal()->alarm($this->context->timeout);
     }
 
     /**
@@ -128,10 +128,10 @@ class Child implements Process
      *
      * @return void
      */
-    protected function runActionTrigger($event, array $context)
+    protected function silentRunActionTrigger($event)
     {
         try {
-            $this->action->trigger($event, $this->control, $context);
+            $this->action->trigger($event, $this->control, $this->context);
         } catch (Exception $exception) {
             // Pokémon Exception Handling
         }
@@ -142,26 +142,26 @@ class Child implements Process
      *
      * @return void
      */
-    protected function run(array $context)
+    protected function run()
     {
-        $this->runActionTrigger(Action::EVENT_START, $context);
+        $this->silentRunActionTrigger(Action::EVENT_START);
         try {
-            $event = $this->action->execute($this->control) ?: Action::EVENT_SUCCESS;
-            $code = 0;
+            $this->context->event = $this->action->execute($this->control) ?: Action::EVENT_SUCCESS;
+            $this->context->exitCode = 0;
         } catch (ErrorException $errorException) {
-            $context['exception'] = $errorException;
-            $event = Action::EVENT_ERROR;
-            $code = 2;
+            $this->context->event = Action::EVENT_ERROR;
+            $this->context->exception = $errorException;
+            $this->context->exitCode = 2;
         } catch (Exception $exception) {
-            $context['exception'] = $exception;
-            $event = Action::EVENT_FAILURE;
-            $code = 1;
+            $this->context->event = Action::EVENT_FAILURE;
+            $this->context->exception = $exception;
+            $this->context->exitCode = 1;
         }
-        $context['finishTime'] = time();
-        $this->runActionTrigger($event, $context);
-        $this->runActionTrigger(Action::EVENT_FINISH, $context);
+        $this->context->finishTime = time();
+        $this->silentRunActionTrigger($this->context->event);
+        $this->silentRunActionTrigger(Action::EVENT_FINISH);
 
-        $this->control->quit($code);
+        $this->control->quit($this->context->exitCode);
     }
 
     /**
@@ -173,24 +173,21 @@ class Child implements Process
             throw new RuntimeException('Process already started');
         }
 
-        $this->running = true;
-        $this->processId = $this->control->fork();
-        if ($this->processId > 0) {
+        $processId = $this->control->fork();
+        if ($processId > 0) {
+            $this->context->isRunning = true;
+            $this->context->processId = $processId;
             usleep(5000); // Give time to the parent think
             return;
         }
 
-        $this->processId = $this->control->info()->getId();
+        $this->context->isRunning = true;
+        $this->context->processId = $this->control->info()->getId();
+        $this->context->startTime = time();
 
-        $context = array(
-            'processId' => $this->processId,
-            'timeout' => $this->timeout,
-            'startTime' => time(),
-        );
-
-        $this->setHandlerAlarm($context);
+        $this->setHandlerAlarm();
         $this->setHandlerErrorException();
-        $this->run($context);
+        $this->run();
         restore_error_handler();
     }
 
@@ -203,7 +200,7 @@ class Child implements Process
             throw new RuntimeException('Could not terminate the process');
         }
 
-        $this->running = false;
+        $this->context->isRunning = false;
     }
 
     /**

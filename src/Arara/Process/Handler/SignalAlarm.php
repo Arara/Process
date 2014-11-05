@@ -11,7 +11,7 @@ class SignalAlarm extends SignalAbstract
     protected $action;
     protected $context;
 
-    public function __construct(Control $control, Action $action, array $context)
+    public function __construct(Control $control, Action $action, Context $context)
     {
         $this->action = $action;
         $this->context = $context;
@@ -21,8 +21,10 @@ class SignalAlarm extends SignalAbstract
 
     public function __invoke($signal)
     {
-        $this->context['finishTime'] = time();
+        $this->context->event = Action::EVENT_TIMEOUT;
+        $this->context->exitCode = 3;
+        $this->context->finishTime = time();
         $this->action->trigger(Action::EVENT_TIMEOUT, $this->control, $this->context);
-        $this->control->quit(3);
+        $this->control->quit($this->context->exitCode);
     }
 }

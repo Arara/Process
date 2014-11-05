@@ -34,4 +34,12 @@ class TestCase extends PHPUnit_Framework_TestCase
         $reflection->setAccessible(true);
         $reflection->setValue($object, $value);
     }
+
+    protected function getObjectPropertyValue($object, $property)
+    {
+        $reflection = new ReflectionProperty($object, $property);
+        $reflection->setAccessible(true);
+
+        return $reflection->getValue($object);
+    }
 }

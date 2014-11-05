@@ -2,6 +2,7 @@
 
 namespace Arara\Process\Action;
 
+use Arara\Process\Context;
 use Arara\Process\Control;
 use InvalidArgumentException;
 
@@ -36,7 +37,7 @@ class Callback implements Action
     /**
      * {@inheritDoc}
      */
-    public function trigger($event, Control $control, array $context)
+    public function trigger($event, Control $control, Context $context)
     {
         foreach ($this->handlers as $key => $handler) {
             if ($event !== ($key & $event)) {
