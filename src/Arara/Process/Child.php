@@ -109,7 +109,7 @@ class Child implements Process
     protected function setHandlerAlarm()
     {
         $handler = new Handler\SignalAlarm($this->control, $this->action, $this->context);
-        $this->control->signal()->handle('alarm', $handler);
+        $this->control->signal()->setHandler('alarm', $handler);
         $this->control->signal()->alarm($this->context->timeout);
     }
 

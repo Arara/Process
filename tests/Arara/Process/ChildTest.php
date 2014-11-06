@@ -505,7 +505,7 @@ class ChildTest extends \TestCase
         $signal = $this->controlSignal->getMock();
         $signal
             ->expects($this->once())
-            ->method('handle')
+            ->method('setHandler')
             ->with('alarm');
 
         $control = $this->control->getMock();
