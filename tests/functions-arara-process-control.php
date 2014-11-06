@@ -79,7 +79,7 @@ function pcntl_signal()
     $count++;
 
     $args = func_get_args();
-    $return = null;
+    $return = true;
 
     $GLOBALS['arara']['pcntl_signal']['args'] = $args;
     if (isset($GLOBALS['arara']['pcntl_signal']['return'])) {

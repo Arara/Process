@@ -2,21 +2,37 @@
 
 namespace Arara\Process\Control;
 
+use RuntimeException;
 use InvalidArgumentException;
 
 class Signal
 {
+    /**
+     * List of signals by name.
+     *
+     * @var array
+     */
     protected $signals = array(
-        'alarm' => SIGALRM,
-        'child' => SIGCHLD,
-        'hangup' => SIGHUP,
+        'abort'     => SIGABRT,
+        'alarm'     => SIGALRM,
+        'child'     => SIGCHLD,
+        'continue'  => SIGCONT,
+        'hangup'    => SIGHUP,
         'interrupt' => SIGINT,
-        'kill' => SIGKILL,
-        'pipe' => SIGPIPE,
-        'quit' => SIGQUIT,
-        'stop' => SIGSTOP,
+        'kill'      => SIGKILL,
+        'pipe'      => SIGPIPE,
+        'quit'      => SIGQUIT,
+        'stop'      => SIGSTOP,
+        'suspend'   => SIGTSTP,
         'terminate' => SIGTERM,
     );
+
+    /**
+     * May contain signals handlers.
+     *
+     * @var array
+     */
+    protected $handlers = array();
 
     /**
      * Define the time (in seconds) to send an alarm to the current process.
@@ -42,36 +58,132 @@ class Signal
     }
 
     /**
+     * Register a signal handler
+     *
+     * @throws RuntimeException When can not register handler.
+     * @param  int $signalNumber Signal number.
+     * @param  callable|int $handler The signal handler.
+     * @return void
+     */
+    protected function registerHandler($signalNumber, $handler)
+    {
+        if (pcntl_signal($signalNumber, $handler)) {
+            return;
+        }
+        throw new RuntimeException('Could not define signal handler');
+    }
+
+    /**
      * Define a handler for the given signal.
      *
      * @link   http://php.net/pcntl_signal
-     * @throws InvalidArgumentException When $handler is not a valid callback.
-     * @param  int|string $signal Signal (code or name) to handle.
-     * @param  callable $handler Callback to handle the given signal.
-     * @return bool
+     * @param  string|int $signal Signal name, PCNTL constant name or PCNTL constant value.
+     * @param  callable|int $handler The signal handler
+     * @param  string $placement Placement of handler ("set", "append" or "prepend")
+     * @return void
      */
-    public function handle($signal, $handler)
+    protected function handle($signal, $handler, $placement)
     {
+        declare(ticks = 1);
+
+        $signalNumber = $this->translateSignal($signal);
+
+        if (is_int($handler) && in_array($handler, array(SIG_IGN, SIG_DFL))) {
+            unset($this->handlers[$signalNumber]);
+            $this->registerHandler($signalNumber, $handler);
+            return;
+        }
+
         if (! is_callable($handler)) {
             throw new InvalidArgumentException('The given handler is not a valid callback');
         }
 
-        return pcntl_signal($this->translateSignal($signal), $handler);
+        $this->placeHandler($signalNumber, $handler, $placement);
     }
 
     /**
-     * Ignore (do not handle) the given signal.
+     * Define a callback handler for the given signal.
      *
-     * Not only user defined handlers, but there are default handlers for a good
-     * part of existing signals.
-     *
-     * @link   http://php.net/pcntl_signal
-     * @param  int|string $signal Signal (code or name) to ignore.
-     * @return bool
+     * @param  int $signal Signal number.
+     * @param  callable $handler The signal handler.
+     * @param  string $placement Placement of handler ("set", "append" or "prepend")
+     * @return void
      */
-    public function ignore($signal)
+    protected function placeHandler($signalNumber, $handler, $placement)
     {
-        return pcntl_signal($this->translateSignal($signal), SIG_IGN);
+        if (! isset($this->handlers[$signalNumber])) {
+            $this->handlers[$signalNumber] = array();
+            $this->registerHandler($signalNumber, $this);
+        }
+
+        switch ($placement) {
+            case 'set':
+                $this->handlers[$signalNumber] = array($handler);
+                break;
+
+            case 'append':
+                array_push($this->handlers[$signalNumber], $handler);
+                break;
+
+            case 'prepend':
+                array_unshift($this->handlers[$signalNumber], $handler);
+                break;
+        }
+    }
+
+    /**
+     * Returns handlers of a specific signal.
+     *
+     * @return array
+     */
+    public function getHandlers($signal)
+    {
+        $signalNumber = $this->translateSignal($signal);
+        $handlers = array();
+        if (isset($this->handlers[$signalNumber])) {
+            $handlers = $this->handlers[$signalNumber];
+        }
+
+        return $handlers;
+    }
+
+    /**
+     * Overwrite signal handlers with the defined handler.
+     *
+     * @see    handle()
+     * @param  string|int $signal Signal name, PCNTL constant name or PCNTL constant value.
+     * @param  callable|int $handler The signal handler
+     * @return void
+     */
+    public function setHandler($signal, $handler)
+    {
+        $this->handle($signal, $handler, 'set');
+    }
+
+    /**
+     * Appends the handler to the current signal handler stack.
+     *
+     * @see    handle()
+     * @param  string|int $signal Signal name, PCNTL constant name or PCNTL constant value.
+     * @param  callable|int $handler The signal handler
+     * @return void
+     */
+    public function appendHandler($signal, $handler)
+    {
+        $this->handle($signal, $handler, 'append');
+    }
+
+    /**
+     * Prepends the handler to the current signal handler stack.
+     *
+     * @see    handle()
+     * @param  string|int $signal Signal name, PCNTL constant name or PCNTL constant value.
+     * @param  callable|int $handler The signal handler
+     * @return void
+     */
+    public function prependHandler($signal, $handler)
+    {
+        $this->handle($signal, $handler, 'prepend');
     }
 
     /**
@@ -94,19 +206,35 @@ class Signal
     /**
      * Translate signals names to codes.
      *
-     * @param  mixed $signal Signal name, PCNTL constant name or PCNTL constant value.
+     * @throws InvalidArgumentException Then signal is not a valid signal.
+     * @param  string|int $signal Signal name, PCNTL constant name or PCNTL constant value.
      * @return int
      */
     protected function translateSignal($signal)
     {
         if (isset($this->signals[$signal])) {
-            return $this->signals[$signal];
+            $signal = $this->signals[$signal];
+        } elseif (defined($signal)) {
+            $signal = constant($signal);
         }
 
-        if (defined($signal)) {
-            return constant($signal);
+        if (! is_int($signal)) {
+            throw new InvalidArgumentException('The given value is not a valid signal');
         }
 
         return $signal;
+    }
+
+    /**
+     * Handles the signals using all handlers in the stack.
+     *
+     * @param  int $signalNumber Signal number to be handled.
+     * @return void
+     */
+    public function __invoke($signalNumber)
+    {
+        foreach ($this->getHandlers($signalNumber) as $handler) {
+            call_user_func($handler, $signalNumber);
+        }
     }
 }

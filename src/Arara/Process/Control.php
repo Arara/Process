@@ -13,10 +13,10 @@ class Control
     {
         $this->info = new Control\Info();
         $this->signal = new Control\Signal();
-        $this->signal->handle('child', new Handler\SignalChild($this));
-        $this->signal->handle('interrupt', new Handler\SignalInterrupt($this));
-        $this->signal->handle('quit', new Handler\SignalQuit($this));
-        $this->signal->handle('terminate', new Handler\SignalTerminate($this));
+        $this->signal->setHandler('child', new Handler\SignalChild($this));
+        $this->signal->setHandler('interrupt', new Handler\SignalInterrupt($this));
+        $this->signal->setHandler('quit', new Handler\SignalQuit($this));
+        $this->signal->setHandler('terminate', new Handler\SignalTerminate($this));
     }
 
     /**
