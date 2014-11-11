@@ -5,6 +5,9 @@ namespace Arara\Process;
 use InvalidArgumentException;
 use RuntimeException;
 
+/**
+ * Class to handle pidfiles.
+ */
 class Pidfile
 {
     protected $applicationName;
@@ -12,7 +15,13 @@ class Pidfile
     protected $fileName;
     protected $fileResource;
     protected $lockDirectory;
+    protected $processId;
 
+    /**
+     * @param  Control $control Object used to control process information
+     * @param  string $applicationName The application name, used as pidfile basename
+     * @param  string $lockDirectory Directory were pidfile is stored
+     */
     public function __construct(Control $control, $applicationName = 'arara', $lockDirectory = '/var/run')
     {
         $this->control = $control;
@@ -20,6 +29,23 @@ class Pidfile
         $this->setLockDirectory($lockDirectory);
     }
 
+    /**
+     * Returns the application's name.
+     *
+     * @return string
+     */
+    public function getApplicationName()
+    {
+        return $this->applicationName;
+    }
+
+    /**
+     * Defines application name.
+     *
+     * @throws InvalidArgumentException When application name is not valid
+     * @param  string $applicationName The application name, used as pidfile basename
+     * @return void
+     */
     protected function setApplicationName($applicationName)
     {
         if ($applicationName != strtolower($applicationName)) {
@@ -38,6 +64,13 @@ class Pidfile
         $this->applicationName = $applicationName;
     }
 
+    /**
+     * Defines the lock directory.
+     *
+     * @throws InvalidArgumentException When lock directory is not valid
+     * @param  string $lockDirectory Directory were pidfile is stored
+     * @return void
+     */
     protected function setLockDirectory($lockDirectory)
     {
         if (! is_dir($lockDirectory)) {
@@ -51,6 +84,11 @@ class Pidfile
         $this->lockDirectory = $lockDirectory;
     }
 
+    /**
+     * Returns the Pidfile filename
+     *
+     * @return string
+     */
     protected function getFileName()
     {
         if (null === $this->fileName) {
@@ -60,6 +98,11 @@ class Pidfile
         return $this->fileName;
     }
 
+    /**
+     * Returns the Pidfile file resource
+     *
+     * @return resource
+     */
     protected function getFileResource()
     {
         if (null === $this->fileResource) {
@@ -73,9 +116,14 @@ class Pidfile
         return $this->fileResource;
     }
 
+    /**
+     * Returns TRUE when pidfile is active or FALSE when is not.
+     *
+     * @return bool
+     */
     public function isActive()
     {
-        $pid = $this->getPid();
+        $pid = $this->getProcessId();
         if (null === $pid) {
             return false;
         }
@@ -83,29 +131,61 @@ class Pidfile
         return $this->control->signal()->send(0, $pid);
     }
 
-    public function getPid()
+    /**
+     * Returns Pidfile content with the PID or NULL when there is no stored PID.
+     *
+     * @return int|null
+     */
+    public function getProcessId()
     {
-        $content = fgets($this->getFileResource());
-        $pieces = explode(PHP_EOL, trim($content));
+        if (null === $this->processId) {
+            $content = fgets($this->getFileResource());
+            $pieces = explode(PHP_EOL, trim($content));
+            $this->processId = reset($pieces) ?: 0;
+        }
 
-        return reset($pieces) ?: null;
+        return $this->processId ?: null;
     }
 
+    /**
+     * Initializes pidfile.
+     *
+     * Create an empty file, store the PID into the file and lock it.
+     *
+     * @return void
+     */
     public function initialize()
     {
         if ($this->isActive()) {
             throw new RuntimeException('Process is already active');
         }
 
-        if (! @flock($this->getFileResource(), (LOCK_EX | LOCK_NB))) {
+        $handle = $this->getFileResource();
+
+        if (! @flock($handle, (LOCK_EX | LOCK_NB))) {
             throw new RuntimeException('Could not lock pidfile');
         }
 
-        if (! @fwrite($this->getFileResource(), $this->control->info()->getId() . PHP_EOL)) {
+        if (-1 === @fseek($handle, 0)) {
+            throw new RuntimeException('Could not seek pidfile cursor');
+        }
+
+        if (! @ftruncate($handle, 0)) {
+            throw new RuntimeException('Could not truncate pidfile');
+        }
+
+        if (! @fwrite($handle, $this->control->info()->getId() . PHP_EOL)) {
             throw new RuntimeException('Could not write on pidfile');
         }
     }
 
+    /**
+     * Finalizes pidfile.
+     *
+     * Unlock pidfile and removes it.
+     *
+     * @return void
+     */
     public function finalize()
     {
         @flock($this->getFileResource(), LOCK_UN);
