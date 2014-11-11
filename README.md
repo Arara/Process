@@ -26,7 +26,7 @@ composer require arara/process
 
 ## Usage
 
-Along with this document, there are many usage examples in the "examples/" directory which may be used for reference.
+Along with this document, there are many usage examples in the [examples/](examples/) directory which may be used for reference.
 
 All examples within this document assume you have the following statement at the beginning of the file:
 
@@ -54,6 +54,10 @@ Using this interface you can create your own actions and run them in the backgro
 The `Arara\Process\Action\Action::trigger(..)` method, as it is written, associates specific actions with events.
 Those events can be:
 
+- `Action::EVENT_INIT`: triggered when action is initialized
+    - When the action is attached to a Child object
+- `Action::EVENT_FORK`: triggered when action is forked
+    - After the action is forked it is triggered on the **parent** process
 - `Action::EVENT_START`: triggered before the execute() method is executed
 - `Action::EVENT_SUCCESS`: triggered when the action is finished with success, that is:
     - When the action does not encounter a PHP error

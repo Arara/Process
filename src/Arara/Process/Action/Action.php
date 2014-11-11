@@ -15,6 +15,20 @@ use Arara\Process\Control;
 interface Action
 {
     /**
+     * Must be triggered when action is initialized.
+     *
+     * This event will always be triggered when the action is attached to a Child object.
+     */
+    const EVENT_INIT = 128;
+
+    /**
+     * Must be triggered when action is forked.
+     *
+     * After the action is forked it is triggered on the **parent** process.
+     */
+    const EVENT_FORK = 256;
+
+    /**
      * Must be triggered when action starts.
      *
      * This event will always be triggered before the execute() method be executed.

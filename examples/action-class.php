@@ -13,7 +13,7 @@ class ActionClass implements Action
         $this->id = $id;
     }
 
-    public function execute(Control $control)
+    public function execute(Control $control, Context $context)
     {
         echo sprintf('[%d] Action "%s" execution', $control->info()->getId(), $this->id) . PHP_EOL;
         sleep(1);
@@ -23,23 +23,29 @@ class ActionClass implements Action
     {
         $eventName = null;
         switch ($event) {
+            case self::EVENT_INIT:
+                $eventName = 'EVENT_INIT';
+                break;
+            case self::EVENT_FORK:
+                $eventName = 'EVENT_FORK';
+                break;
             case self::EVENT_START:
-                $eventName = 'Start';
+                $eventName = 'EVENT_START';
                 break;
             case self::EVENT_SUCCESS:
-                $eventName = 'Success';
+                $eventName = 'EVENT_SUCCESS';
                 break;
             case self::EVENT_ERROR:
-                $eventName = 'Error';
+                $eventName = 'EVENT_ERROR';
                 break;
             case self::EVENT_FAILURE:
-                $eventName = 'Failure';
+                $eventName = 'EVENT_FAILURE';
                 break;
             case self::EVENT_TIMEOUT:
-                $eventName = 'Timeout';
+                $eventName = 'EVENT_TIMEOUT';
                 break;
             case self::EVENT_FINISH:
-                $eventName = 'Finish';
+                $eventName = 'EVENT_FINISH';
                 break;
             default:
                 $eventName = 'Unrecognized';
