@@ -42,6 +42,20 @@ class CallbackTest extends \TestCase
         $this->assertEquals(1, $counter);
     }
 
+    public function testShouldReturnAllDefinedHandlers()
+    {
+        $callback = new Callback(function() {});
+        $callback->bind(Callback::EVENT_INIT, 'trim');
+        $callback->bind(Callback::EVENT_ERROR, 'strlen');
+
+        $expectedHandlers = array(
+            Callback::EVENT_INIT => 'trim',
+            Callback::EVENT_ERROR => 'strlen',
+        );
+
+        $this->assertEquals($expectedHandlers, $callback->getHandlers());
+    }
+
     public function testShouldAddEventHandlers()
     {
         $event = Callback::EVENT_SUCCESS;
@@ -51,7 +65,7 @@ class CallbackTest extends \TestCase
         $callback = new Callback(function() {});
         $callback->bind($event, $handler);
 
-        $this->assertAttributeSame($expectedHandlers, 'handlers', $callback);
+        $this->assertEquals($expectedHandlers, $callback->getHandlers());
     }
 
     /**

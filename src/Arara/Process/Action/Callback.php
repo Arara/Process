@@ -11,8 +11,8 @@ use InvalidArgumentException;
  */
 class Callback implements Action
 {
-    private $callback;
-    private $handlers = array();
+    protected $callback;
+    protected $handlers = array();
 
     /**
      * @param callable $callback Callback to run as action.
@@ -62,5 +62,15 @@ class Callback implements Action
         }
 
         $this->handlers[$event] = $handler;
+    }
+
+    /**
+     * Returns all defined handlers.
+     *
+     * @return array
+     */
+    public function getHandlers()
+    {
+        return $this->handlers;
     }
 }
