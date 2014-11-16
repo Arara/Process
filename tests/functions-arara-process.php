@@ -2,6 +2,94 @@
 
 namespace Arara\Process;
 
+function sleep()
+{
+    static $count;
+    if (! isset($GLOBALS['arara']['sleep'])) {
+        $count = 0;
+    }
+    $count++;
+
+    $args = func_get_args();
+    $return = null;
+
+    $GLOBALS['arara']['sleep']['args'] = $args;
+    if (array_key_exists('return', $GLOBALS['arara']['sleep'])) {
+        $return = $GLOBALS['arara']['sleep']['return'];
+    } else {
+        call_user_func_array('sleep', $args);
+    }
+    $GLOBALS['arara']['sleep']['count'] = $count;
+
+    return $return;
+}
+
+function usleep()
+{
+    static $count;
+    if (! isset($GLOBALS['arara']['usleep'])) {
+        $count = 0;
+    }
+    $count++;
+
+    $args = func_get_args();
+    $return = null;
+
+    $GLOBALS['arara']['usleep']['args'] = $args;
+    if (array_key_exists('return', $GLOBALS['arara']['usleep'])) {
+        $return = $GLOBALS['arara']['usleep']['return'];
+    } else {
+        call_user_func_array('usleep', $args);
+    }
+    $GLOBALS['arara']['usleep']['count'] = $count;
+
+    return $return;
+}
+
+function clearstatcache()
+{
+    static $count;
+    if (! isset($GLOBALS['arara']['clearstatcache'])) {
+        $count = 0;
+    }
+    $count++;
+
+    $args = func_get_args();
+    $return = null;
+
+    $GLOBALS['arara']['clearstatcache']['args'] = $args;
+    if (array_key_exists('return', $GLOBALS['arara']['clearstatcache'])) {
+        $return = $GLOBALS['arara']['clearstatcache']['return'];
+    } else {
+        call_user_func_array('clearstatcache', $args);
+    }
+    $GLOBALS['arara']['clearstatcache']['count'] = $count;
+
+    return $return;
+}
+
+function gc_collect_cycles()
+{
+    static $count;
+    if (! isset($GLOBALS['arara']['gc_collect_cycles'])) {
+        $count = 0;
+    }
+    $count++;
+
+    $args = func_get_args();
+    $return = null;
+
+    $GLOBALS['arara']['gc_collect_cycles']['args'] = $args;
+    if (array_key_exists('return', $GLOBALS['arara']['gc_collect_cycles'])) {
+        $return = $GLOBALS['arara']['gc_collect_cycles']['return'];
+    } else {
+        call_user_func_array('gc_collect_cycles', $args);
+    }
+    $GLOBALS['arara']['gc_collect_cycles']['count'] = $count;
+
+    return $return;
+}
+
 function pcntl_fork()
 {
     static $count;

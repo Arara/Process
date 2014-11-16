@@ -126,4 +126,67 @@ class ControlTest extends \TestCase
 
         $this->assertEquals(42, $status);
     }
+
+    /**
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Seconds must be a number greater than or equal to 0
+     */
+    public function testShouldNotAcceptANonNumericValueOnFlushMethod()
+    {
+        $control = new Control();
+        $control->flush(array());
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Seconds must be a number greater than or equal to 0
+     */
+    public function testShouldNotAcceptANonPositiveValueOnFlushMethod()
+    {
+        $control = new Control();
+        $control->flush(-1);
+    }
+
+    public function testShouldSleepSecondsWhenValueIsIntegerOnFlushMethod()
+    {
+        $GLOBALS['arara']['sleep']['return'] = null;
+        $control = new Control();
+        $control->flush(10);
+
+        $this->assertEquals(array(10), $GLOBALS['arara']['sleep']['args']);
+    }
+
+    public function testShouldSleepMicroSecondsWhenValueIsFloatOnFlushMethod()
+    {
+        $GLOBALS['arara']['usleep']['return'] = null;
+
+        $control = new Control();
+        $control->flush(0.1);
+
+        $this->assertEquals(array(100000), $GLOBALS['arara']['usleep']['args']);
+    }
+
+    public function testShouldUseZeroAsDefaultSleepValueOnFlushMethod()
+    {
+        $control = new Control();
+        $control->flush();
+
+        $this->assertEquals(array(0), $GLOBALS['arara']['sleep']['args']);
+    }
+
+    public function testShouldClearsFileStatusCacheOnFlushMethod()
+    {
+        $control = new Control();
+        $control->flush();
+
+        $this->assertEquals(1, $GLOBALS['arara']['clearstatcache']['count']);
+    }
+
+    public function testShouldCollectExistingGarbageCyclesOnFlushMethod()
+    {
+        $control = new Control();
+        $control->flush();
+
+        $this->assertEquals(1, $GLOBALS['arara']['gc_collect_cycles']['count']);
+    }
 }

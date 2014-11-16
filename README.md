@@ -262,6 +262,7 @@ if ($pid > 0) {
 echo 'Child process has PID ' . $control->info()->getId() . PHP_EOL;
 echo 'Child process has parent PID ' . $control->info()->getParentId() . PHP_EOL;
 
+$control->flush(2.5); // Will try to flush current process memory and sleep by 2 and a half seconds
 $control->signal()->send('kill'); // Will send SIGKILL to the current process (the child)
 ```
 
