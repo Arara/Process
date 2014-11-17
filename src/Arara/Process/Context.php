@@ -3,14 +3,18 @@
 namespace Arara\Process;
 
 /**
- * @property bool isRunning
- * @property Exception exception
- * @property int event
- * @property int exitCode
- * @property int finishTime
- * @property int processId
- * @property int startTime
- * @property int timeout
+ * @property bool $isRunning
+ * @property Exception $exception
+ * @property int $event
+ * @property int $exitCode
+ * @property int $finishTime
+ * @property int $processId
+ * @property int $startTime
+ * @property int $timeout
+ * @property resource $stdin
+ * @property resource $stdout
+ * @property resource $stderr
+ * @property Pidfile $pidfile
  */
 class Context
 {

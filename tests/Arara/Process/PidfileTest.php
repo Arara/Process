@@ -8,6 +8,9 @@ function fgets()
     $GLOBALS['arara']['fgets']['args'] = func_get_args();
     if (isset($GLOBALS['arara']['fgets']['return'])) {
         $return = $GLOBALS['arara']['fgets']['return'];
+        unset($GLOBALS['arara']['fgets']['return']);
+    } else {
+        $return = '';
     }
 
     return $return;
@@ -17,8 +20,10 @@ function flock()
 {
     $return = null;
     $GLOBALS['arara']['flock']['args'] = func_get_args();
-    if (isset($GLOBALS['arara']['flock']['return'])) {
+    if (array_key_exists('return', $GLOBALS['arara']['flock'])) {
         $return = $GLOBALS['arara']['flock']['return'];
+    } else {
+        $return = true;
     }
 
     return $return;
@@ -28,8 +33,10 @@ function fopen()
 {
     $return = null;
     $GLOBALS['arara']['fopen']['args'] = func_get_args();
-    if (isset($GLOBALS['arara']['fopen']['return'])) {
+    if (array_key_exists('return', $GLOBALS['arara']['fopen'])) {
         $return = $GLOBALS['arara']['fopen']['return'];
+    } else {
+        $return = true;
     }
 
     return $return;
@@ -39,7 +46,7 @@ function fclose()
 {
     $return = null;
     $GLOBALS['arara']['fclose']['args'] = func_get_args();
-    if (isset($GLOBALS['arara']['fclose']['return'])) {
+    if (array_key_exists('return', $GLOBALS['arara']['fclose'])) {
         $return = $GLOBALS['arara']['fclose']['return'];
     }
 
@@ -50,30 +57,36 @@ function fwrite()
 {
     $return = null;
     $GLOBALS['arara']['fwrite']['args'] = func_get_args();
-    if (isset($GLOBALS['arara']['fwrite']['return'])) {
+    if (array_key_exists('return', $GLOBALS['arara']['fwrite'])) {
         $return = $GLOBALS['arara']['fwrite']['return'];
+    } else {
+        $return = true;
     }
 
     return $return;
 }
 
-function is_dir()
+function is_dir($directory)
 {
     $return = null;
     $GLOBALS['arara']['is_dir']['args'] = func_get_args();
-    if (isset($GLOBALS['arara']['is_dir']['return'])) {
+    if (array_key_exists('return', $GLOBALS['arara']['is_dir'])) {
         $return = $GLOBALS['arara']['is_dir']['return'];
+    } else {
+        $return = true;
     }
 
     return $return;
 }
 
-function is_writable()
+function is_writable($filename)
 {
     $return = null;
     $GLOBALS['arara']['is_writable']['args'] = func_get_args();
-    if (isset($GLOBALS['arara']['is_writable']['return'])) {
+    if (array_key_exists('return', $GLOBALS['arara']['is_writable'])) {
         $return = $GLOBALS['arara']['is_writable']['return'];
+    } else {
+        $return = true;
     }
 
     return $return;
@@ -83,8 +96,34 @@ function unlink()
 {
     $return = null;
     $GLOBALS['arara']['unlink']['args'] = func_get_args();
-    if (isset($GLOBALS['arara']['unlink']['return'])) {
+    if (array_key_exists('return', $GLOBALS['arara']['unlink'])) {
         $return = $GLOBALS['arara']['unlink']['return'];
+    }
+
+    return $return;
+}
+
+function fseek()
+{
+    $return = null;
+    $GLOBALS['arara']['fseek']['args'] = func_get_args();
+    if (array_key_exists('return', $GLOBALS['arara']['fseek'])) {
+        $return = $GLOBALS['arara']['fseek']['return'];
+    } else {
+        $return = 0;
+    }
+
+    return $return;
+}
+
+function ftruncate()
+{
+    $return = null;
+    $GLOBALS['arara']['ftruncate']['args'] = func_get_args();
+    if (array_key_exists('return', $GLOBALS['arara']['ftruncate'])) {
+        $return = $GLOBALS['arara']['ftruncate']['return'];
+    } else {
+        $return = true;
     }
 
     return $return;
@@ -101,6 +140,9 @@ class PidfileTest extends \TestCase
         $GLOBALS['arara']['fopen']['return'] = 'a non-false value';
         $GLOBALS['arara']['is_dir']['return'] = true;
         $GLOBALS['arara']['is_writable']['return'] = true;
+        $GLOBALS['arara']['flock']['return'] = true;
+        $GLOBALS['arara']['fseek']['return'] = 0;
+        $GLOBALS['arara']['ftruncate']['return'] = true;
     }
 
     public function testShouldAcceptAControlOnConstructor()
@@ -116,7 +158,7 @@ class PidfileTest extends \TestCase
         $control = new Control();
         $pidfile = new Pidfile($control);
 
-        $this->assertAttributeSame('arara', 'applicationName', $pidfile);
+        $this->assertSame('arara', $pidfile->getApplicationName());
     }
 
     public function testShouldDefineAnApplicationNameOnConstructor()
@@ -125,7 +167,7 @@ class PidfileTest extends \TestCase
         $applicationName = 'application42';
         $pidfile = new Pidfile($control, $applicationName);
 
-        $this->assertAttributeSame($applicationName, 'applicationName', $pidfile);
+        $this->assertSame('application42', $pidfile->getApplicationName());
     }
 
     /**
@@ -256,7 +298,7 @@ class PidfileTest extends \TestCase
 
         $pidfile = new Pidfile($control);
 
-        $this->assertEquals($processId, $pidfile->getPid());
+        $this->assertEquals($processId, $pidfile->getProcessId());
     }
 
     public function testShouldReturnNullWhenThereIsNoPidOnPidfile()
@@ -267,7 +309,7 @@ class PidfileTest extends \TestCase
 
         $pidfile = new Pidfile($control);
 
-        $this->assertNull($pidfile->getPid());
+        $this->assertNull($pidfile->getProcessId());
     }
 
     public function testShouldReturnOnlyTheFirstLineOfThePidWhenPidfileIsNotEmpty()
@@ -279,7 +321,7 @@ class PidfileTest extends \TestCase
 
         $pidfile = new Pidfile($control);
 
-        $this->assertEquals($processId, $pidfile->getPid());
+        $this->assertEquals($processId, $pidfile->getProcessId());
     }
 
     /**
@@ -312,8 +354,31 @@ class PidfileTest extends \TestCase
      */
     public function testShouldThrowsAnExceptionIfCouldNotLockPidfileWhenInitializing()
     {
-        $GLOBALS['arara']['fgets']['return'] = 123456;
         $GLOBALS['arara']['flock']['return'] = false;
+
+        $pidfile = new Pidfile(new Control());
+        $pidfile->initialize();
+    }
+
+    /**
+     * @expectedException RuntimeException
+     * @expectedExceptionMessage Could not seek pidfile cursor
+     */
+    public function testShouldThrowsAnExceptionIfCouldNotSeekPidfileWhenInitializing()
+    {
+        $GLOBALS['arara']['fseek']['return'] = -1;
+
+        $pidfile = new Pidfile(new Control());
+        $pidfile->initialize();
+    }
+
+    /**
+     * @expectedException RuntimeException
+     * @expectedExceptionMessage Could not truncate pidfile
+     */
+    public function testShouldThrowsAnExceptionIfCouldNotTruncatePidfileWhenInitializing()
+    {
+        $GLOBALS['arara']['ftruncate']['return'] = false;
 
         $pidfile = new Pidfile(new Control());
         $pidfile->initialize();
@@ -323,10 +388,8 @@ class PidfileTest extends \TestCase
      * @expectedException RuntimeException
      * @expectedExceptionMessage Could not write on pidfile
      */
-    public function testShouldThrowsAnExceptionIfCouldWritePidfileWhenInitializing()
+    public function testShouldThrowsAnExceptionIfCouldNotWritePidfileWhenInitializing()
     {
-        $GLOBALS['arara']['fgets']['return'] = 123456;
-        $GLOBALS['arara']['flock']['return'] = 'non-false';
         $GLOBALS['arara']['fwrite']['return'] = false;
 
         $pidfile = new Pidfile(new Control());
@@ -389,5 +452,15 @@ class PidfileTest extends \TestCase
         $pidfile->finalize();
 
         $this->assertEquals('/var/run/arara.pid', $GLOBALS['arara']['unlink']['args'][0]);
+    }
+
+    public function testShouldReadFileContentOnce()
+    {
+        $GLOBALS['arara']['fgets']['return'] = 123456;
+
+        $pidfile = new Pidfile(new Control());
+
+        $this->assertEquals(123456, $pidfile->getProcessId());
+        $this->assertEquals(123456, $pidfile->getProcessId());
     }
 }

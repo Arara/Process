@@ -2,6 +2,7 @@
 
 namespace Arara\Process;
 
+use InvalidArgumentException;
 use RuntimeException;
 
 class Control
@@ -46,6 +47,33 @@ class Control
         exit($exitCode);
     }
     // @codeCoverageIgnoreEnd
+
+    /**
+     * Try to flush current process memory.
+     *
+     * - Delays the program execution;
+     * - Clears file status cache;
+     * - Forces collection of any existing garbage cycles.
+     *
+     * @throws InvalidArgumentException When $seconds is not a valid value.
+     * @param  float|int[optional] $seconds Seconds to sleep (can be 0.5)
+     * @return void
+     */
+    public function flush($seconds = 0)
+    {
+        if (! (is_float($seconds) || is_int($seconds)) || $seconds < 0) {
+            throw new InvalidArgumentException('Seconds must be a number greater than or equal to 0');
+        }
+
+        if (is_int($seconds)) {
+            sleep($seconds);
+        } else {
+            usleep($seconds * 1000000);
+        }
+
+        clearstatcache();
+        gc_collect_cycles();
+    }
 
     /**
      * @link   http://php.net/pcntl_fork

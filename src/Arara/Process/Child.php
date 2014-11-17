@@ -31,6 +31,8 @@ class Child implements Process
         $this->context->isRunning = false;
         $this->context->processId = null;
         $this->context->timeout = $timeout;
+
+        $action->trigger(Action::EVENT_INIT, $this->control, $this->context);
     }
 
     /**
@@ -99,6 +101,7 @@ class Child implements Process
         }
 
         $this->context->isRunning = false;
+        $this->context->processId = null;
     }
 
     /**
@@ -177,7 +180,7 @@ class Child implements Process
         if ($processId > 0) {
             $this->context->isRunning = true;
             $this->context->processId = $processId;
-            usleep(5000); // Give time to the parent think
+            $this->action->trigger(Action::EVENT_FORK, $this->control, $this->context);
             return;
         }
 
@@ -201,6 +204,7 @@ class Child implements Process
         }
 
         $this->context->isRunning = false;
+        $this->context->processId = null;
     }
 
     /**

@@ -543,15 +543,58 @@ class ChildTest extends \TestCase
         $child->start();
     }
 
-    public function testShouldTriggerStartEventWhenStart()
+    public function testShouldTriggerInitEventWhenAddedToProcess()
     {
         $action = $this->action->getMock();
         $action
             ->expects($this->at(0))
             ->method('trigger')
+            ->with(Action::EVENT_INIT);
+
+        $control = $this->control->getMock();
+
+        $child = new Child($action, $control);
+    }
+
+    public function testShouldTriggerForkEventOnParentWhenStart()
+    {
+        $action = $this->action->getMock();
+        $action
+            ->expects($this->at(1))
+            ->method('trigger')
+            ->with(Action::EVENT_FORK);
+
+        $control = $this->control->getMock();
+        $control
+            ->expects($this->once())
+            ->method('fork')
+            ->will($this->returnValue(123456));
+        $control
+            ->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue($this->controlInfo->getMock()));
+        $control
+            ->expects($this->any())
+            ->method('signal')
+            ->will($this->returnValue($this->controlSignal->getMock()));
+
+        $child = new Child($action, $control);
+        $child->start();
+    }
+
+    public function testShouldTriggerStartEventWhenStart()
+    {
+        $action = $this->action->getMock();
+        $action
+            ->expects($this->at(1))
+            ->method('trigger')
             ->with(Action::EVENT_START);
 
         $control = $this->control->getMock();
+        $control
+            ->expects($this->once())
+            ->method('fork')
+            ->will($this->returnValue(0));
         $control
             ->expects($this->any())
             ->method('info')
@@ -573,7 +616,7 @@ class ChildTest extends \TestCase
             ->method('execute')
             ->will($this->returnValue(null));
         $action
-            ->expects($this->at(2))
+            ->expects($this->at(3))
             ->method('trigger')
             ->with(Action::EVENT_SUCCESS);
 
@@ -601,7 +644,7 @@ class ChildTest extends \TestCase
                 trim(array());
             }));
         $action
-            ->expects($this->at(2))
+            ->expects($this->at(3))
             ->method('trigger')
             ->with(Action::EVENT_ERROR);
 
@@ -627,7 +670,7 @@ class ChildTest extends \TestCase
             ->method('execute')
             ->will($this->throwException(new \Exception('Whatever')));
         $action
-            ->expects($this->at(2))
+            ->expects($this->at(3))
             ->method('trigger')
             ->with(Action::EVENT_FAILURE);
 
@@ -649,7 +692,7 @@ class ChildTest extends \TestCase
     {
         $action = $this->action->getMock();
         $action
-            ->expects($this->at(3))
+            ->expects($this->at(4))
             ->method('trigger')
             ->with(Action::EVENT_FINISH);
 
