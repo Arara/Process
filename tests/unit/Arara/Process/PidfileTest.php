@@ -129,11 +129,12 @@ function ftruncate()
     return $return;
 }
 
+use Arara\Test\TestCase;
 
 /**
  * @covers Arara\Process\Pidfile
  */
-class PidfileTest extends \TestCase
+class PidfileTest extends TestCase
 {
     protected function init()
     {

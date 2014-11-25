@@ -5,11 +5,12 @@ namespace Arara\Process\Action;
 use Arara\Process\Context;
 use Arara\Process\Control;
 use Arara\Process\Pidfile;
+use Arara\Test\TestCase;
 
 /**
  * @covers Arara\Process\Action\Daemon
  */
-class DaemonTest extends \TestCase
+class DaemonTest extends TestCase
 {
     public function testShouldDefineACallbackActionOnConstructor()
     {

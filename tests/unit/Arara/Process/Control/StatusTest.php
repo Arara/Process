@@ -2,10 +2,12 @@
 
 namespace Arara\Process\Control;
 
+use Arara\Test\TestCase;
+
 /**
  * @covers Arara\Process\Control\Status
  */
-class StatusTest extends \TestCase
+class StatusTest extends TestCase
 {
     public function testShouldAcceptAnWaitStatusOnConstructor()
     {

@@ -2,10 +2,12 @@
 
 namespace Arara\Process\Control;
 
+use Arara\Test\TestCase;
+
 /**
  * @covers Arara\Process\Control\Signal
  */
-class SignalTest extends \TestCase
+class SignalTest extends TestCase
 {
     public function testShouldDefineAProcessAlarm()
     {

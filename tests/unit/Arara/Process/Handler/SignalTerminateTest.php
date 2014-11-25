@@ -2,10 +2,12 @@
 
 namespace Arara\Process\Handler;
 
+use Arara\Test\TestCase;
+
 /**
  * @covers Arara\Process\Handler\SignalTerminate
  */
-class SignalTerminateTest extends \TestCase
+class SignalTerminateTest extends TestCase
 {
     public function testShouldExitAs0()
     {

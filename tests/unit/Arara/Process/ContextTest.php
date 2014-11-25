@@ -2,10 +2,12 @@
 
 namespace Arara\Process;
 
+use Arara\Test\TestCase;
+
 /**
  * @covers Arara\Process\Context
  */
-class ContextTest extends \TestCase
+class ContextTest extends TestCase
 {
     public function testShouldDefineAndReturnAPropertyValue()
     {

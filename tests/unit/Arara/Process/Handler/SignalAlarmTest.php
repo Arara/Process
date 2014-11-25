@@ -13,11 +13,12 @@ function time()
 
 use Arara\Process\Action\Action;
 use Arara\Process\Context;
+use Arara\Test\TestCase;
 
 /**
  * @covers Arara\Process\Handler\SignalAlarm
  */
-class SignalAlarmTest extends \TestCase
+class SignalAlarmTest extends TestCase
 {
 
     const TIMESTAMP = 1230192830;

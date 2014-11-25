@@ -3,11 +3,12 @@
 namespace Arara\Process\Handler;
 
 use Arara\Process\Control;
+use Arara\Test\TestCase;
 
 /**
  * @covers Arara\Process\Handler\SignalAbstract
  */
-class SignalAbstractTest extends \TestCase
+class SignalAbstractTest extends TestCase
 {
     public function testShouldAcceptAnInstanceOfControlOnConstructor()
     {

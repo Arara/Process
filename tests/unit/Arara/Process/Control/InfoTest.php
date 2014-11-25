@@ -2,10 +2,12 @@
 
 namespace Arara\Process\Control;
 
+use Arara\Test\TestCase;
+
 /**
  * @covers Arara\Process\Control\Info
  */
-class InfoTest extends \TestCase
+class InfoTest extends TestCase
 {
     public function testShouldReturnCurrentProcessId()
     {

@@ -2,10 +2,12 @@
 
 namespace Arara\Process\Handler;
 
+use Arara\Test\TestCase;
+
 /**
  * @covers Arara\Process\Handler\SignalQuit
  */
-class SignalQuitTest extends \TestCase
+class SignalQuitTest extends TestCase
 {
     public function testShouldExitAs4()
     {

@@ -2,10 +2,12 @@
 
 namespace Arara\Process\Handler;
 
+use Arara\Test\TestCase;
+
 /**
  * @covers Arara\Process\Handler\SignalChild
  */
-class SignalChildTest extends \TestCase
+class SignalChildTest extends TestCase
 {
     public function testShouldWaitChildrenFinish()
     {

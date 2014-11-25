@@ -25,11 +25,12 @@ function exec($command, &$output = null, &$return_var = null)
 
 use Arara\Process\Context;
 use Arara\Process\Control;
+use Arara\Test\TestCase;
 
 /**
  * @covers Arara\Process\Action\Command
  */
-class CommandTest extends \TestCase
+class CommandTest extends TestCase
 {
     protected function init()
     {

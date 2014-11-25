@@ -3,11 +3,12 @@
 namespace Arara\Process;
 
 use Arara\Process\Action\Action;
+use Arara\Test\TestCase;
 
 /**
  * @covers Arara\Process\Child
  */
-class ChildTest extends \TestCase
+class ChildTest extends TestCase
 {
     private $control;
     private $context;

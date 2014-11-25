@@ -2,10 +2,12 @@
 
 namespace Arara\Process;
 
+use Arara\Test\TestCase;
+
 /**
  * @covers Arara\Process\Control
  */
-class ControlTest extends \TestCase
+class ControlTest extends TestCase
 {
     public function testShouldExcecuteACommand()
     {

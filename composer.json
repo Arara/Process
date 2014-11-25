@@ -25,5 +25,10 @@
         "psr-0": {
             "Arara\\Process": "src"
         }
+    },
+    "autoload-dev": {
+        "psr-0": {
+            "Arara\\Test": "tests/src"
+        }
     }
 }
