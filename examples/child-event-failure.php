@@ -14,7 +14,7 @@ $action = new Callback(function (Control $control) {
     throw new Exception('An exception was thrown');
 });
 $action->bind(Action::EVENT_FAILURE, function (Control $control, Context $context) {
-    echo 'Failure: ' . json_encode($context->toArray(), (defined('JSON_PRETTY_PRINT') ? JSON_PRETTY_PRINT : 0)) . PHP_EOL;
+    echo 'Failure: ' . json_encode($context->toArray(), (JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT)) . PHP_EOL;
 });
 
 $control = new Control();

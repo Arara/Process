@@ -14,7 +14,7 @@ $action = new Callback(function (Control $control) {
     trim(array('A PHP error occours'));
 });
 $action->bind(Action::EVENT_ERROR, function (Control $control, Context $context) {
-    echo 'Error: ' . json_encode($context->toArray(), (defined('JSON_PRETTY_PRINT') ? JSON_PRETTY_PRINT : 0)) . PHP_EOL;
+    echo 'Error: ' . json_encode($context->toArray(), (JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT)) . PHP_EOL;
 });
 
 $control = new Control();
