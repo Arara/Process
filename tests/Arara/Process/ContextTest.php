@@ -49,4 +49,25 @@ class ContextTest extends \TestCase
 
         $this->assertSame($expectedValue, $actualValue);
     }
+
+    public function testShouldDumpExceptionWhenConveringToArray()
+    {
+        $exception = new \DomainException('My message', 42);
+
+        $context = new Context();
+        $context->exception = $exception;
+
+        $actualValue = $context->toArray();
+        $expectedValue = array(
+            'exception' => array(
+                'class'     => get_class($exception),
+                'message'   => $exception->getMessage(),
+                'code'      => $exception->getCode(),
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine(),
+            ),
+        );
+
+        $this->assertSame($actualValue, $expectedValue);
+    }
 }
