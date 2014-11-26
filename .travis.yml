@@ -14,3 +14,4 @@ script:
   - make phpcs
   - make phpmd
   - make phpunit ARGS=--testsuite=unit
+  - make phpunit ARGS=--testsuite=functional

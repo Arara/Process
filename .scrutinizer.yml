@@ -23,7 +23,7 @@ build:
     tests:
         override:
             -
-                command: 'vendor/bin/phpunit --coverage-clover=coverage-clover.xml tests/'
+                command: 'make phpunit ARGS="--testsuite=unit --coverage-clover=coverage-clover.xml"'
                 coverage:
                     file: 'coverage-clover.xml'
                     format: 'php-clover'
