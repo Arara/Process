@@ -7,9 +7,10 @@ php:
   - 5.6
 
 before_script:
-  - make install
+  - pecl install uopz
+  - composer install --dev --no-interaction --prefer-source
 
 script:
   - make phpcs
   - make phpmd
-  - make phpunit
+  - make phpunit ARGS=--testsuite=unit

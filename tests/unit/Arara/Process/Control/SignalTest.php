@@ -11,24 +11,48 @@ class SignalTest extends TestCase
 {
     public function testShouldDefineAProcessAlarm()
     {
-        $alarm = 990;
-        $signal = new Signal();
-        $signal->alarm($alarm);
+        $actualAlarm = null;
+        $expectedAlarm = 990;
 
-        $this->assertEquals($alarm, $GLOBALS['arara']['pcntl_alarm']['args'][0]);
+        $this->overwrite(
+            'pcntl_alarm',
+            function ($alarm) use (&$actualAlarm) {
+                $actualAlarm = $alarm;
+            }
+        );
+
+        $signal = new Signal();
+        $signal->alarm($expectedAlarm);
+
+        $this->assertEquals($expectedAlarm, $actualAlarm);
     }
 
     public function testShouldReturnTheLastAlarmWhenDefiningANewOne()
     {
-        $GLOBALS['arara']['pcntl_alarm']['return'] = 42;
-        $signal = new Signal();
+        $expectedReturn = 42;
 
-        $this->assertEquals(42, $signal->alarm(123));
+        $this->overwrite(
+            'pcntl_alarm',
+            function () use ($expectedReturn) {
+                return $expectedReturn;
+            }
+        );
+
+        $signal = new Signal();
+        $actualReturn = $signal->alarm(123);
+
+        $this->assertEquals($expectedReturn, $actualReturn);
     }
 
     public function testShouldReturnSignalDispatchingStatus()
     {
-        $GLOBALS['arara']['pcntl_signal_dispatch']['return'] = true;
+        $this->overwrite(
+            'pcntl_signal_dispatch',
+            function () {
+                return true;
+            }
+        );
+
         $signal = new Signal();
 
         $this->assertTrue($signal->dispatch());
@@ -36,6 +60,13 @@ class SignalTest extends TestCase
 
     public function testShouldHandleASignalByPcntlConstant()
     {
+        $this->overwrite(
+            'pcntl_signal',
+            function () {
+                return true;
+            }
+        );
+
         $signal = new Signal();
         $signal->setHandler(SIGINT, 'trim');
 
@@ -44,6 +75,13 @@ class SignalTest extends TestCase
 
     public function testShouldHandleASignalByPcntlConstantName()
     {
+        $this->overwrite(
+            'pcntl_signal',
+            function () {
+                return true;
+            }
+        );
+
         $signal = new Signal();
         $signal->setHandler('SIGINT', 'trim');
 
@@ -52,6 +90,13 @@ class SignalTest extends TestCase
 
     public function testShouldHandleASignalByName()
     {
+        $this->overwrite(
+            'pcntl_signal',
+            function () {
+                return true;
+            }
+        );
+
         $signal = new Signal();
         $signal->setHandler('alarm', 'trim');
 
@@ -74,7 +119,12 @@ class SignalTest extends TestCase
      */
     public function testShouldThrowsExceptionWhenConNotRegisterHandler()
     {
-        $GLOBALS['arara']['pcntl_signal']['return'] = false;
+        $this->overwrite(
+            'pcntl_signal',
+            function () {
+                return false;
+            }
+        );
 
         $signal = new Signal();
 
@@ -93,36 +143,73 @@ class SignalTest extends TestCase
 
     public function testShouldIgnoreASignalByPcntlConstant()
     {
+        $actualArguments = null;
+        $expectedArguments = array(SIGINT, SIG_IGN);
+
+        $this->overwrite(
+            'pcntl_signal',
+            function () use (&$actualArguments) {
+                $actualArguments = func_get_args();
+
+                return true;
+            }
+        );
+
         $signal = new Signal();
         $signal->setHandler('SIGINT', SIG_IGN);
 
-        $this->assertEquals(array(SIGINT, SIG_IGN), $GLOBALS['arara']['pcntl_signal']['args']);
+        $this->assertEquals($expectedArguments, $actualArguments);
     }
 
     public function testShouldIgnoreASignalByPcntlConstantName()
     {
+        $actualArguments = null;
+        $expectedArguments = array(SIGINT, SIG_IGN);
+
+        $this->overwrite(
+            'pcntl_signal',
+            function () use (&$actualArguments) {
+                $actualArguments = func_get_args();
+
+                return true;
+            }
+        );
+
         $signal = new Signal();
         $signal->setHandler(SIGINT, SIG_IGN);
 
-        $this->assertEquals(array(SIGINT, SIG_IGN), $GLOBALS['arara']['pcntl_signal']['args']);
+        $this->assertEquals($expectedArguments, $actualArguments);
     }
 
     public function testShouldIgnoreASignalByName()
     {
+        $actualArguments = null;
+        $expectedArguments = array(SIGTERM, SIG_IGN);
+
+        $this->overwrite(
+            'pcntl_signal',
+            function () use (&$actualArguments) {
+                $actualArguments = func_get_args();
+
+                return true;
+            }
+        );
+
         $signal = new Signal();
         $signal->setHandler('terminate', SIG_IGN);
 
-        $this->assertEquals(array(SIGTERM, SIG_IGN), $GLOBALS['arara']['pcntl_signal']['args']);
-    }
-
-    public function testShouldThowsAnExceptionWhenSignalHandleFails()
-    {
-        $signal = new Signal();
-        $signal->setHandler('quit', SIG_DFL);
+        $this->assertEquals($expectedArguments, $actualArguments);
     }
 
     public function testShouldSetHandler()
     {
+        $this->overwrite(
+            'pcntl_signal',
+            function () {
+                return true;
+            }
+        );
+
         $signal = new Signal();
         $signal->setHandler('quit', 'rtrim');
         $signal->setHandler('quit', 'trim');
@@ -132,6 +219,13 @@ class SignalTest extends TestCase
 
     public function testShouldAppendHandler()
     {
+        $this->overwrite(
+            'pcntl_signal',
+            function () {
+                return true;
+            }
+        );
+
         $signal = new Signal();
         $signal->appendHandler('quit', 'rtrim');
         $signal->appendHandler('quit', 'trim');
@@ -142,6 +236,13 @@ class SignalTest extends TestCase
 
     public function testShouldPrependHandler()
     {
+        $this->overwrite(
+            'pcntl_signal',
+            function () {
+                return true;
+            }
+        );
+
         $signal = new Signal();
         $signal->prependHandler('stop', 'rtrim');
         $signal->prependHandler('stop', 'trim');
@@ -152,6 +253,13 @@ class SignalTest extends TestCase
 
     public function testShouldHandleSignals()
     {
+        $this->overwrite(
+            'pcntl_signal',
+            function () {
+                return true;
+            }
+        );
+
         $count = 0;
         $callback1 = function () use (&$count) { $count++; };
         $callback2 = function () use (&$count) { $count++; };
@@ -168,31 +276,72 @@ class SignalTest extends TestCase
 
     public function testShouldSendASignalByPcntlConstant()
     {
+        $actualArguments = null;
+        $expectedArguments = array(12345, SIGINT);
+
+        $this->overwrite(
+            'posix_kill',
+            function () use (&$actualArguments) {
+                $actualArguments = func_get_args();
+
+                return true;
+            }
+        );
+
         $signal = new Signal();
         $signal->send(SIGINT, 12345);
 
-        $this->assertEquals(array(12345, SIGINT), $GLOBALS['arara']['posix_kill']['args']);
+        $this->assertEquals($expectedArguments, $actualArguments);
     }
 
     public function testShouldSendASignalByPcntlConstantName()
     {
+        $actualArguments = null;
+        $expectedArguments = array(12345, SIGINT);
+
+        $this->overwrite(
+            'posix_kill',
+            function () use (&$actualArguments) {
+                $actualArguments = func_get_args();
+
+                return true;
+            }
+        );
+
         $signal = new Signal();
         $signal->send('SIGINT', 12345);
 
-        $this->assertEquals(array(12345, SIGINT), $GLOBALS['arara']['posix_kill']['args']);
+        $this->assertEquals($expectedArguments, $actualArguments);
     }
 
     public function testShouldSendASignalByName()
     {
+        $actualArguments = null;
+        $expectedArguments = array(12345, SIGALRM);
+
+        $this->overwrite(
+            'posix_kill',
+            function () use (&$actualArguments) {
+                $actualArguments = func_get_args();
+
+                return true;
+            }
+        );
+
         $signal = new Signal();
         $signal->send('alarm', 12345);
 
-        $this->assertEquals(array(12345, SIGALRM), $GLOBALS['arara']['posix_kill']['args']);
+        $this->assertEquals($expectedArguments, $actualArguments);
     }
 
     public function testShouldReturnSignalSendingStatus()
     {
-        $GLOBALS['arara']['posix_kill']['return'] = true;
+        $this->overwrite(
+            'posix_kill',
+            function () {
+                return true;
+            }
+        );
 
         $signal = new Signal();
 
@@ -201,11 +350,28 @@ class SignalTest extends TestCase
 
     public function testShouldUseCurrentProcessIdWhenSendingSignalWithoutDefiningProcessId()
     {
-        $GLOBALS['arara']['posix_getpid']['return'] = 42;
+        $actualProcessId = null;
+        $expectedProcessId = 42;
+
+        $this->overwrite(
+            'posix_getpid',
+            function () use ($expectedProcessId) {
+                return $expectedProcessId;
+            }
+        );
+
+        $this->overwrite(
+            'posix_kill',
+            function ($processId) use (&$actualProcessId) {
+                $actualProcessId = $processId;
+
+                return true;
+            }
+        );
 
         $signal = new Signal();
         $signal->send('kill');
 
-        $this->assertEquals(array(42, SIGKILL), $GLOBALS['arara']['posix_kill']['args']);
+        $this->assertEquals($expectedProcessId, $actualProcessId);
     }
 }

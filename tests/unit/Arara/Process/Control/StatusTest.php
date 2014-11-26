@@ -29,31 +29,64 @@ class StatusTest extends TestCase
 
     public function testShouldReturnExitStatus()
     {
-        $GLOBALS['arara']['pcntl_wexitstatus']['return'] = 0;
-        $status = new Status(0);
+        $expectedExitStatus = 0;
 
-        $this->assertEquals(0, $status->getExitStatus());
+        $this->overwrite(
+            'pcntl_wexitstatus',
+            function () use ($expectedExitStatus) {
+                return $expectedExitStatus;
+            }
+        );
+
+        $status = new Status(0);
+        $actualExitStatus = $status->getExitStatus();
+
+        $this->assertEquals($expectedExitStatus, $actualExitStatus);
     }
 
     public function testShouldReturnStopSignal()
     {
-        $GLOBALS['arara']['pcntl_wstopsig']['return'] = SIGSTOP;
-        $status = new Status(0);
+        $expectedSignal = SIGSTOP;
 
-        $this->assertEquals(SIGSTOP, $status->getStopSignal());
+        $this->overwrite(
+            'pcntl_wstopsig',
+            function () use ($expectedSignal) {
+                return $expectedSignal;
+            }
+        );
+
+        $status = new Status(0);
+        $actualSignal = $status->getStopSignal();
+
+        $this->assertEquals($expectedSignal, $actualSignal);
     }
 
     public function testShouldReturnTerminateSignal()
     {
-        $GLOBALS['arara']['pcntl_wtermsig']['return'] = SIGTERM;
-        $status = new Status(0);
+        $expectedSignal = SIGTERM;
 
-        $this->assertEquals(SIGTERM, $status->getTerminateSignal());
+        $this->overwrite(
+            'pcntl_wtermsig',
+            function () use ($expectedSignal) {
+                return $expectedSignal;
+            }
+        );
+
+        $status = new Status(0);
+        $actualSignal = $status->getTerminateSignal();
+
+        $this->assertEquals($expectedSignal, $actualSignal);
     }
 
     public function testShouldReturnIfIsExited()
     {
-        $GLOBALS['arara']['pcntl_wifexited']['return'] = true;
+        $this->overwrite(
+            'pcntl_wifexited',
+            function () {
+                return true;
+            }
+        );
+
         $status = new Status(0);
 
         $this->assertTrue($status->isExited());
@@ -61,7 +94,13 @@ class StatusTest extends TestCase
 
     public function testShouldReturnIfIsSignaled()
     {
-        $GLOBALS['arara']['pcntl_wifsignaled']['return'] = true;
+        $this->overwrite(
+            'pcntl_wifsignaled',
+            function () {
+                return true;
+            }
+        );
+
         $status = new Status(0);
 
         $this->assertTrue($status->isSignaled());
@@ -69,7 +108,13 @@ class StatusTest extends TestCase
 
     public function testShouldReturnIfIsStopped()
     {
-        $GLOBALS['arara']['pcntl_wifstopped']['return'] = true;
+        $this->overwrite(
+            'pcntl_wifstopped',
+            function () {
+                return true;
+            }
+        );
+
         $status = new Status(0);
 
         $this->assertTrue($status->isStopped());
@@ -77,7 +122,13 @@ class StatusTest extends TestCase
 
     public function testShouldReturnAsSuccessfulWhenExitStatusIsZero()
     {
-        $GLOBALS['arara']['pcntl_wexitstatus']['return'] = 0;
+        $this->overwrite(
+            'pcntl_wexitstatus',
+            function () {
+                return 0;
+            }
+        );
+
         $status = new Status(0);
 
         $this->assertTrue($status->isSuccessful());
@@ -85,7 +136,13 @@ class StatusTest extends TestCase
 
     public function testShouldReturnAsUnsuccessfulWhenExitStatusIsNotZero()
     {
-        $GLOBALS['arara']['pcntl_wexitstatus']['return'] = 3;
+        $this->overwrite(
+            'pcntl_wexitstatus',
+            function () {
+                return 1;
+            }
+        );
+
         $status = new Status(0);
 
         $this->assertFalse($status->isSuccessful());

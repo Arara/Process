@@ -11,35 +11,73 @@ class InfoTest extends TestCase
 {
     public function testShouldReturnCurrentProcessId()
     {
-        $GLOBALS['arara']['posix_getpid']['return'] = 123456;
-        $info = new Info();
+        $expectedProcessId = 123456;
 
-        $this->assertEquals(123456, $info->getId());
+        $this->overwrite(
+            'posix_getpid',
+            function () use ($expectedProcessId) {
+                return $expectedProcessId;
+            }
+        );
+
+        $info = new Info();
+        $actualProcessId = $info->getId();
+
+        $this->assertEquals($expectedProcessId, $actualProcessId);
     }
 
-    public function testShouldReturnParentProcessId()
+    public function testShouldProcessIdParentProcessId()
     {
-        $GLOBALS['arara']['posix_getppid']['return'] = 654321;
-        $info = new Info();
+        $expectedParentProcessId = 654321;
 
-        $this->assertEquals(654321, $info->getParentId());
+        $this->overwrite(
+            'posix_getppid',
+            function () use ($expectedParentProcessId) {
+                return $expectedParentProcessId;
+            }
+        );
+
+        $info = new Info();
+        $actualParentProcessId = $info->getParentId();
+
+        $this->assertEquals($expectedParentProcessId, $actualParentProcessId);
     }
 
     public function testShouldReturnCurrentUserId()
     {
-        $GLOBALS['arara']['posix_getuid']['return'] = 1001;
-        $info = new Info();
+        $expectedUserId = 1001;
 
-        $this->assertEquals(1001, $info->getUserId());
+        $this->overwrite(
+            'posix_getuid',
+            function () use ($expectedUserId) {
+                return $expectedUserId;
+            }
+        );
+
+        $info = new Info();
+        $actualUserId = $info->getUserId();
+
+        $this->assertEquals($expectedUserId, $actualUserId);
     }
 
     public function testShouldDefineCurrentUserId()
     {
-        $GLOBALS['arara']['posix_setuid']['return'] = true;
-        $info = new Info();
-        $info->setUserId(1001);
+        $actualUserId = null;
+        $expectedUserId = 1001;
 
-        $this->assertEquals(array(1001), $GLOBALS['arara']['posix_setuid']['args']);
+        $this->overwrite(
+            'posix_setuid',
+            function ($userId) use (&$actualUserId) {
+                $actualUserId = $userId;
+
+                return true;
+            }
+        );
+
+        $info = new Info();
+        $info->setUserId($expectedUserId);
+
+        $this->assertEquals($expectedUserId, $actualUserId);
     }
 
     /**
@@ -48,27 +86,59 @@ class InfoTest extends TestCase
      */
     public function testShouldThrowsAnExceptionWhenUnableToUpdateCurrentUserId()
     {
-        $GLOBALS['arara']['posix_setuid']['return'] = false;
+        $this->overwrite(
+            'posix_setuid',
+            function () {
+                return false;
+            }
+        );
+
         $info = new Info();
         $info->setUserId(1001);
     }
 
     public function testShouldReturnCurrentUserName()
     {
-        $GLOBALS['arara']['posix_getlogin']['return'] = 'arara';
-        $info = new Info();
+        $expectedUserName = 'arara';
 
-        $this->assertEquals('arara', $info->getUserName());
+        $this->overwrite(
+            'posix_getlogin',
+            function () use ($expectedUserName) {
+                return $expectedUserName;
+            }
+        );
+
+        $info = new Info();
+        $actualUserName = $info->getUserName();
+
+        $this->assertEquals($expectedUserName, $actualUserName);
     }
 
     public function testShouldDefineCurrentUserName()
     {
-        $GLOBALS['arara']['posix_getpwnam']['return'] = array('uid' => 1001);
-        $GLOBALS['arara']['posix_setuid']['return'] = true;
+        $actualUserId = null;
+        $expectedUserId = 1001;
+
+        $this->overwrite(
+            'posix_getpwnam',
+            function () use ($expectedUserId) {
+                return array('uid' => $expectedUserId);
+            }
+        );
+
+        $this->overwrite(
+            'posix_setuid',
+            function ($userId) use (&$actualUserId) {
+                $actualUserId = $userId;
+
+                return true;
+            }
+        );
+
         $info = new Info();
         $info->setUserName('arara');
 
-        $this->assertEquals(array(1001), $GLOBALS['arara']['posix_setuid']['args']);
+        $this->assertEquals($expectedUserId, $actualUserId);
     }
 
     /**
@@ -77,25 +147,52 @@ class InfoTest extends TestCase
      */
     public function testShouldThrowsAnExceptionWhenDefiningANonExistingUserName()
     {
+        $this->overwrite(
+            'posix_getpwnam',
+            function () {
+                return false;
+            }
+        );
+
         $info = new Info();
         $info->setUserName('arara');
     }
 
     public function testShouldReturnCurrentGroupId()
     {
-        $GLOBALS['arara']['posix_getgid']['return'] = 1005;
-        $info = new Info();
+        $expectedGroupId = 1005;
 
-        $this->assertEquals(1005, $info->getGroupId());
+        $this->overwrite(
+            'posix_getgid',
+            function () use ($expectedGroupId) {
+                return $expectedGroupId;
+            }
+        );
+
+        $info = new Info();
+        $actualGroupId = $info->getGroupId();
+
+        $this->assertEquals($expectedGroupId, $actualGroupId);
     }
 
     public function testShouldDefineCurrentGroupId()
     {
-        $GLOBALS['arara']['posix_setgid']['return'] = true;
-        $info = new Info();
-        $info->setGroupId(1005);
+        $actualGroupId = null;
+        $expectedGroupId = 1005;
 
-        $this->assertEquals(array(1005), $GLOBALS['arara']['posix_setgid']['args']);
+        $this->overwrite(
+            'posix_setgid',
+            function ($groupId) use (&$actualGroupId) {
+                $actualGroupId = $groupId;
+
+                return true;
+            }
+        );
+
+        $info = new Info();
+        $info->setGroupId($expectedGroupId);
+
+        $this->assertEquals($expectedGroupId, $actualGroupId);
     }
 
     /**
@@ -104,19 +201,44 @@ class InfoTest extends TestCase
      */
     public function testShouldThrowsAnExceptionWhenUnableToUpdateCurrentGroupId()
     {
-        $GLOBALS['arara']['posix_setgid']['return'] = false;
+        $this->overwrite(
+            'posix_setgid',
+            function () {
+                return false;
+            }
+        );
+
         $info = new Info();
         $info->setGroupId(1001);
     }
 
     public function testShouldReturnCurrentGroupName()
     {
-        $GLOBALS['arara']['posix_getgid']['return'] = 1004;
-        $GLOBALS['arara']['posix_getgrgid']['return'] = array('name' => 'arara');
-        $info = new Info();
+        $currentGroupId = 1004;
+        $expectedGroupName = 'arara';
 
-        $this->assertEquals('arara', $info->getGroupName());
-        $this->assertEquals(array(1004), $GLOBALS['arara']['posix_getgrgid']['args']);
+        $this->overwrite(
+            'posix_getgid',
+            function () use ($currentGroupId) {
+                return $currentGroupId;
+            }
+        );
+
+        $this->overwrite(
+            'posix_getgrgid',
+            function ($groupId) use ($currentGroupId, $expectedGroupName) {
+                if ($currentGroupId != $groupId) {
+                    return array();
+                }
+
+                return array('name' => $expectedGroupName);
+            }
+        );
+
+        $info = new Info();
+        $actualGroupName = $info->getGroupName();
+
+        $this->assertEquals($expectedGroupName, $actualGroupName);
     }
 
     /**
@@ -125,7 +247,13 @@ class InfoTest extends TestCase
      */
     public function testShouldThrowsAnExceptionWhenUnadleToFindCurrentGroupName()
     {
-        $GLOBALS['arara']['posix_getgrgid']['return'] = false;
+        $this->overwrite(
+            'posix_getgrgid',
+            function () {
+                return array();
+            }
+        );
+
         $info = new Info();
         $info->getGroupName();
     }
@@ -133,12 +261,29 @@ class InfoTest extends TestCase
 
     public function testShouldDefineCurrentGroupName()
     {
-        $GLOBALS['arara']['posix_getgrnam']['return'] = array('gid' => 1004);
-        $GLOBALS['arara']['posix_setgid']['return'] = true;
+        $actualGroupId = null;
+        $expectedGroupId = 1004;
+
+        $this->overwrite(
+            'posix_getgrnam',
+            function () use ($expectedGroupId) {
+                return array('gid' => 1004);
+            }
+        );
+
+        $this->overwrite(
+            'posix_setgid',
+            function ($groupId) use (&$actualGroupId) {
+                $actualGroupId = $groupId;
+
+                return true;
+            }
+        );
+
         $info = new Info();
         $info->setGroupName('arara');
 
-        $this->assertEquals(array(1004), $GLOBALS['arara']['posix_setgid']['args']);
+        $this->assertEquals($expectedGroupId, $actualGroupId);
     }
 
     /**
@@ -147,16 +292,32 @@ class InfoTest extends TestCase
      */
     public function testShouldThrowsAnExceptionWhenDefiningANonExistingGroupName()
     {
+        $this->overwrite(
+            'posix_getgrnam',
+            function () {
+                return array();
+            }
+        );
+
         $info = new Info();
         $info->setGroupName('arara');
     }
 
     public function testShouldDetachSessionOfCurrentProcess()
     {
-        $GLOBALS['arara']['posix_setsid']['return'] = 1;
-        $info = new Info();
+        $expectedSessionId = 1;
 
-        $this->assertEquals(1, $info->detachSession());
+        $this->overwrite(
+            'posix_setsid',
+            function () use ($expectedSessionId) {
+                return $expectedSessionId;
+            }
+        );
+
+        $info = new Info();
+        $actualSessionId = $info->detachSession();
+
+        $this->assertEquals($expectedSessionId, $actualSessionId);
     }
 
     /**
@@ -165,16 +326,31 @@ class InfoTest extends TestCase
      */
     public function testShouldThrowsAnExceptionWhenUnableToDetachSessionOfTheCurrentProcess()
     {
-        $GLOBALS['arara']['posix_setsid']['return'] = -1;
+        $this->overwrite(
+            'posix_setsid',
+            function () {
+                return -1;
+            }
+        );
+
         $info = new Info();
         $info->detachSession();
     }
 
     public function testShouldReturnCurrentSessionId()
     {
-        $GLOBALS['arara']['posix_getsid']['return'] = 1;
-        $info = new Info();
+        $expectedSessionId = 1;
 
-        $this->assertEquals(1, $info->getSessionId());
+        $this->overwrite(
+            'posix_getsid',
+            function () use ($expectedSessionId) {
+                return $expectedSessionId;
+            }
+        );
+
+        $info = new Info();
+        $actualSessionId = $info->getSessionId();
+
+        $this->assertEquals($expectedSessionId, $actualSessionId);
     }
 }

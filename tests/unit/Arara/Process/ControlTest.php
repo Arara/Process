@@ -11,12 +11,20 @@ class ControlTest extends TestCase
 {
     public function testShouldExcecuteACommand()
     {
-        $command = '/bin/date';
+        $actualCommand = null;
+        $expectedCommand = '/bin/date';
+
+        $this->overwrite(
+            'pcntl_exec',
+            function ($command) use (&$actualCommand) {
+                $actualCommand = $command;
+            }
+        );
 
         $control = new Control();
-        $control->execute($command);
+        $control->execute($expectedCommand);
 
-        $this->assertEquals($command, $GLOBALS['arara']['pcntl_exec']['args'][0]);
+        $this->assertEquals($expectedCommand, $actualCommand);
     }
 
     /**
@@ -25,7 +33,12 @@ class ControlTest extends TestCase
      */
     public function testShouldThrowsAnExceptionWhenCommandExecutionFails()
     {
-        $GLOBALS['arara']['pcntl_exec']['return'] = false;
+        $this->overwrite(
+            'pcntl_exec',
+            function () {
+                return false;
+            }
+        );
 
         $control = new Control();
         $control->execute('/bin/date');
@@ -33,20 +46,36 @@ class ControlTest extends TestCase
 
     public function testShouldReturnPidForParentProcessWhenForking()
     {
-        $GLOBALS['arara']['pcntl_fork']['return'] = 12345;
+        $expectedPid = 12345;
+
+        $this->overwrite(
+            'pcntl_fork',
+            function () use ($expectedPid) {
+                return $expectedPid;
+            }
+        );
 
         $control = new Control();
+        $actualPid = $control->fork();
 
-        $this->assertEquals($GLOBALS['arara']['pcntl_fork']['return'], $control->fork());
+        $this->assertEquals($expectedPid, $actualPid);
     }
 
     public function testShouldReturnZeroForChildProcessWhenForking()
     {
-        $GLOBALS['arara']['pcntl_fork']['return'] = 0;
+        $expectedReturn = 0;
+
+        $this->overwrite(
+            'pcntl_fork',
+            function () use ($expectedReturn) {
+                return $expectedReturn;
+            }
+        );
 
         $control = new Control();
+        $actualReturn = $control->fork();
 
-        $this->assertEquals($GLOBALS['arara']['pcntl_fork']['return'], $control->fork());
+        $this->assertEquals($expectedReturn, $actualReturn);
     }
 
     /**
@@ -55,7 +84,12 @@ class ControlTest extends TestCase
      */
     public function testShouldThrowsAnExceptionWhenForkFails()
     {
-        $GLOBALS['arara']['pcntl_fork']['return'] = -1;
+        $this->overwrite(
+            'pcntl_fork',
+            function () {
+                return -1;
+            }
+        );
 
         $control = new Control();
         $control->fork();
@@ -77,56 +111,111 @@ class ControlTest extends TestCase
 
     public function testShouldDefineSignalHandlersByDefault()
     {
+        $actualCount = 0;
+        $expectedCount = 4;
+
+        $this->overwrite(
+            'pcntl_signal',
+            function () use (&$actualCount) {
+                $actualCount++;
+
+                return true;
+            }
+        );
+
         $control = new Control();
         $control->signal();
 
-        $this->assertEquals(4, $GLOBALS['arara']['pcntl_signal']['count']);
+        $this->assertEquals($expectedCount, $actualCount);
     }
 
     public function testShouldWaitAndReturn()
     {
-        $GLOBALS['arara']['pcntl_wait']['return'] = -1;
+        $expectedReturn = -1;
+
+        $this->overwrite(
+            'pcntl_wait',
+            function () use ($expectedReturn) {
+                return $expectedReturn;
+            }
+        );
 
         $control = new Control();
-        $this->assertEquals(-1, $control->wait());
+        $actualReturn = $control->wait();
+
+        $this->assertEquals($expectedReturn, $actualReturn);
     }
 
     public function testShouldWaitAndUpdateStatus()
     {
-        $GLOBALS['arara']['pcntl_wait']['status'] = 42;
+        $actualStatus = null;
+        $expectedStatus = -1;
+
+        $this->overwrite(
+            'pcntl_wait',
+            function (&$status) use ($expectedStatus) {
+                $status = $expectedStatus;
+            }
+        );
 
         $control = new Control();
-        $status = null;
-        $control->wait($status);
+        $control->wait($actualStatus);
 
-        $this->assertEquals(42, $status);
+        $this->assertEquals($expectedStatus, $actualStatus);
     }
 
     public function testShouldWaitProcessId()
     {
+        $actualProcessId = null;
+        $expectedProcessId = 999;
+
+        $this->overwrite(
+            'pcntl_waitpid',
+            function ($processId) use (&$actualProcessId) {
+                $actualProcessId = $processId;
+            }
+        );
+
         $control = new Control();
         $control->waitProcessId(999);
 
-        $this->assertEquals(array(999, null, 0), $GLOBALS['arara']['pcntl_waitpid']['args']);
+        $this->assertEquals($expectedProcessId, $actualProcessId);
     }
 
     public function testShouldWaitProcessIdAndReturn()
     {
-        $GLOBALS['arara']['pcntl_waitpid']['return'] = -1;
+        $expectedReturn = -1;
+
+        $this->overwrite(
+            'pcntl_waitpid',
+            function () use ($expectedReturn) {
+                return $expectedReturn;
+            }
+        );
 
         $control = new Control();
-        $this->assertEquals(-1, $control->waitProcessId(999));
+        $actualReturn = $control->waitProcessId(999);
+
+        $this->assertEquals($expectedReturn, $actualReturn);
     }
 
     public function testShouldWaitProcessIdAndUpdateStatus()
     {
-        $GLOBALS['arara']['pcntl_waitpid']['status'] = 42;
+        $actualStatus = null;
+        $expectedStatus = 42;
+
+        $this->overwrite(
+            'pcntl_waitpid',
+            function ($processId, &$status) use ($expectedStatus) {
+                $status = $expectedStatus;
+                return -1;
+            }
+        );
 
         $control = new Control();
-        $status = null;
-        $control->waitProcessId(999, $status);
+        $control->waitProcessId(999, $actualStatus);
 
-        $this->assertEquals(42, $status);
+        $this->assertEquals($expectedStatus, $actualStatus);
     }
 
     /**
@@ -151,44 +240,91 @@ class ControlTest extends TestCase
 
     public function testShouldSleepSecondsWhenValueIsIntegerOnFlushMethod()
     {
-        $GLOBALS['arara']['sleep']['return'] = null;
-        $control = new Control();
-        $control->flush(10);
+        $actualTime = null;
+        $expectedTime = 10;
 
-        $this->assertEquals(array(10), $GLOBALS['arara']['sleep']['args']);
+        $this->overwrite(
+            'sleep',
+            function ($seconds) use (&$actualTime) {
+                $actualTime = $seconds;
+            }
+        );
+
+        $control = new Control();
+        $control->flush($expectedTime);
+
+        $this->assertSame($expectedTime, $actualTime);
     }
 
     public function testShouldSleepMicroSecondsWhenValueIsFloatOnFlushMethod()
     {
-        $GLOBALS['arara']['usleep']['return'] = null;
+        $actualTime = null;
+        $expectedTime = 0.5;
+
+        $this->overwrite(
+            'usleep',
+            function ($seconds) use (&$actualTime) {
+                $actualTime = $seconds / 1000000;
+            }
+        );
 
         $control = new Control();
-        $control->flush(0.1);
+        $control->flush($expectedTime);
 
-        $this->assertEquals(array(100000), $GLOBALS['arara']['usleep']['args']);
+        $this->assertSame($expectedTime, $actualTime);
     }
 
     public function testShouldUseZeroAsDefaultSleepValueOnFlushMethod()
     {
+        $actualTime = null;
+        $expectedTime = 0;
+
+        $this->overwrite(
+            'sleep',
+            function ($seconds) use (&$actualTime) {
+                $actualTime = $seconds;
+            }
+        );
+
         $control = new Control();
         $control->flush();
 
-        $this->assertEquals(array(0), $GLOBALS['arara']['sleep']['args']);
+        $this->assertSame($expectedTime, $actualTime);
     }
 
     public function testShouldClearsFileStatusCacheOnFlushMethod()
     {
+        $actualCount = 0;
+        $expectedCount = 1;
+
+        $this->overwrite(
+            'clearstatcache',
+            function () use (&$actualCount) {
+                $actualCount++;
+            }
+        );
+
         $control = new Control();
         $control->flush();
 
-        $this->assertEquals(1, $GLOBALS['arara']['clearstatcache']['count']);
+        $this->assertSame($expectedCount, $actualCount);
     }
 
     public function testShouldCollectExistingGarbageCyclesOnFlushMethod()
     {
+        $actualCount = 0;
+        $expectedCount = 1;
+
+        $this->overwrite(
+            'gc_collect_cycles',
+            function () use (&$actualCount) {
+                $actualCount++;
+            }
+        );
+
         $control = new Control();
         $control->flush();
 
-        $this->assertEquals(1, $GLOBALS['arara']['gc_collect_cycles']['count']);
+        $this->assertSame($expectedCount, $actualCount);
     }
 }

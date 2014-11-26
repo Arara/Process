@@ -12,6 +12,22 @@ use Arara\Test\TestCase;
  */
 class DaemonTest extends TestCase
 {
+    protected function init()
+    {
+        $this->overwrite(
+            'fopen',
+            function () {
+                return 'a resource';
+            }
+        );
+        $this->overwrite(
+            'fgets',
+            function () {
+                return '';
+            }
+        );
+    }
+
     public function testShouldDefineACallbackActionOnConstructor()
     {
         $action = function () {};

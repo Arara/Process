@@ -17,6 +17,7 @@
         "php": ">=5.4.0"
     },
     "require-dev": {
+        "ext-uopz": "*",
         "phpmd/phpmd" : "@stable",
         "phpunit/phpunit": "@stable",
         "squizlabs/php_codesniffer": "@stable"
