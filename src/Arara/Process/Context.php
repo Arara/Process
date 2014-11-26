@@ -5,7 +5,6 @@ namespace Arara\Process;
 /**
  * @property bool $isRunning
  * @property Exception $exception
- * @property int $event
  * @property int $exitCode
  * @property int $finishTime
  * @property int $processId

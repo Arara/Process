@@ -21,7 +21,6 @@ class SignalAlarm extends SignalAbstract
 
     public function __invoke($signal)
     {
-        $this->context->event = Action::EVENT_TIMEOUT;
         $this->context->exitCode = 3;
         $this->context->finishTime = time();
         $this->action->trigger(Action::EVENT_TIMEOUT, $this->control, $this->context);

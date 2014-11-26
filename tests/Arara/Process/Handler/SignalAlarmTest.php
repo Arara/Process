@@ -79,7 +79,6 @@ class SignalAlarmTest extends \TestCase
 
         $actualData = $context->toArray();
         $expectedData = array(
-            'event' => Action::EVENT_TIMEOUT,
             'exitCode' => 3,
             'finishTime' => self::TIMESTAMP,
         );
