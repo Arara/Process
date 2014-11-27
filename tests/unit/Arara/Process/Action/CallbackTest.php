@@ -4,11 +4,12 @@ namespace Arara\Process\Action;
 
 use Arara\Process\Context;
 use Arara\Process\Control;
+use Arara\Test\TestCase;
 
 /**
  * @covers Arara\Process\Action\Callback
  */
-class CallbackTest extends \TestCase
+class CallbackTest extends TestCase
 {
     public function testShouldDefineACallbackActionOnConstructor()
     {

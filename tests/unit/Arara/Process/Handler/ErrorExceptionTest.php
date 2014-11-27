@@ -3,11 +3,12 @@
 namespace Arara\Process\Handler;
 
 use Arara\Process\Control;
+use Arara\Test\TestCase;
 
 /**
  * @covers Arara\Process\Handler\ErrorException
  */
-class ErrorExceptionTest extends \TestCase
+class ErrorExceptionTest extends TestCase
 {
     /**
      * @expectedException ErrorException

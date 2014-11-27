@@ -2,10 +2,12 @@
 
 namespace Arara\Process\Handler;
 
+use Arara\Test\TestCase;
+
 /**
  * @covers Arara\Process\Handler\SignalInterrupt
  */
-class SignalInterruptTest extends \TestCase
+class SignalInterruptTest extends TestCase
 {
     public function testShouldExitAs3()
     {

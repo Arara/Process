@@ -2,34 +2,23 @@
 
 namespace Arara\Process\Handler;
 
-function time()
-{
-    if ( isset($GLOBALS['time'])) {
-        return $GLOBALS['time'];
-    }
-
-    return \time();
-}
-
 use Arara\Process\Action\Action;
 use Arara\Process\Context;
+use Arara\Test\TestCase;
 
 /**
  * @covers Arara\Process\Handler\SignalAlarm
  */
-class SignalAlarmTest extends \TestCase
+class SignalAlarmTest extends TestCase
 {
-
     const TIMESTAMP = 1230192830;
 
     protected function init()
     {
-        $GLOBALS['time'] = self::TIMESTAMP;
-    }
-
-    protected function finish()
-    {
-        unset($GLOBALS['time']);
+        $timestamp = self::TIMESTAMP;
+        $this->overwrite('time', function () use ($timestamp) {
+            return $timestamp;
+        });
     }
 
     public function testShouldHandleAlarm()
@@ -79,7 +68,6 @@ class SignalAlarmTest extends \TestCase
 
         $actualData = $context->toArray();
         $expectedData = array(
-            'event' => Action::EVENT_TIMEOUT,
             'exitCode' => 3,
             'finishTime' => self::TIMESTAMP,
         );

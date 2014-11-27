@@ -2,10 +2,12 @@
 
 namespace Arara\Process;
 
+use Arara\Test\TestCase;
+
 /**
  * @covers Arara\Process\Context
  */
-class ContextTest extends \TestCase
+class ContextTest extends TestCase
 {
     public function testShouldDefineAndReturnAPropertyValue()
     {
@@ -48,5 +50,26 @@ class ContextTest extends \TestCase
         $actualValue = $context->toArray();
 
         $this->assertSame($expectedValue, $actualValue);
+    }
+
+    public function testShouldDumpExceptionWhenConveringToArray()
+    {
+        $exception = new \DomainException('My message', 42);
+
+        $context = new Context();
+        $context->exception = $exception;
+
+        $actualValue = $context->toArray();
+        $expectedValue = array(
+            'exception' => array(
+                'class'     => get_class($exception),
+                'message'   => $exception->getMessage(),
+                'code'      => $exception->getCode(),
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine(),
+            ),
+        );
+
+        $this->assertSame($actualValue, $expectedValue);
     }
 }

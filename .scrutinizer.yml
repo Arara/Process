@@ -3,14 +3,27 @@ filter:
         - tests/*
         - examples/*
 
-before_commands:
-    - composer install --prefer-source
-
 build:
+    environment:
+        mysql: false
+        postgresql: false
+        redis: false
+        elasticsearch: false
+        rabbitmq: false
+        mongodb: false
+        neo4j: false
+        memcached: false
+        php:
+            version: 5.6
+    dependencies:
+        before:
+            -
+                command: 'yes | pecl install uopz'
+                not_if: 'php -m | grep -q uopz'
     tests:
         override:
             -
-                command: 'phpunit --coverage-clover=coverage-clover.xml'
+                command: 'vendor/bin/phpunit --coverage-clover=coverage-clover.xml tests/'
                 coverage:
                     file: 'coverage-clover.xml'
                     format: 'php-clover'

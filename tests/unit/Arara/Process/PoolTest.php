@@ -2,10 +2,12 @@
 
 namespace Arara\Process;
 
+use Arara\Test\TestCase;
+
 /**
  * @covers Arara\Process\Pool
  */
-class PoolTest extends \TestCase
+class PoolTest extends TestCase
 {
     public function testShouldDefineProcessLimitOnConstructor()
     {

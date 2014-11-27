@@ -2,45 +2,25 @@
 
 namespace Arara\Process\Action;
 
-function exec($command, &$output = null, &$return_var = null)
-{
-    $args = func_get_args();
-    $return = null;
-
-    $GLOBALS['arara']['exec']['args'] = $args;
-
-    if (array_key_exists('output', $GLOBALS['arara']['exec'])) {
-        $output = $GLOBALS['arara']['exec']['output'];
-        $return = end($output);
-    } else {
-        \exec($command, $output, $return_var);
-    }
-
-    if (isset($GLOBALS['arara']['exec']['return_var'])) {
-        $return_var = $GLOBALS['arara']['exec']['return_var'];
-    }
-
-    return $return;
-}
-
 use Arara\Process\Context;
 use Arara\Process\Control;
+use Arara\Test\TestCase;
 
 /**
  * @covers Arara\Process\Action\Command
  */
-class CommandTest extends \TestCase
+class CommandTest extends TestCase
 {
+    protected $defaultExecCallback;
+
     protected function init()
     {
-        $GLOBALS['arara']['exec']['return'] = null;
-        $GLOBALS['arara']['exec']['output'] = array('');
-        $GLOBALS['arara']['exec']['return_var'] = 0;
-    }
+        $this->defaultExecCallback = function ($command, &$output, &$return_var) {
+            $output = array('first', 'Second', 'Third');
+            $return_var = 0;
 
-    protected function finish()
-    {
-        unset($GLOBALS['arara']['exec']);
+            return end($output);
+        };
     }
 
     public function testShouldAcceptCommandAndPrefixItOnConstructor()
@@ -73,6 +53,8 @@ class CommandTest extends \TestCase
 
     public function testShouldAssembleCommandAndArguments()
     {
+        $this->overwrite('exec', $this->defaultExecCallback);
+
         $control = new Control();
         $context = new Context();
         $action = new Command('echo', array('Arara', 'Process'));
@@ -86,6 +68,8 @@ class CommandTest extends \TestCase
 
     public function testShouldAssembleCommandAndKeyValueArguments()
     {
+        $this->overwrite('exec', $this->defaultExecCallback);
+
         $control = new Control();
         $context = new Context();
         $action = new Command('echo', array('-n' => 'Process'));
@@ -99,6 +83,8 @@ class CommandTest extends \TestCase
 
     public function testShouldNotAssembleWithEnvCommand()
     {
+        $this->overwrite('exec', $this->defaultExecCallback);
+
         $control = new Control();
         $context = new Context();
         $prefixEnv = false;
@@ -113,25 +99,64 @@ class CommandTest extends \TestCase
 
     public function testShouldExecuteCommandAndRedirectStderr()
     {
+        $actualCommand = null;
+        $expectedCommand = "(echo 'Arara\Process')2>&1";
+
+        $this->overwrite(
+            'exec',
+            function ($command, &$output, &$return_var) use (&$actualCommand) {
+                $output = array();
+                $return_var = 0;
+                $actualCommand = $command;
+
+                return '';
+            }
+        );
+
         $control = new Control();
         $context = new Context();
         $action = new Command('echo', array('Arara\Process'), false);
         $action->execute($control, $context);
-
-        $actualCommand = $GLOBALS['arara']['exec']['args'][0];
-        $expectedCommand = "(echo 'Arara\Process')2>&1";
 
         $this->assertEquals($expectedCommand, $actualCommand);
     }
 
     /**
      * @expectedException RuntimeException
-     * @expectedExceptionMessage An error has occurred
      */
     public function testShouldThowsAnExceptionWhenCommandGetError()
     {
-        $GLOBALS['arara']['exec']['output'] = array('echo', 'An error has occurred');
-        $GLOBALS['arara']['exec']['return_var'] = 1;
+        $this->overwrite(
+            'exec',
+            function ($command, &$output, &$return_var) {
+                $output = array();
+                $return_var = 1;
+
+                return '';
+            }
+        );
+
+        $control = new Control();
+        $context = new Context();
+        $action = new Command('echo', array('Arara\nProcess'), false);
+        $action->execute($control, $context);
+    }
+
+    /**
+     * @expectedException RuntimeException
+     * @expectedExceptionMessage Second
+     */
+    public function testShouldThowsAnExceptionWithLastLineAsMessageWhenCommandGetError()
+    {
+        $this->overwrite(
+            'exec',
+            function ($command, &$output, &$return_var) {
+                $output = array('First', 'Second');
+                $return_var = 1;
+
+                return end($output);
+            }
+        );
 
         $control = new Control();
         $context = new Context();
@@ -141,7 +166,17 @@ class CommandTest extends \TestCase
 
     public function testShouldStoreLastOutputLine()
     {
-        $GLOBALS['arara']['exec']['output'] = array('Arara', 'Process');
+        $expectedTail = 'Process';
+
+        $this->overwrite(
+            'exec',
+            function ($command, &$output, &$return_var) use ($expectedTail) {
+                $output = array('Arara', $expectedTail);
+                $return_var = 0;
+
+                return end($output);
+            }
+        );
 
         $control = new Control();
         $context = new Context();
@@ -149,14 +184,23 @@ class CommandTest extends \TestCase
         $action->execute($control, $context);
 
         $actualTail = $context->outputTail;
-        $expectedTail = 'Process';
 
         $this->assertEquals($expectedTail, $actualTail);
     }
 
     public function testShouldStoreOutputLines()
     {
-        $GLOBALS['arara']['exec']['output'] = array('Arara', 'Process');
+        $expectedLines = array('Arara', 'Process');
+
+        $this->overwrite(
+            'exec',
+            function ($command, &$output, &$return_var) use ($expectedLines) {
+                $output = $expectedLines;
+                $return_var = 0;
+
+                return end($output);
+            }
+        );
 
         $control = new Control();
         $context = new Context();
@@ -164,14 +208,23 @@ class CommandTest extends \TestCase
         $action->execute($control, $context);
 
         $actualLines = $context->outputLines;
-        $expectedLines = $GLOBALS['arara']['exec']['output'];
 
         $this->assertEquals($expectedLines, $actualLines);
     }
 
     public function testShouldStoreOutputString()
     {
-        $GLOBALS['arara']['exec']['output'] = array('Arara', 'Process');
+        $expectedString = 'Arara' . PHP_EOL . 'Process';
+
+        $this->overwrite(
+            'exec',
+            function ($command, &$output, &$return_var) use ($expectedString) {
+                $output = explode(PHP_EOL, $expectedString);
+                $return_var = 0;
+
+                return end($output);
+            }
+        );
 
         $control = new Control();
         $context = new Context();
@@ -179,7 +232,6 @@ class CommandTest extends \TestCase
         $action->execute($control, $context);
 
         $actualString = $context->outputString;
-        $expectedString = 'Arara' . PHP_EOL . 'Process';
 
         $this->assertEquals($expectedString, $actualString);
     }

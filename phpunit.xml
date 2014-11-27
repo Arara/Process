@@ -1,25 +1,7 @@
-<phpunit backupGlobals="true"
-         backupStaticAttributes="false"
-         bootstrap="tests/bootstrap.php"
-         cacheTokens="false"
-         colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         forceCoversAnnotation="false"
-         mapTestClassNameToCoveredClassName="false"
-         processIsolation="false"
-         stopOnError="false"
-         stopOnFailure="false"
-         stopOnIncomplete="false"
-         stopOnSkipped="false"
-         strict="false"
-         verbose="true">
-
-
+<phpunit>
     <testsuites>
         <testsuite name="unit">
-            <directory>tests/Arara</directory>
+            <directory suffix="Test.php">tests/unit</directory>
         </testsuite>
     </testsuites>
     <filter>

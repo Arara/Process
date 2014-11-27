@@ -5,12 +5,29 @@ namespace Arara\Process\Action;
 use Arara\Process\Context;
 use Arara\Process\Control;
 use Arara\Process\Pidfile;
+use Arara\Test\TestCase;
 
 /**
  * @covers Arara\Process\Action\Daemon
  */
-class DaemonTest extends \TestCase
+class DaemonTest extends TestCase
 {
+    protected function init()
+    {
+        $this->overwrite(
+            'fopen',
+            function () {
+                return 'a resource';
+            }
+        );
+        $this->overwrite(
+            'fgets',
+            function () {
+                return '';
+            }
+        );
+    }
+
     public function testShouldDefineACallbackActionOnConstructor()
     {
         $action = function () {};

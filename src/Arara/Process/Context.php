@@ -5,7 +5,6 @@ namespace Arara\Process;
 /**
  * @property bool $isRunning
  * @property Exception $exception
- * @property int $event
  * @property int $exitCode
  * @property int $finishTime
  * @property int $processId
@@ -72,6 +71,20 @@ class Context
      */
     public function toArray()
     {
-        return $this->data;
+        $data = array();
+        foreach ($this->data as $key => $value) {
+            if ($value instanceof \Exception) {
+                $value = array(
+                    'class'     => get_class($value),
+                    'message'   => $value->getMessage(),
+                    'code'      => $value->getCode(),
+                    'file'      => $value->getFile(),
+                    'line'      => $value->getLine(),
+                );
+            }
+            $data[$key] = $value;
+        }
+
+        return $data;
     }
 }

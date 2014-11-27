@@ -149,19 +149,19 @@ class Child implements Process
     {
         $this->silentRunActionTrigger(Action::EVENT_START);
         try {
-            $this->context->event = $this->action->execute($this->control, $this->context) ?: Action::EVENT_SUCCESS;
+            $event = $this->action->execute($this->control, $this->context) ?: Action::EVENT_SUCCESS;
             $this->context->exitCode = 0;
         } catch (ErrorException $errorException) {
-            $this->context->event = Action::EVENT_ERROR;
+            $event = Action::EVENT_ERROR;
             $this->context->exception = $errorException;
             $this->context->exitCode = 2;
         } catch (Exception $exception) {
-            $this->context->event = Action::EVENT_FAILURE;
+            $event = Action::EVENT_FAILURE;
             $this->context->exception = $exception;
             $this->context->exitCode = 1;
         }
         $this->context->finishTime = time();
-        $this->silentRunActionTrigger($this->context->event);
+        $this->silentRunActionTrigger($event);
         $this->silentRunActionTrigger(Action::EVENT_FINISH);
 
         $this->control->quit($this->context->exitCode);

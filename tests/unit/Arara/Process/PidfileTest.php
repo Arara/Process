@@ -2,147 +2,84 @@
 
 namespace Arara\Process;
 
-function fgets()
-{
-    $return = null;
-    $GLOBALS['arara']['fgets']['args'] = func_get_args();
-    if (isset($GLOBALS['arara']['fgets']['return'])) {
-        $return = $GLOBALS['arara']['fgets']['return'];
-        unset($GLOBALS['arara']['fgets']['return']);
-    } else {
-        $return = '';
-    }
-
-    return $return;
-}
-
-function flock()
-{
-    $return = null;
-    $GLOBALS['arara']['flock']['args'] = func_get_args();
-    if (array_key_exists('return', $GLOBALS['arara']['flock'])) {
-        $return = $GLOBALS['arara']['flock']['return'];
-    } else {
-        $return = true;
-    }
-
-    return $return;
-}
-
-function fopen()
-{
-    $return = null;
-    $GLOBALS['arara']['fopen']['args'] = func_get_args();
-    if (array_key_exists('return', $GLOBALS['arara']['fopen'])) {
-        $return = $GLOBALS['arara']['fopen']['return'];
-    } else {
-        $return = true;
-    }
-
-    return $return;
-}
-
-function fclose()
-{
-    $return = null;
-    $GLOBALS['arara']['fclose']['args'] = func_get_args();
-    if (array_key_exists('return', $GLOBALS['arara']['fclose'])) {
-        $return = $GLOBALS['arara']['fclose']['return'];
-    }
-
-    return $return;
-}
-
-function fwrite()
-{
-    $return = null;
-    $GLOBALS['arara']['fwrite']['args'] = func_get_args();
-    if (array_key_exists('return', $GLOBALS['arara']['fwrite'])) {
-        $return = $GLOBALS['arara']['fwrite']['return'];
-    } else {
-        $return = true;
-    }
-
-    return $return;
-}
-
-function is_dir($directory)
-{
-    $return = null;
-    $GLOBALS['arara']['is_dir']['args'] = func_get_args();
-    if (array_key_exists('return', $GLOBALS['arara']['is_dir'])) {
-        $return = $GLOBALS['arara']['is_dir']['return'];
-    } else {
-        $return = true;
-    }
-
-    return $return;
-}
-
-function is_writable($filename)
-{
-    $return = null;
-    $GLOBALS['arara']['is_writable']['args'] = func_get_args();
-    if (array_key_exists('return', $GLOBALS['arara']['is_writable'])) {
-        $return = $GLOBALS['arara']['is_writable']['return'];
-    } else {
-        $return = true;
-    }
-
-    return $return;
-}
-
-function unlink()
-{
-    $return = null;
-    $GLOBALS['arara']['unlink']['args'] = func_get_args();
-    if (array_key_exists('return', $GLOBALS['arara']['unlink'])) {
-        $return = $GLOBALS['arara']['unlink']['return'];
-    }
-
-    return $return;
-}
-
-function fseek()
-{
-    $return = null;
-    $GLOBALS['arara']['fseek']['args'] = func_get_args();
-    if (array_key_exists('return', $GLOBALS['arara']['fseek'])) {
-        $return = $GLOBALS['arara']['fseek']['return'];
-    } else {
-        $return = 0;
-    }
-
-    return $return;
-}
-
-function ftruncate()
-{
-    $return = null;
-    $GLOBALS['arara']['ftruncate']['args'] = func_get_args();
-    if (array_key_exists('return', $GLOBALS['arara']['ftruncate'])) {
-        $return = $GLOBALS['arara']['ftruncate']['return'];
-    } else {
-        $return = true;
-    }
-
-    return $return;
-}
-
+use Arara\Test\TestCase;
 
 /**
  * @covers Arara\Process\Pidfile
  */
-class PidfileTest extends \TestCase
+class PidfileTest extends TestCase
 {
     protected function init()
     {
-        $GLOBALS['arara']['fopen']['return'] = 'a non-false value';
-        $GLOBALS['arara']['is_dir']['return'] = true;
-        $GLOBALS['arara']['is_writable']['return'] = true;
-        $GLOBALS['arara']['flock']['return'] = true;
-        $GLOBALS['arara']['fseek']['return'] = 0;
-        $GLOBALS['arara']['ftruncate']['return'] = true;
+        $this->overwrite(
+            'fopen',
+            function () {
+                return 'a resource';
+            }
+        );
+
+        $this->overwrite(
+            'fgets',
+            function () {
+                return '';
+            }
+        );
+
+        $this->overwrite(
+            'is_dir',
+            function () {
+                return true;
+            }
+        );
+
+        $this->overwrite(
+            'is_writable',
+            function () {
+                return true;
+            }
+        );
+
+        $this->overwrite(
+            'flock',
+            function () {
+                return true;
+            }
+        );
+
+        $this->overwrite(
+            'fseek',
+            function () {
+                return 0;
+            }
+        );
+
+        $this->overwrite(
+            'ftruncate',
+            function () {
+                return true;
+            }
+        );
+
+        $this->overwrite(
+            'fwrite',
+            function ($content) {
+                return strlen($content);
+            }
+        );
+
+        $this->overwrite(
+            'fclose',
+            function () {
+                return true;
+            }
+        );
+
+        $this->overwrite(
+            'unlink',
+            function () {
+                return true;
+            }
+        );
     }
 
     public function testShouldAcceptAControlOnConstructor()
@@ -229,7 +166,15 @@ class PidfileTest extends \TestCase
      */
     public function testShouldThrowsAnExceptionWhenLockDirectoryIsNotADirectory()
     {
-        $GLOBALS['arara']['is_dir']['return'] = false;
+        $this
+            ->restore('is_dir')
+            ->overwrite(
+                'is_dir',
+                function () {
+                    return false;
+                }
+            );
+
         $control = new Control();
         new Pidfile($control, 'arara', 'filename');
     }
@@ -240,7 +185,15 @@ class PidfileTest extends \TestCase
      */
     public function testShouldThrowsAnExceptionWhenLockDirectoryIsNotWritable()
     {
-        $GLOBALS['arara']['is_writable']['return'] = false;
+        $this
+            ->restore('is_writable')
+            ->overwrite(
+                'is_writable',
+                function () {
+                    return false;
+                }
+            );
+
         $control = new Control();
         new Pidfile($control, 'arara', 'filename');
     }
@@ -251,7 +204,15 @@ class PidfileTest extends \TestCase
      */
     public function testShouldThrowsAnExceptionIfCanNotOpenPidfileWhenCheckingIfIsActive()
     {
-        $GLOBALS['arara']['fopen']['return'] = false;
+        $this
+            ->restore('fopen')
+            ->overwrite(
+                'fopen',
+                function () {
+                    return false;
+                }
+            );
+
 
         $control = new Control();
         $pidfile = new Pidfile($control, 'arara', 'filename');
@@ -269,7 +230,16 @@ class PidfileTest extends \TestCase
     public function testShouldCheckIfPidIsActiveWhenPidfileContainsProcessId()
     {
         $processId = 123456;
-        $GLOBALS['arara']['fgets']['return'] = $processId . PHP_EOL;
+
+        $this
+            ->restore('fgets')
+            ->overwrite(
+            'fgets',
+                function () use ($processId) {
+                    return $processId . PHP_EOL;
+                }
+            );
+
 
         $signal = $this->getMock('Arara\Process\Control\Signal');
         $signal
@@ -292,7 +262,14 @@ class PidfileTest extends \TestCase
     public function testShouldReturnPidWhenHasPidOnPidfile()
     {
         $processId = 123456;
-        $GLOBALS['arara']['fgets']['return'] = $processId;
+        $this
+            ->restore('fgets')
+            ->overwrite(
+                'fgets',
+                function () use ($processId) {
+                    return $processId;
+                }
+            );
 
         $control = $this->getMock('Arara\Process\Control');
 
@@ -303,8 +280,6 @@ class PidfileTest extends \TestCase
 
     public function testShouldReturnNullWhenThereIsNoPidOnPidfile()
     {
-        $GLOBALS['arara']['fgets']['return'] = '';
-
         $control = $this->getMock('Arara\Process\Control');
 
         $pidfile = new Pidfile($control);
@@ -315,7 +290,14 @@ class PidfileTest extends \TestCase
     public function testShouldReturnOnlyTheFirstLineOfThePidWhenPidfileIsNotEmpty()
     {
         $processId = 123456;
-        $GLOBALS['arara']['fgets']['return'] = $processId . PHP_EOL . 987981723 . 12387687;
+        $this
+            ->restore('fgets')
+            ->overwrite(
+                'fgets',
+                function () use ($processId) {
+                    return $processId . PHP_EOL . 987981723 . 12387687;
+                }
+            );
 
         $control = $this->getMock('Arara\Process\Control');
 
@@ -330,7 +312,14 @@ class PidfileTest extends \TestCase
      */
     public function testShouldThrowsAnExceptionIfIsIsAlreadyActiveWhenInitializing()
     {
-        $GLOBALS['arara']['fgets']['return'] = 123456;
+        $this
+            ->restore('fgets')
+            ->overwrite(
+                'fgets',
+                function () {
+                    return 123456;
+                }
+            );
 
         $signal = $this->getMock('Arara\Process\Control\Signal');
         $signal
@@ -354,7 +343,14 @@ class PidfileTest extends \TestCase
      */
     public function testShouldThrowsAnExceptionIfCouldNotLockPidfileWhenInitializing()
     {
-        $GLOBALS['arara']['flock']['return'] = false;
+        $this
+            ->restore('flock')
+            ->overwrite(
+                'flock',
+                function () {
+                    return false;
+                }
+            );
 
         $pidfile = new Pidfile(new Control());
         $pidfile->initialize();
@@ -366,7 +362,14 @@ class PidfileTest extends \TestCase
      */
     public function testShouldThrowsAnExceptionIfCouldNotSeekPidfileWhenInitializing()
     {
-        $GLOBALS['arara']['fseek']['return'] = -1;
+        $this
+            ->restore('fseek')
+            ->overwrite(
+                'fseek',
+                function () {
+                    return -1;
+                }
+            );
 
         $pidfile = new Pidfile(new Control());
         $pidfile->initialize();
@@ -378,7 +381,14 @@ class PidfileTest extends \TestCase
      */
     public function testShouldThrowsAnExceptionIfCouldNotTruncatePidfileWhenInitializing()
     {
-        $GLOBALS['arara']['ftruncate']['return'] = false;
+        $this
+            ->restore('ftruncate')
+            ->overwrite(
+                'ftruncate',
+                function () {
+                    return false;
+                }
+            );
 
         $pidfile = new Pidfile(new Control());
         $pidfile->initialize();
@@ -390,7 +400,15 @@ class PidfileTest extends \TestCase
      */
     public function testShouldThrowsAnExceptionIfCouldNotWritePidfileWhenInitializing()
     {
-        $GLOBALS['arara']['fwrite']['return'] = false;
+        $this
+            ->restore('fwrite')
+            ->overwrite(
+                'fwrite',
+                function () {
+                    return false;
+                }
+            );
+
 
         $pidfile = new Pidfile(new Control());
         $pidfile->initialize();
@@ -399,8 +417,20 @@ class PidfileTest extends \TestCase
     public function testShouldWriteProcessIdOnPidfileWhenInitializing()
     {
         $processId = 123456;
-        $GLOBALS['arara']['flock']['return'] = 'non-false';
-        $GLOBALS['arara']['fwrite']['return'] = 'nono-false';
+        $actualContent = null;
+        $expectedContent = $processId . PHP_EOL;
+
+        $this
+            ->restore('fwrite')
+            ->overwrite(
+                'fwrite',
+                function () use (&$actualContent) {
+                    $actualContent = func_get_arg(1);
+
+                    return true;
+                }
+            );
+
 
         $signal = $this->getMock('Arara\Process\Control\Signal');
         $signal
@@ -427,40 +457,92 @@ class PidfileTest extends \TestCase
         $pidfile = new Pidfile($control);
         $pidfile->initialize();
 
-        $this->assertEquals($processId . PHP_EOL, $GLOBALS['arara']['fwrite']['args'][1]);
+        $this->assertSame($expectedContent, $actualContent);
     }
 
     public function testShouldUnlockPidfileWhenFinilizing()
     {
+        $actualArgument = null;
+        $expectedArgument = LOCK_UN;
+        $this
+            ->restore('flock')
+            ->overwrite(
+                'flock',
+                function () use (&$actualArgument) {
+                    $actualArgument = func_get_arg(1);
+
+                    return true;
+                }
+            );
+
         $pidfile = new Pidfile(new Control());
         $pidfile->finalize();
 
-        $this->assertEquals(LOCK_UN, $GLOBALS['arara']['flock']['args'][1]);
+        $this->assertSame($expectedArgument, $actualArgument);
     }
 
     public function testShouldClosePidfileWhenFinilizing()
     {
+        $actualCount = 0;
+        $expectedCount = 1;
+        $this
+            ->restore('fclose')
+            ->overwrite(
+                'fclose',
+                function () use (&$actualCount) {
+                    $actualCount++;
+
+                    return true;
+                }
+            );
+
         $pidfile = new Pidfile(new Control());
         $pidfile->finalize();
 
-        $this->assertArrayHasKey('fclose', $GLOBALS['arara']);
+        $this->assertSame($expectedCount, $actualCount);
     }
 
     public function testShouldRemovePidfileWhenFinilizing()
     {
+        $actualPidfile = null;
+        $expectedPidfile = '/var/run/arara.pid';
+        $this
+            ->restore('unlink')
+            ->overwrite(
+                'unlink',
+                function () use (&$actualPidfile) {
+                    $actualPidfile = func_get_arg(0);
+
+                    return true;
+                }
+            );
+
         $pidfile = new Pidfile(new Control());
         $pidfile->finalize();
 
-        $this->assertEquals('/var/run/arara.pid', $GLOBALS['arara']['unlink']['args'][0]);
+        $this->assertEquals($expectedPidfile, $actualPidfile);
     }
 
     public function testShouldReadFileContentOnce()
     {
-        $GLOBALS['arara']['fgets']['return'] = 123456;
+        $actualCount = 0;
+        $expectedCount = 1;
+        $this
+            ->restore('fgets')
+            ->overwrite(
+                'fgets',
+                function () use (&$actualCount) {
+                    $actualCount++;
+
+                    return 123456;
+                }
+            );
 
         $pidfile = new Pidfile(new Control());
+        $pidfile->getProcessId();
+        $pidfile->getProcessId();
+        $pidfile->getProcessId();
 
-        $this->assertEquals(123456, $pidfile->getProcessId());
-        $this->assertEquals(123456, $pidfile->getProcessId());
+        $this->assertEquals($expectedCount, $actualCount);
     }
 }

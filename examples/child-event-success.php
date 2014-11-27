@@ -14,7 +14,7 @@ $action = new Callback(function (Control $control) {
     echo 'This is the process action of PID ' . $control->info()->getId() . PHP_EOL;
 });
 $action->bind(Action::EVENT_SUCCESS, function (Control $control, Context $context) {
-    echo 'Success: ' . json_encode($context->toArray(), (defined('JSON_PRETTY_PRINT') ? JSON_PRETTY_PRINT : 0)) . PHP_EOL;
+    echo 'Success: ' . json_encode($context->toArray(), (JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT)) . PHP_EOL;
 });
 
 $control = new Control();

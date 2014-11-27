@@ -16,7 +16,7 @@ $action = new Callback(function (Control $control) {
     echo 'Child just awakened' . PHP_EOL;
 });
 $action->bind(Action::EVENT_TIMEOUT, function (Control $control, Context $context) {
-    echo 'Timeout: ' . json_encode($context->toArray(), (defined('JSON_PRETTY_PRINT') ? JSON_PRETTY_PRINT : 0)) . PHP_EOL;
+    echo 'Timeout: ' . json_encode($context->toArray(), (JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT)) . PHP_EOL;
 });
 
 $control = new Control();
