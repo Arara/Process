@@ -14,13 +14,14 @@
     "require": {
         "ext-pcntl": "*",
         "ext-posix": "*",
-        "php": ">=5.4.0"
+        "php": ">=5.4.0",
+        "phpfluent/callback": "~1.0.0"
     },
     "require-dev": {
         "ext-uopz": "*",
-        "phpmd/phpmd" : "@stable",
-        "phpunit/phpunit": "@stable",
-        "squizlabs/php_codesniffer": "@stable"
+        "phpmd/phpmd" : "~2.1.3",
+        "phpunit/phpunit": "~4.3.5",
+        "squizlabs/php_codesniffer": "~1.5.5"
     },
     "autoload": {
         "psr-0": {

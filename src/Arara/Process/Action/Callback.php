@@ -4,26 +4,47 @@ namespace Arara\Process\Action;
 
 use Arara\Process\Context;
 use Arara\Process\Control;
-use InvalidArgumentException;
+use PHPFluent\Callback\Callback as FluentCallback;
 
 /**
  * {@inheritDoc}
  */
 class Callback implements Action
 {
+    /**
+     * @var FluentCallback
+     */
     protected $callback;
+
+    /**
+     * @var array
+     */
     protected $handlers = array();
 
     /**
      * @param callable $callback Callback to run as action.
      */
-    public function __construct($callback)
+    public function __construct(callable $callback)
     {
-        if (! is_callable($callback)) {
-            throw new InvalidArgumentException('Given action is not a valid callback');
-        }
+        $this->callback = $this->fluentCallback($callback);
+    }
 
-        $this->callback = $callback;
+    /**
+     * @return callable
+     */
+    public function getCallable()
+    {
+        return $this->callback->getCallable();
+    }
+
+    /**
+     * Creates a fluent callback based by the given callable.
+     *
+     * @return FluentCallback
+     */
+    protected function fluentCallback(callable $callable)
+    {
+        return new FluentCallback($callable);
     }
 
     /**
@@ -43,7 +64,7 @@ class Callback implements Action
             if ($event !== ($key & $event)) {
                 continue;
             }
-            call_user_func($handler, $control, $context);
+            call_user_func($handler, $event, $control, $context);
             break;
         }
     }
@@ -55,13 +76,9 @@ class Callback implements Action
      * @param  callable $handler Callback to handle the event (or events).
      * @return void
      */
-    public function bind($event, $handler)
+    public function bind($event, callable $handler)
     {
-        if (! is_callable($handler)) {
-            throw new InvalidArgumentException('Given event handler is not a valid callback');
-        }
-
-        $this->handlers[$event] = $handler;
+        $this->handlers[$event] = $this->fluentCallback($handler);
     }
 
     /**
@@ -71,6 +88,11 @@ class Callback implements Action
      */
     public function getHandlers()
     {
-        return $this->handlers;
+        $handlers = array();
+        foreach ($this->handlers as $key => $handler) {
+            $handlers[$key] = $handler->getCallable();
+        }
+
+        return $handlers;
     }
 }

@@ -33,7 +33,7 @@ class DaemonTest extends TestCase
         $action = function () {};
         $daemon = new Daemon($action);
 
-        $this->assertAttributeSame($action, 'callback', $daemon);
+        $this->assertSame($action, $daemon->getCallable());
     }
 
     public function testShouldDefineOptionsOnConstructor()
@@ -165,7 +165,7 @@ class DaemonTest extends TestCase
     public function testShouldExecutePayloadCallbackWithArguments()
     {
         $actualArguments = array();
-        $payloadCallback = function () use (&$actualArguments) {
+        $payloadCallback = function (Control $control, Context $context, Daemon $daemon) use (&$actualArguments) {
             $actualArguments = func_get_args();
         };
         $daemon = new Daemon($payloadCallback);
