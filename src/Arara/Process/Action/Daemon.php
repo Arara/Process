@@ -102,7 +102,7 @@ class Daemon extends Callback
      *
      * @throws InvalidArgumentException When event binding is forbidden.
      */
-    public function bind($event, $handler)
+    public function bind($event, callable $handler)
     {
         if (in_array($event, array(self::EVENT_INIT, self::EVENT_FORK, self::EVENT_START))) {
             throw new InvalidArgumentException('You can not bind a callback for this event');

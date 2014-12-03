@@ -94,10 +94,6 @@ class Signal
             return;
         }
 
-        if (! is_callable($handler)) {
-            throw new InvalidArgumentException('The given handler is not a valid callback');
-        }
-
         $this->placeHandler($signalNumber, $handler, $placement);
     }
 
@@ -109,7 +105,7 @@ class Signal
      * @param  string $placement Placement of handler ("set", "append" or "prepend")
      * @return void
      */
-    protected function placeHandler($signalNumber, $handler, $placement)
+    protected function placeHandler($signalNumber, callable $handler, $placement)
     {
         if (! isset($this->handlers[$signalNumber])) {
             $this->handlers[$signalNumber] = array();

@@ -132,10 +132,10 @@ class SignalTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage The given handler is not a valid callback
+     * @expectedException PHPUnit_Framework_Exception
+     * @expectedExceptionMessage Argument 2 passed to Arara\Process\Control\Signal::placeHandler() must be callable, array given
      */
-    public function testShouldThrowsAnExceptionWhenSignalHandlerIsNotAValidCallback()
+    public function testShouldTriggerAnErrorWhenSignalHandlerIsNotAValidCallback()
     {
         $signal = new Signal();
         $signal->setHandler('hangup', array());

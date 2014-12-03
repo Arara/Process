@@ -19,16 +19,6 @@ class CallbackTest extends TestCase
         $this->assertAttributeSame($action, 'callback', $callback);
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage Given action is not a valid callback
-     */
-    public function testShouldThrowsAnExceptionWhenActionIsNotAValidCallback()
-    {
-        $action = array();
-        $callback = new Callback($action);
-    }
-
     public function testShouldRunDefinedCallback()
     {
         $control = new Control();
@@ -67,16 +57,6 @@ class CallbackTest extends TestCase
         $callback->bind($event, $handler);
 
         $this->assertEquals($expectedHandlers, $callback->getHandlers());
-    }
-
-    /**
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage Given event handler is not a valid callback
-     */
-    public function testShouldThrowsAnExceptionWhenEventHandlerIsNotAValidCallback()
-    {
-        $callback = new Callback(function() {});
-        $callback->bind(Callback::EVENT_START, array());
     }
 
     public function testShouldRunDefinedEventHandler()

@@ -17,12 +17,8 @@ class Callback implements Action
     /**
      * @param callable $callback Callback to run as action.
      */
-    public function __construct($callback)
+    public function __construct(callable $callback)
     {
-        if (! is_callable($callback)) {
-            throw new InvalidArgumentException('Given action is not a valid callback');
-        }
-
         $this->callback = $callback;
     }
 
@@ -55,12 +51,8 @@ class Callback implements Action
      * @param  callable $handler Callback to handle the event (or events).
      * @return void
      */
-    public function bind($event, $handler)
+    public function bind($event, callable $handler)
     {
-        if (! is_callable($handler)) {
-            throw new InvalidArgumentException('Given event handler is not a valid callback');
-        }
-
         $this->handlers[$event] = $handler;
     }
 
