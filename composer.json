@@ -18,9 +18,9 @@
     },
     "require-dev": {
         "ext-uopz": "*",
-        "phpmd/phpmd" : "@stable",
-        "phpunit/phpunit": "@stable",
-        "squizlabs/php_codesniffer": "@stable"
+        "phpmd/phpmd" : "~2.1.3",
+        "phpunit/phpunit": "~4.3.5",
+        "squizlabs/php_codesniffer": "~1.5.5"
     },
     "autoload": {
         "psr-0": {
