@@ -4,14 +4,21 @@ namespace Arara\Process\Action;
 
 use Arara\Process\Context;
 use Arara\Process\Control;
-use InvalidArgumentException;
+use PHPFluent\Callback\Callback as FluentCallback;
 
 /**
  * {@inheritDoc}
  */
 class Callback implements Action
 {
+    /**
+     * @var FluentCallback
+     */
     protected $callback;
+
+    /**
+     * @var array
+     */
     protected $handlers = array();
 
     /**
@@ -19,7 +26,25 @@ class Callback implements Action
      */
     public function __construct(callable $callback)
     {
-        $this->callback = $callback;
+        $this->callback = $this->fluentCallback($callback);
+    }
+
+    /**
+     * @return callable
+     */
+    public function getCallable()
+    {
+        return $this->callback->getCallable();
+    }
+
+    /**
+     * Creates a fluent callback based by the given callable.
+     *
+     * @return FluentCallback
+     */
+    protected function fluentCallback(callable $callable)
+    {
+        return new FluentCallback($callable);
     }
 
     /**
@@ -39,7 +64,7 @@ class Callback implements Action
             if ($event !== ($key & $event)) {
                 continue;
             }
-            call_user_func($handler, $control, $context);
+            call_user_func($handler, $event, $control, $context);
             break;
         }
     }
@@ -53,7 +78,7 @@ class Callback implements Action
      */
     public function bind($event, callable $handler)
     {
-        $this->handlers[$event] = $handler;
+        $this->handlers[$event] = $this->fluentCallback($handler);
     }
 
     /**
@@ -63,6 +88,11 @@ class Callback implements Action
      */
     public function getHandlers()
     {
-        return $this->handlers;
+        $handlers = array();
+        foreach ($this->handlers as $key => $handler) {
+            $handlers[$key] = $handler->getCallable();
+        }
+
+        return $handlers;
     }
 }

@@ -16,7 +16,7 @@ class CallbackTest extends TestCase
         $action = function () {};
         $callback = new Callback($action);
 
-        $this->assertAttributeSame($action, 'callback', $callback);
+        $this->assertSame($action, $callback->getCallable());
     }
 
     public function testShouldRunDefinedCallback()

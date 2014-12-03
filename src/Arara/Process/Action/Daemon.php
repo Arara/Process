@@ -92,9 +92,9 @@ class Daemon extends Callback
      */
     protected function bindDefaultTriggers()
     {
-        $this->handlers[self::EVENT_INIT]   = array($this, 'handleInit');
-        $this->handlers[self::EVENT_FORK]   = array($this, 'handleFork');
-        $this->handlers[self::EVENT_START]  = array($this, 'handleStart');
+        $this->handlers[self::EVENT_INIT]   = $this->fluentCallback(array($this, 'handleInit'));
+        $this->handlers[self::EVENT_FORK]   = $this->fluentCallback(array($this, 'handleFork'));
+        $this->handlers[self::EVENT_START]  = $this->fluentCallback(array($this, 'handleStart'));
     }
 
     /**
@@ -118,7 +118,7 @@ class Daemon extends Callback
      * @param  Context $context
      * @return void
      */
-    protected function handleInit(Control $control, Context $context)
+    public function handleInit(Control $control, Context $context)
     {
         if (! $context->pidfile instanceof Pidfile) {
             $context->pidfile = new Pidfile($control, $this->getOption('name'), $this->getOption('lock_dir'));
@@ -135,7 +135,7 @@ class Daemon extends Callback
      * @param  Control $control
      * @return void
      */
-    protected function handleFork(Control $control)
+    public function handleFork(Control $control)
     {
         $control->flush(0.5);
     }
@@ -159,7 +159,7 @@ class Daemon extends Callback
      * @param  Context $context
      * @return void
      */
-    protected function handleStart(Control $control, Context $context)
+    public function handleStart(Control $control, Context $context)
     {
         if (! $context->pidfile instanceof Pidfile) {
             throw new LogicException('Pidfile is not defined');

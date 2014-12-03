@@ -23,6 +23,7 @@ composer require arara/process
 - PHP 5.4+
 - [PCNTL](http://php.net/pcntl)
 - [POSIX](http://php.net/posix)
+- [PHPFluent\Callback](https://github.com/PHPFluent/Callback) (installed by Composer)
 
 Version [1.6.0](https://github.com/Arara/Process/tree/1.6.0) or less of Arara\Process works on PHP 5.3.
 

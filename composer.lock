@@ -4,8 +4,57 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "5e8b680459951ebd00899c00386bc5e3",
-    "packages": [],
+    "hash": "89912e89e7c78b75a48730d7c5ecbb26",
+    "packages": [
+        {
+            "name": "phpfluent/callback",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PHPFluent/Callback.git",
+                "reference": "d71a6f36a66db143d055e78ebec99d6647a99944"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PHPFluent/Callback/zipball/d71a6f36a66db143d055e78ebec99d6647a99944",
+                "reference": "d71a6f36a66db143d055e78ebec99d6647a99944",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "phpmd/phpmd": "~2.1.3",
+                "phpunit/phpunit": "~4.3.5",
+                "squizlabs/php_codesniffer": "~1.5.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PHPFluent\\Callback\\": "src/PHPFluent/Callback"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Henrique Moody",
+                    "email": "henriquemoody@gmail.com",
+                    "homepage": "http://about.me/henriquemoody"
+                }
+            ],
+            "description": "Allows you execute callbacks in a more dynamic way",
+            "homepage": "https://github.com/PHPFluent/Callback",
+            "keywords": [
+                "callable",
+                "callback",
+                "closure"
+            ],
+            "time": "2014-12-03 19:09:06"
+        }
+    ],
     "packages-dev": [
         {
             "name": "doctrine/instantiator",
