@@ -57,14 +57,11 @@ class PoolTest extends TestCase
         $this->assertFalse($pool->isRunning());
     }
 
-    /**
-     * @expectedException Arara\Process\Exception\RuntimeException
-     * @expectedExceptionMessage Cannot kill a non-running pool
-     */
-    public function testShouldThrowsAnExceptionWhenTryingToKillANonRunningPool()
+    public function testShouldReturnFalseWhenTryingToKillANonRunningPool()
     {
         $pool = new Pool(42);
-        $pool->kill();
+
+        $this->assertFalse($pool->kill());
     }
 
     public function testShouldReturnAsNotRunningAfterTerminate()
@@ -75,14 +72,11 @@ class PoolTest extends TestCase
         $this->assertFalse($pool->isRunning());
     }
 
-    /**
-     * @expectedException Arara\Process\Exception\RuntimeException
-     * @expectedExceptionMessage Cannot terminate a non-running pool
-     */
-    public function testShouldThrowsAnExceptionWhenTryingToTerminateANonRunningPool()
+    public function testShouldReturnFalseWhenTryingToTerminateANonRunningPool()
     {
         $pool = new Pool(42);
-        $pool->terminate();
+
+        $this->assertFalse($pool->terminate());
     }
 
     public function testShouldAttachProcessToPool()
@@ -284,7 +278,7 @@ class PoolTest extends TestCase
         $pool->attach($this->getMock('Arara\Process\Process'));
     }
 
-    public function testShouldKillProcessAtThePoolWhenTryingToKillPool()
+    public function testShouldKillProcessedInThePoolWhenTryingToKillPool()
     {
         $process1 = $this->getMock('Arara\Process\Process');
         $process1
@@ -388,14 +382,11 @@ class PoolTest extends TestCase
         $pool->terminate();
     }
 
-    /**
-     * @expectedException Arara\Process\Exception\RuntimeException
-     * @expectedExceptionMessage Cannot wait a non-running pool
-     */
-    public function testShouldThrowsAnExceptionWhenTryingToWaitANonRunningPool()
+    public function testShouldReturnFalseWhenTryingToWaitANonRunningPool()
     {
         $pool = new Pool(42);
-        $pool->wait();
+
+        $this->assertFalse($pool->wait());
     }
 
     public function testShouldWaitProcessAtThePoolWhenTryingToWaitPool()
