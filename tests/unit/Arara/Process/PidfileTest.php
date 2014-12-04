@@ -108,7 +108,7 @@ class PidfileTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage Application name should be lowercase
      */
     public function testShouldThrowsAnExceptionWhenApplicationNameIsNotALowerCaseString()
@@ -120,7 +120,7 @@ class PidfileTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage Application name should contains only alphanumeric chars
      */
     public function testShouldThrowsAnExceptionWhenApplicationNameIsContainsNonAlphanumericChars()
@@ -132,7 +132,7 @@ class PidfileTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage Application name should be no longer than 16 characters
      */
     public function testShouldThrowsAnExceptionWhenApplicationNameHasLen()
@@ -161,7 +161,7 @@ class PidfileTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage "filename" is not a valid directory
      */
     public function testShouldThrowsAnExceptionWhenLockDirectoryIsNotADirectory()
@@ -180,7 +180,7 @@ class PidfileTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage "filename" is not a writable directory
      */
     public function testShouldThrowsAnExceptionWhenLockDirectoryIsNotWritable()
@@ -199,7 +199,7 @@ class PidfileTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Could not open pidfile
      */
     public function testShouldThrowsAnExceptionIfCanNotOpenPidfileWhenCheckingIfIsActive()
@@ -307,7 +307,7 @@ class PidfileTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Process is already active
      */
     public function testShouldThrowsAnExceptionIfIsIsAlreadyActiveWhenInitializing()
@@ -338,7 +338,7 @@ class PidfileTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Could not lock pidfile
      */
     public function testShouldThrowsAnExceptionIfCouldNotLockPidfileWhenInitializing()
@@ -357,7 +357,7 @@ class PidfileTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Could not seek pidfile cursor
      */
     public function testShouldThrowsAnExceptionIfCouldNotSeekPidfileWhenInitializing()
@@ -376,7 +376,7 @@ class PidfileTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Could not truncate pidfile
      */
     public function testShouldThrowsAnExceptionIfCouldNotTruncatePidfileWhenInitializing()
@@ -395,7 +395,7 @@ class PidfileTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Could not write on pidfile
      */
     public function testShouldThrowsAnExceptionIfCouldNotWritePidfileWhenInitializing()

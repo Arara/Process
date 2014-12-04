@@ -2,7 +2,7 @@
 
 namespace Arara\Process\Control;
 
-use InvalidArgumentException;
+use Arara\Process\Exception\InvalidArgumentException;
 
 class Status
 {

@@ -2,8 +2,8 @@
 
 namespace Arara\Process\Control;
 
-use InvalidArgumentException;
-use RuntimeException;
+use Arara\Process\Exception\InvalidArgumentException;
+use Arara\Process\Exception\RuntimeException;
 
 class Info
 {

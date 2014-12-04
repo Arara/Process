@@ -19,7 +19,7 @@ class StatusTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid wait status given
      */
     public function testShouldThrowsAnExceptionWhenStatusIsNotValid()

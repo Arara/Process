@@ -11,7 +11,7 @@ use Arara\Test\TestCase;
 class ErrorExceptionTest extends TestCase
 {
     /**
-     * @expectedException ErrorException
+     * @expectedException Arara\Process\Exception\ErrorException
      * @expectedExceptionMessage Some message
      */
     public function testShouldThrowsErrorExceptionWhenCalled()

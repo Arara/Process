@@ -122,7 +122,7 @@ class CommandTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      */
     public function testShouldThowsAnExceptionWhenCommandGetError()
     {
@@ -143,7 +143,7 @@ class CommandTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Second
      */
     public function testShouldThowsAnExceptionWithLastLineAsMessageWhenCommandGetError()

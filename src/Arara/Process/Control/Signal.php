@@ -2,8 +2,8 @@
 
 namespace Arara\Process\Control;
 
-use RuntimeException;
-use InvalidArgumentException;
+use Arara\Process\Exception\InvalidArgumentException;
+use Arara\Process\Exception\RuntimeException;
 
 class Signal
 {

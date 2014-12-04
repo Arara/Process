@@ -103,7 +103,7 @@ class ChildTest extends TestCase
     }
 
     /**
-     * @expectedException UnexpectedValueException
+     * @expectedException Arara\Process\Exception\UnexpectedValueException
      * @expectedExceptionMessage There is no defined process identifier
      */
     public function testShouldThrowsAnExceptionWhenThereIsNoDefinedId()
@@ -183,7 +183,7 @@ class ChildTest extends TestCase
         $this->assertFalse($context->isRunning);
     }
 
-    public function testShouldKillProcess()
+    public function testShouldKillProcessWhenItIsRunning()
     {
         $processId = 123456;
 
@@ -205,36 +205,21 @@ class ChildTest extends TestCase
         $child = new Child($this->action->getMock(), $controlMock);
         $context = $this->getObjectPropertyValue($child, 'context');
         $context->processId = $processId;
-        $child->kill();
+        $context->isRunning = true;
+
+        $this->assertTrue($child->kill());
     }
 
-    /**
-     * @expectedException RuntimeException
-     * @expectedExceptionMessage Could not kill the process
-     */
-    public function testShouldThrowsAnExceptionWhenKillOfProcessFails()
+    public function testShouldNotKillProcessWhenItIsNotRunning()
     {
-        $processId = 123456;
-
-        $controlSignalMock = $this->controlSignal
-            ->setMethods(array('send'))
-            ->getMock();
-        $controlSignalMock
-            ->expects($this->once())
-            ->method('send')
-            ->with(SIGKILL, $processId)
-            ->will($this->returnValue(false));
-
         $controlMock = $this->control->getMock();
         $controlMock
-            ->expects($this->once())
-            ->method('signal')
-            ->will($this->returnValue($controlSignalMock));
+            ->expects($this->any())
+            ->method('signal');
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $context = $this->getObjectPropertyValue($child, 'context');
-        $context->processId = $processId;
-        $child->kill();
+
+        $this->assertFalse($child->kill());
     }
 
     public function testShouldUpdateRunningStatusAfterKillTheProcess()
@@ -259,12 +244,13 @@ class ChildTest extends TestCase
         $child = new Child($this->action->getMock(), $controlMock);
         $context = $this->getObjectPropertyValue($child, 'context');
         $context->processId = $processId;
+        $context->isRunning = true;
         $child->kill();
 
         $this->assertFalse($child->isRunning());
     }
 
-    public function testShouldTerminateProcess()
+    public function testShouldTerminateProcessIfProcessIsRunning()
     {
         $processId = 123456;
 
@@ -286,36 +272,21 @@ class ChildTest extends TestCase
         $child = new Child($this->action->getMock(), $controlMock);
         $context = $this->getObjectPropertyValue($child, 'context');
         $context->processId = $processId;
-        $child->terminate();
+        $context->isRunning = true;
+
+        $this->assertTrue($child->terminate());
     }
 
-    /**
-     * @expectedException RuntimeException
-     * @expectedExceptionMessage Could not terminate the process
-     */
-    public function testShouldThrowsAnExceptionWhenTerminateOfProcessFails()
+    public function testShouldNotTerminateProcessIfProcessIsNotRunning()
     {
-        $processId = 123456;
-
-        $controlSignalMock = $this->controlSignal
-            ->setMethods(array('send'))
-            ->getMock();
-        $controlSignalMock
-            ->expects($this->once())
-            ->method('send')
-            ->with(SIGTERM, $processId)
-            ->will($this->returnValue(false));
-
         $controlMock = $this->control->getMock();
         $controlMock
-            ->expects($this->once())
-            ->method('signal')
-            ->will($this->returnValue($controlSignalMock));
+            ->expects($this->never())
+            ->method('signal');
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $context = $this->getObjectPropertyValue($child, 'context');
-        $context->processId = $processId;
-        $child->terminate();
+
+        $this->assertFalse($child->terminate());
     }
 
     public function testShouldUpdateRunningStatusAfterTerminateTheProcess()
@@ -340,16 +311,30 @@ class ChildTest extends TestCase
         $child = new Child($this->action->getMock(), $controlMock);
         $context = $this->getObjectPropertyValue($child, 'context');
         $context->processId = $processId;
+        $context->isRunning = true;
         $child->terminate();
 
         $this->assertFalse($child->isRunning());
     }
 
-    public function testShouldWaitProcess()
+    public function testShouldWaitProcessIfProcessIsRunning()
     {
         $processId = 123456;
 
+        $controlSignalMock = $this->controlSignal
+            ->setMethods(array('send'))
+            ->getMock();
+        $controlSignalMock
+            ->expects($this->once())
+            ->method('send')
+            ->with(0, $processId)
+            ->will($this->returnValue(true));
+
         $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('signal')
+            ->will($this->returnValue($controlSignalMock));
         $controlMock
             ->expects($this->once())
             ->method('waitProcessId')
@@ -358,27 +343,20 @@ class ChildTest extends TestCase
         $child = new Child($this->action->getMock(), $controlMock);
         $context = $this->getObjectPropertyValue($child, 'context');
         $context->processId = $processId;
-        $child->wait();
+        $context->isRunning = true;
+
+        $this->assertTrue($child->wait());
     }
-
-    /**
-     * @expectedException RuntimeException
-     * @expectedExceptionMessage An error occurred while waiting for the process
-     */
-    public function testShouldThrowsAnExceptionWhenWaitFails()
+    public function testShouldNotWaitWhenProcessIsNotRunning()
     {
-        $processId = 123456;
-
         $controlMock = $this->control->getMock();
         $controlMock
-            ->expects($this->once())
-            ->method('waitProcessId')
-            ->will($this->returnValue(-1));
+            ->expects($this->never())
+            ->method('waitProcessId');
 
         $child = new Child($this->action->getMock(), $controlMock);
-        $context = $this->getObjectPropertyValue($child, 'context');
-        $context->processId = $processId;
-        $child->wait();
+
+        $this->assertFalse($child->wait());
     }
 
     public function testShouldNotHaveAnStatusByDefault()
@@ -395,7 +373,20 @@ class ChildTest extends TestCase
     {
         $processId = 123456;
 
+        $controlSignalMock = $this->controlSignal
+            ->setMethods(array('send'))
+            ->getMock();
+        $controlSignalMock
+            ->expects($this->once())
+            ->method('send')
+            ->with(0, $processId)
+            ->will($this->returnValue(true));
+
         $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('signal')
+            ->will($this->returnValue($controlSignalMock));
         $controlMock
             ->expects($this->once())
             ->method('waitProcessId')
@@ -404,6 +395,7 @@ class ChildTest extends TestCase
         $child = new Child($this->action->getMock(), $controlMock);
         $context = $this->getObjectPropertyValue($child, 'context');
         $context->processId = $processId;
+        $context->isRunning = true;
         $child->wait();
 
         $this->assertAttributeInstanceOf('Arara\Process\Control\Status', 'status', $child);
@@ -416,7 +408,20 @@ class ChildTest extends TestCase
     {
         $processId = 123456;
 
+        $controlSignalMock = $this->controlSignal
+            ->setMethods(array('send'))
+            ->getMock();
+        $controlSignalMock
+            ->expects($this->once())
+            ->method('send')
+            ->with(0, $processId)
+            ->will($this->returnValue(true));
+
         $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('signal')
+            ->will($this->returnValue($controlSignalMock));
         $controlMock
             ->expects($this->once())
             ->method('waitProcessId')
@@ -425,12 +430,13 @@ class ChildTest extends TestCase
         $child = new Child($this->action->getMock(), $controlMock);
         $context = $this->getObjectPropertyValue($child, 'context');
         $context->processId = $processId;
+        $context->isRunning = true;
 
         $this->assertInstanceOf('Arara\Process\Control\Status', $child->getStatus());
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Process already started
      */
     public function testShouldNotStartActionIfThereIsADefinedProcessId()

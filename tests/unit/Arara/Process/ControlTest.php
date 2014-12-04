@@ -28,7 +28,7 @@ class ControlTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Error when executing command
      */
     public function testShouldThrowsAnExceptionWhenCommandExecutionFails()
@@ -79,7 +79,7 @@ class ControlTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Unable to fork process
      */
     public function testShouldThrowsAnExceptionWhenForkFails()
@@ -219,7 +219,7 @@ class ControlTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage Seconds must be a number greater than or equal to 0
      */
     public function testShouldNotAcceptANonNumericValueOnFlushMethod()
@@ -229,7 +229,7 @@ class ControlTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage Seconds must be a number greater than or equal to 0
      */
     public function testShouldNotAcceptANonPositiveValueOnFlushMethod()

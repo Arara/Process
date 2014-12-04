@@ -81,7 +81,7 @@ class InfoTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Unable to update the current user identifier
      */
     public function testShouldThrowsAnExceptionWhenUnableToUpdateCurrentUserId()
@@ -142,7 +142,7 @@ class InfoTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage "arara" is not a valid user name
      */
     public function testShouldThrowsAnExceptionWhenDefiningANonExistingUserName()
@@ -196,7 +196,7 @@ class InfoTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Unable to update the current group identifier
      */
     public function testShouldThrowsAnExceptionWhenUnableToUpdateCurrentGroupId()
@@ -242,7 +242,7 @@ class InfoTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Unable to get the current group name
      */
     public function testShouldThrowsAnExceptionWhenUnadleToFindCurrentGroupName()
@@ -287,7 +287,7 @@ class InfoTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage "arara" is not a valid group name
      */
     public function testShouldThrowsAnExceptionWhenDefiningANonExistingGroupName()
@@ -321,7 +321,7 @@ class InfoTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Unable to detach current session
      */
     public function testShouldThrowsAnExceptionWhenUnableToDetachSessionOfTheCurrentProcess()

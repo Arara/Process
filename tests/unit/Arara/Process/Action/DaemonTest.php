@@ -110,7 +110,7 @@ class DaemonTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage "chumba" is not a valid option
      */
     public function testShouldThrowsAnExceptinoWhenDefiningANonExistingOption()
@@ -120,7 +120,7 @@ class DaemonTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage You can not bind a callback for this event
      */
     public function testShouldNotBeAbleToBindTriggerForInitEvent()
@@ -130,7 +130,7 @@ class DaemonTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage You can not bind a callback for this event
      */
     public function testShouldNotBeAbleToBindTriggerForForkEvent()
@@ -140,7 +140,7 @@ class DaemonTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage You can not bind a callback for this event
      */
     public function testShouldNotBeAbleToBindTriggerForStartEvent()
@@ -272,7 +272,7 @@ class DaemonTest extends TestCase
     }
 
     /**
-     * @expectedException LogicException
+     * @expectedException Arara\Process\Exception\LogicException
      * @expectedExceptionMessage Pidfile is not defined
      */
     public function testShouldThrowsAnExceptionWhenPidfileIsNotDefinedOnStartEvent()

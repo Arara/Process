@@ -4,7 +4,7 @@ namespace Arara\Process\Action;
 
 use Arara\Process\Context;
 use Arara\Process\Control;
-use RuntimeException;
+use Arara\Process\Exception\RuntimeException;
 
 /**
  * Handle shell commands.
@@ -85,7 +85,7 @@ class Command extends Callback
         $context->returnValue   = $returnValue;
 
         if ($returnValue > 0) {
-            throw new \RuntimeException($context->outputTail);
+            throw new RuntimeException($context->outputTail);
         }
     }
 }

@@ -2,9 +2,8 @@
 
 namespace Arara\Process;
 
+use Arara\Process\Exception\RuntimeException;
 use Countable;
-use IteratorAggregate;
-use RuntimeException;
 use SplObjectStorage;
 
 class Pool implements Process, Countable
@@ -87,17 +86,16 @@ class Pool implements Process, Countable
      */
     public function kill()
     {
-        if (! $this->isRunning()) {
-            throw new RuntimeException('Cannot kill a non-running pool');
-        }
-
+        $result = $this->isRunning();
         $this->stopped = true;
         foreach ($this->process as $process) {
             if (! $process->isRunning()) {
                 continue;
             }
-            $process->kill();
+            $result = $process->kill() && $result;
         }
+
+        return $result;
     }
 
     /**
@@ -133,17 +131,16 @@ class Pool implements Process, Countable
      */
     public function terminate()
     {
-        if (! $this->isRunning()) {
-            throw new RuntimeException('Cannot terminate a non-running pool');
-        }
-
+        $result = $this->isRunning();
         $this->stopped = true;
         foreach ($this->process as $process) {
             if (! $process->isRunning()) {
                 continue;
             }
-            $process->terminate();
+            $result = $process->terminate() && $result;
         }
+
+        return $result;
     }
 
     /**
@@ -151,15 +148,14 @@ class Pool implements Process, Countable
      */
     public function wait()
     {
-        if (! $this->isRunning()) {
-            throw new RuntimeException('Cannot wait a non-running pool');
-        }
-
+        $result = $this->isRunning();
         foreach ($this->process as $process) {
             if (! $process->isRunning()) {
                 continue;
             }
-            $process->wait();
+            $result = $process->wait() && $result;
         }
+
+        return $result;
     }
 }

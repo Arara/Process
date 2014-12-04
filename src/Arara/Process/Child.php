@@ -4,10 +4,10 @@ namespace Arara\Process;
 
 use Arara\Process\Action\Action;
 use Arara\Process\Control\Status;
-use ErrorException;
+use Arara\Process\Exception\ErrorException;
+use Arara\Process\Exception\RuntimeException;
+use Arara\Process\Exception\UnexpectedValueException;
 use Exception;
-use RuntimeException;
-use UnexpectedValueException;
 
 class Child implements Process
 {
@@ -78,17 +78,28 @@ class Child implements Process
      */
     public function isRunning()
     {
-        if (! $this->hasId()) {
+        return ($this->context->isRunning = $this->sendSignal(0));
+    }
+
+    /**
+     * Sends a signal to the current process and returns its results.
+     *
+     * @param  int $signalNumber
+     * @return boolen
+     */
+    protected function sendSignal($signalNumber)
+    {
+        if (! $this->context->isRunning || ! $this->context->processId) {
             return false;
         }
 
-        if (! $this->context->isRunning) {
-            return false;
+        $result = $this->control->signal()->send($signalNumber, $this->context->processId);
+        if (in_array($signalNumber, array(SIGTERM, SIGKILL))) {
+            $this->context->isRunning = false;
+            $this->context->processId = null;
         }
 
-        $this->context->isRunning = $this->control->signal()->send(0, $this->getId());
-
-        return $this->context->isRunning;
+        return $result;
     }
 
     /**
@@ -96,12 +107,7 @@ class Child implements Process
      */
     public function kill()
     {
-        if (! $this->control->signal()->send(SIGKILL, $this->getId())) {
-            throw new RuntimeException('Could not kill the process');
-        }
-
-        $this->context->isRunning = false;
-        $this->context->processId = null;
+        return $this->sendSignal(SIGKILL);
     }
 
     /**
@@ -163,8 +169,6 @@ class Child implements Process
         $this->context->finishTime = time();
         $this->silentRunActionTrigger($event);
         $this->silentRunActionTrigger(Action::EVENT_FINISH);
-
-        $this->control->quit($this->context->exitCode);
     }
 
     /**
@@ -176,15 +180,13 @@ class Child implements Process
             throw new RuntimeException('Process already started');
         }
 
-        $processId = $this->control->fork();
-        if ($processId > 0) {
-            $this->context->isRunning = true;
-            $this->context->processId = $processId;
+        $this->context->processId = $this->control->fork();
+        $this->context->isRunning = true;
+        if ($this->context->processId > 0) {
             $this->action->trigger(Action::EVENT_FORK, $this->control, $this->context);
             return;
         }
 
-        $this->context->isRunning = true;
         $this->context->processId = $this->control->info()->getId();
         $this->context->startTime = time();
 
@@ -192,6 +194,8 @@ class Child implements Process
         $this->setHandlerErrorException();
         $this->run();
         restore_error_handler();
+
+        $this->control->quit($this->context->exitCode);
     }
 
     /**
@@ -199,12 +203,7 @@ class Child implements Process
      */
     public function terminate()
     {
-        if (! $this->control->signal()->send(SIGTERM, $this->getId())) {
-            throw new RuntimeException('Could not terminate the process');
-        }
-
-        $this->context->isRunning = false;
-        $this->context->processId = null;
+        return $this->sendSignal(SIGTERM);
     }
 
     /**
@@ -212,13 +211,15 @@ class Child implements Process
      */
     public function wait()
     {
+        if (! $this->isRunning()) {
+            return false;
+        }
+
         $waitStatus = 0;
         $waitReturn = $this->control->waitProcessId($this->getId(), $waitStatus);
 
         $this->status = new Status($waitStatus);
 
-        if (-1 === $waitReturn) {
-            throw new RuntimeException('An error occurred while waiting for the process');
-        }
+        return (-1 !== $waitReturn);
     }
 }
