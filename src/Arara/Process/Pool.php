@@ -2,9 +2,8 @@
 
 namespace Arara\Process;
 
+use Arara\Process\Exception\RuntimeException;
 use Countable;
-use IteratorAggregate;
-use RuntimeException;
 use SplObjectStorage;
 
 class Pool implements Process, Countable

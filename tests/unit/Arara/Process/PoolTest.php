@@ -39,7 +39,7 @@ class PoolTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Pool is already running
      */
     public function testShouldThrowsAnExceptionWhenTryingToStartTwice()
@@ -58,7 +58,7 @@ class PoolTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Cannot kill a non-running pool
      */
     public function testShouldThrowsAnExceptionWhenTryingToKillANonRunningPool()
@@ -76,7 +76,7 @@ class PoolTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Cannot terminate a non-running pool
      */
     public function testShouldThrowsAnExceptionWhenTryingToTerminateANonRunningPool()
@@ -107,7 +107,7 @@ class PoolTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Could not attach child to non-running pool
      */
     public function testShouldThrowsAnExceptionWhenTryingToAttachProcessAfterKillPool()
@@ -118,7 +118,7 @@ class PoolTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Could not attach child to non-running pool
      */
     public function testShouldThrowsAnExceptionWhenTryingToAttachProcessAfterTerminatePool()
@@ -389,7 +389,7 @@ class PoolTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Cannot wait a non-running pool
      */
     public function testShouldThrowsAnExceptionWhenTryingToWaitANonRunningPool()

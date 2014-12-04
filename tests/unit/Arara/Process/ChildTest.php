@@ -103,7 +103,7 @@ class ChildTest extends TestCase
     }
 
     /**
-     * @expectedException UnexpectedValueException
+     * @expectedException Arara\Process\Exception\UnexpectedValueException
      * @expectedExceptionMessage There is no defined process identifier
      */
     public function testShouldThrowsAnExceptionWhenThereIsNoDefinedId()
@@ -209,7 +209,7 @@ class ChildTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Could not kill the process
      */
     public function testShouldThrowsAnExceptionWhenKillOfProcessFails()
@@ -290,7 +290,7 @@ class ChildTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Could not terminate the process
      */
     public function testShouldThrowsAnExceptionWhenTerminateOfProcessFails()
@@ -362,7 +362,7 @@ class ChildTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage An error occurred while waiting for the process
      */
     public function testShouldThrowsAnExceptionWhenWaitFails()
@@ -430,7 +430,7 @@ class ChildTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Process already started
      */
     public function testShouldNotStartActionIfThereIsADefinedProcessId()

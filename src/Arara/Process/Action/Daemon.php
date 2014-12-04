@@ -4,10 +4,9 @@ namespace Arara\Process\Action;
 
 use Arara\Process\Context;
 use Arara\Process\Control;
+use Arara\Process\Exception\InvalidArgumentException;
+use Arara\Process\Exception\LogicException;
 use Arara\Process\Pidfile;
-use InvalidArgumentException;
-use LogicException;
-use RuntimeException;
 
 class Daemon extends Callback
 {

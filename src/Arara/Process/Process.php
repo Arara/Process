@@ -2,6 +2,8 @@
 
 namespace Arara\Process;
 
+use Arara\Process\Exception\RuntimeException;
+
 interface Process
 {
     /**

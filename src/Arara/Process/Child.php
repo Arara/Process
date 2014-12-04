@@ -4,10 +4,10 @@ namespace Arara\Process;
 
 use Arara\Process\Action\Action;
 use Arara\Process\Control\Status;
-use ErrorException;
+use Arara\Process\Exception\ErrorException;
+use Arara\Process\Exception\RuntimeException;
+use Arara\Process\Exception\UnexpectedValueException;
 use Exception;
-use RuntimeException;
-use UnexpectedValueException;
 
 class Child implements Process
 {

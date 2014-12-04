@@ -104,7 +104,7 @@ class SignalTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Arara\Process\Exception\InvalidArgumentException
      * @expectedExceptionMessage The given value is not a valid signal
      */
     public function testShouldThrowsAnExceptionWhenSignalIsNotValid()
@@ -114,7 +114,7 @@ class SignalTest extends TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Could not define signal handler
      */
     public function testShouldThrowsExceptionWhenConNotRegisterHandler()
