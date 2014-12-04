@@ -16,8 +16,7 @@ interface Process
     /**
      * Kill the current process (SIGKILL).
      *
-     * @throws RuntimeException If could not kill the process.
-     * @return void
+     * @return boolean If could kill the process or not.
      */
     public function kill();
 
@@ -35,16 +34,14 @@ interface Process
     /**
      * Terminate the current process (SIGTERM).
      *
-     * @throws RuntimeException If could not terminate the process.
-     * @return void
+     * @return boolean If could terminate the process or not.
      */
     public function terminate();
 
     /**
      * Wait the current process.
      *
-     * @throws RuntimeException If an error occouts when waiting the process.
-     * @return void
+     * @return boolean If none error occouts when waiting the process or any.
      */
     public function wait();
 }
