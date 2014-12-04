@@ -1,5 +1,8 @@
 <phpunit>
     <testsuites>
+        <testsuite name="functional">
+            <directory suffix=".phpt">tests/functional</directory>
+        </testsuite>
         <testsuite name="unit">
             <directory suffix="Test.php">tests/unit</directory>
         </testsuite>

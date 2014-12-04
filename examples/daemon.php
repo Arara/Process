@@ -1,8 +1,8 @@
 <?php
 
-declare(ticks=1);
+declare (ticks = 1);
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__.'/../vendor/autoload.php';
 
 use Arara\Process\Action\Daemon;
 use Arara\Process\Child;
@@ -10,7 +10,7 @@ use Arara\Process\Control;
 use Arara\Process\Context;
 
 $daemon = new Daemon(
-    function (Control $control, Context $context, Daemon $daemon) {
+    function (Daemon $daemon, Control $control) {
         openlog($daemon->getOption('name'), LOG_PID | LOG_PERROR, LOG_LOCAL0);
 
         $control->flush(60);
@@ -19,7 +19,7 @@ $daemon = new Daemon(
 $daemon->bind(Daemon::EVENT_SUCCESS, function () {
     syslog(LOG_INFO, 'Daemon was successfully finished');
 });
-$daemon->bind(Daemon::EVENT_ERROR | Daemon::EVENT_FAILURE, function (Control $control, Context $context) {
+$daemon->bind(Daemon::EVENT_ERROR | Daemon::EVENT_FAILURE, function (Context $context) {
     syslog(LOG_ERR, $context->exception->getMessage());
 });
 $daemon->bind(Daemon::EVENT_FINISH, function () {
@@ -31,10 +31,9 @@ $control = new Control();
 $process = new Child($daemon, $control);
 
 try {
-
     $args = $_SERVER['argv'];
     $script = array_shift($args);
-    $usageMessage = sprintf('php %s [OPTIONS] {start|stop|status}', $script);
+    $usageMessage = sprintf('php %s {start|stop|status}', $script);
 
     if (empty($args)) {
         throw new DomainException($usageMessage);
@@ -44,28 +43,26 @@ try {
     switch ($action) {
         case 'start':
             $process->start();
-            fwrite(STDOUT, 'Started' . PHP_EOL);
+            fwrite(STDOUT, 'Started'.PHP_EOL);
             break;
 
         case 'stop':
             $process->terminate();
-            fwrite(STDOUT, 'Stopped' . PHP_EOL);
+            fwrite(STDOUT, 'Stopped'.PHP_EOL);
             break;
 
         case 'status':
-            fwrite(STDOUT, 'Daemon is ' . ($process->isRunning() ? '' : 'not ') . 'running' . PHP_EOL);
+            fwrite(STDOUT, 'Daemon is '.($process->isRunning() ? '' : 'not ').'running'.PHP_EOL);
             break;
 
         default:
             throw new DomainException($usageMessage);
     }
-
 } catch (DomainException $exception) {
-    fwrite(STDERR, $exception->getMessage() . PHP_EOL);
+    fwrite(STDERR, $exception->getMessage().PHP_EOL);
     exit(1);
-
 } catch (Exception $exception) {
-    fwrite(STDERR, $exception->getMessage() . PHP_EOL);
-    fwrite(STDERR, $exception->getTraceAsString() . PHP_EOL);
+    fwrite(STDERR, $exception->getMessage().PHP_EOL);
+    fwrite(STDERR, $exception->getTraceAsString().PHP_EOL);
     exit(2);
 }
