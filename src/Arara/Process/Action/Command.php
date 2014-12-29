@@ -7,7 +7,7 @@ use Arara\Process\Control;
 use Arara\Process\Exception\RuntimeException;
 
 /**
- * Handle shell commands.
+ * Action implementation for shell commands.
  */
 class Command extends Callback
 {
@@ -22,13 +22,13 @@ class Command extends Callback
     protected $arguments = array();
 
     /**
-     * @param string $command
-     * @param array[optional] $arguments
+     * @param string  $command
+     * @param array   $arguments
      * @param boolean $prefix
      */
     public function __construct($command, array $arguments = array(), $prefix = true)
     {
-        $this->command = $prefix ? '/usr/bin/env ' . $command : $command;
+        $this->command = $prefix ? '/usr/bin/env '.$command : $command;
         $this->arguments = $arguments;
     }
 
@@ -63,11 +63,11 @@ class Command extends Callback
         foreach ($this->arguments as $key => $value) {
             if (is_int($key)
                 && false === strpos((string) $key, '-')) {
-                $assembled .= ' ' . escapeshellarg($value);
+                $assembled .= ' '.escapeshellarg($value);
                 continue;
             }
-            $assembled .= ' ' . escapeshellarg($key);
-            $assembled .= ' ' . escapeshellarg($value);
+            $assembled .= ' '.escapeshellarg($key);
+            $assembled .= ' '.escapeshellarg($value);
         }
 
         return $assembled;

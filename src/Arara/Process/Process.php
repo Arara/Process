@@ -4,12 +4,15 @@ namespace Arara\Process;
 
 use Arara\Process\Exception\RuntimeException;
 
+/**
+ * Interface for processes.
+ */
 interface Process
 {
     /**
      * Return TRUE when process is running or FALSE if not.
      *
-     * @return bool
+     * @return boolean
      */
     public function isRunning();
 
@@ -27,7 +30,8 @@ interface Process
      * as parent or child.
      *
      * @throws RuntimeException If could not start the process.
-     * @return void
+     *
+     * @return null
      */
     public function start();
 

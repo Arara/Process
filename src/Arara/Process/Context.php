@@ -2,32 +2,39 @@
 
 namespace Arara\Process;
 
+use Exception;
+
 /**
- * @property bool $isRunning
- * @property Exception $exception
- * @property int $exitCode
- * @property int $finishTime
- * @property int $processId
- * @property int $startTime
- * @property int $timeout
- * @property resource $stdin
- * @property resource $stdout
- * @property resource $stderr
- * @property Pidfile $pidfile
- * @property string $command
- * @property string $outputTail
- * @property string $outputString
- * @property array $outputLines
- * @property int $returnValue
+ * Used as data context when any event is triggered.
+ *
+ * @property string     $command
+ * @property Exception  $exception
+ * @property integer    $exitCode
+ * @property integer    $finishTime
+ * @property boolean    $isRunning
+ * @property array      $outputLines
+ * @property string     $outputString
+ * @property string     $outputTail
+ * @property Pidfile    $pidfile
+ * @property integer    $processId
+ * @property integer    $returnValue
+ * @property integer    $startTime
+ * @property resource   $stderr
+ * @property resource   $stdin
+ * @property resource   $stdout
+ * @property integer    $timeout
  */
 class Context
 {
+    /**
+     * @var array
+     */
     protected $data = array();
 
     /**
-     * Accept an array of properties on constructor
+     * Accept an array of properties on constructor.
      *
-     * @param  array $data Key => value properties
+     * @param array $data Optional key => value properties.
      */
     public function __construct(array $data = array())
     {
@@ -39,8 +46,10 @@ class Context
     /**
      * Defines a value for some property.
      *
-     * @param  string $property
-     * @param  mixed $value
+     * @param string $property
+     * @param mixed  $value
+     *
+     * @return null
      */
     public function __set($property, $value)
     {
@@ -65,6 +74,28 @@ class Context
     }
 
     /**
+     * Normalizes the given value.
+     *
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    protected function normalize($value)
+    {
+        if ($value instanceof Exception) {
+            $value = array(
+                'class'     => get_class($value),
+                'message'   => $value->getMessage(),
+                'code'      => $value->getCode(),
+                'file'      => $value->getFile(),
+                'line'      => $value->getLine(),
+            );
+        }
+
+        return $value;
+    }
+
+    /**
      * Returns all data as an array.
      *
      * @return array
@@ -73,16 +104,7 @@ class Context
     {
         $data = array();
         foreach ($this->data as $key => $value) {
-            if ($value instanceof \Exception) {
-                $value = array(
-                    'class'     => get_class($value),
-                    'message'   => $value->getMessage(),
-                    'code'      => $value->getCode(),
-                    'file'      => $value->getFile(),
-                    'line'      => $value->getLine(),
-                );
-            }
-            $data[$key] = $value;
+            $data[$key] = $this->normalize($value);
         }
 
         return $data;

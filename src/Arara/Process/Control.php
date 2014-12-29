@@ -2,29 +2,55 @@
 
 namespace Arara\Process;
 
+use Arara\Process\Control\Info;
+use Arara\Process\Control\Signal;
 use Arara\Process\Exception\InvalidArgumentException;
 use Arara\Process\Exception\RuntimeException;
+use Arara\Process\Handler\SignalChild;
+use Arara\Process\Handler\SignalInterrupt;
+use Arara\Process\Handler\SignalQuit;
+use Arara\Process\Handler\SignalTerminate;
 
+/**
+ * Process controller.
+ */
 class Control
 {
+    /**
+     * @var Info
+     */
     protected $info;
+
+    /**
+     * @var Signal
+     */
     protected $signal;
 
+    /**
+     * Creates required internal instances.
+     *
+     * Load default signal handlers.
+     */
     public function __construct()
     {
-        $this->info = new Control\Info();
-        $this->signal = new Control\Signal();
-        $this->signal->setHandler('child', new Handler\SignalChild($this));
-        $this->signal->setHandler('interrupt', new Handler\SignalInterrupt($this));
-        $this->signal->setHandler('quit', new Handler\SignalQuit($this));
-        $this->signal->setHandler('terminate', new Handler\SignalTerminate($this));
+        $this->info = new Info();
+        $this->signal = new Signal();
+        $this->signal->setHandler('child', new SignalChild($this));
+        $this->signal->setHandler('interrupt', new SignalInterrupt($this));
+        $this->signal->setHandler('quit', new SignalQuit($this));
+        $this->signal->setHandler('terminate', new SignalTerminate($this));
     }
 
     /**
-     * @link   http://php.net/pcntl_exec
-     * @param  string $path
-     * @param  array[optional] $args
-     * @param  array[optional] $envs
+     * Executes specified program in current process space.
+     *
+     * @param string $path
+     * @param array  $args
+     * @param array  $envs
+     *
+     * @throws RuntimeException When get an error.
+     *
+     * @return null
      */
     public function execute($path, array $args = array(), array $envs = array())
     {
@@ -35,12 +61,13 @@ class Control
 
     // @codeCoverageIgnoreStart
     /**
-     * This method exists to allow us to test without quit the program.
+     * Terminate the current program.
      *
      * @SuppressWarnings("exit")
      *
-     * @link   http://php.net/exit
-     * @param  int[optional] $exitCode
+     * @param integer $exitCode Optional exit code.
+     *
+     * @return null
      */
     public function quit($exitCode = 0)
     {
@@ -51,13 +78,15 @@ class Control
     /**
      * Try to flush current process memory.
      *
-     * - Delays the program execution;
-     * - Clears file status cache;
-     * - Forces collection of any existing garbage cycles.
+     * - Delays the program execution
+     * - Clears file status cache
+     * - Forces collection of any existing garbage cycles
      *
      * @throws InvalidArgumentException When $seconds is not a valid value.
-     * @param  float|int[optional] $seconds Seconds to sleep (can be 0.5)
-     * @return void
+     *
+     * @param float|integer $seconds Seconds to sleep (can be 0.5)
+     *
+     * @return null
      */
     public function flush($seconds = 0)
     {
@@ -76,9 +105,11 @@ class Control
     }
 
     /**
-     * @link   http://php.net/pcntl_fork
+     * Forks the current process.
+     *
      * @throws RuntimeException When fork fails.
-     * @return int When is the child process returns "0" unless returns the child PID.
+     *
+     * @return integer When is the child process returns "0" unless returns the child PID.
      */
     public function fork()
     {
@@ -91,9 +122,9 @@ class Control
     }
 
     /**
-     * Returns a info controller.
+     * Returns the process information controller.
      *
-     * @return Control\Info
+     * @return Info
      */
     public function info()
     {
@@ -101,9 +132,9 @@ class Control
     }
 
     /**
-     * Returns a signal controller.
+     * Returns the process signal controller.
      *
-     * @return Control\Signal
+     * @return Signal
      */
     public function signal()
     {
@@ -111,10 +142,12 @@ class Control
     }
 
     /**
-     * @link   http://php.net/pcntl_wait
-     * @param  int[optional] $status
-     * @param  int[optional] $options
-     * @return int
+     * Waits on or returns the status of a forked child.
+     *
+     * @param integer $status
+     * @param integer $options
+     *
+     * @return integer
      */
     public function wait(&$status = null, $options = 0)
     {
@@ -122,8 +155,13 @@ class Control
     }
 
     /**
-     * @link   http://php.net/pcntl_waitpid
-     * @return int
+     * Waits on or returns the status of a forked child by its id (PID).
+     *
+     * @param integer $processId
+     * @param integer $status
+     * @param integer $options
+     *
+     * @return integer
      */
     public function waitProcessId($processId, &$status = null, $options = 0)
     {

@@ -7,7 +7,7 @@ use Arara\Process\Control;
 use PHPFluent\Callback\Callback as FluentCallback;
 
 /**
- * {@inheritDoc}
+ * Action implementation using callbacks.
  */
 class Callback implements Action
 {
@@ -72,9 +72,9 @@ class Callback implements Action
     /**
      * Bind a handler for event/events.
      *
-     * @param  int      $event   Event to handle
+     * @param  integer  $event   Event to handle
      * @param  callable $handler Callback to handle the event (or events).
-     * @return void
+     * @return null
      */
     public function bind($event, callable $handler)
     {
