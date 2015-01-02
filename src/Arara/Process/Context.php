@@ -1,4 +1,12 @@
 <?php
+/*
+ * This file is part of the Arara\Process package.
+ *
+ * Copyright (c) Henrique Moody <henriquemoody@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Arara\Process;
 
@@ -23,6 +31,8 @@ use Exception;
  * @property resource   $stdin
  * @property resource   $stdout
  * @property integer    $timeout
+ *
+ * @author Henrique Moody <henriquemoody@gmail.com>
  */
 class Context
 {
