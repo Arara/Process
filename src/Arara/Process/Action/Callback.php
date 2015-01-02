@@ -1,4 +1,12 @@
 <?php
+/*
+ * This file is part of the Arara\Process package.
+ *
+ * Copyright (c) Henrique Moody <henriquemoody@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Arara\Process\Action;
 
@@ -7,7 +15,9 @@ use Arara\Process\Control;
 use PHPFluent\Callback\Callback as FluentCallback;
 
 /**
- * {@inheritDoc}
+ * Action implementation using callbacks.
+ *
+ * @author Henrique Moody <henriquemoody@gmail.com>
  */
 class Callback implements Action
 {
@@ -72,9 +82,9 @@ class Callback implements Action
     /**
      * Bind a handler for event/events.
      *
-     * @param  int      $event   Event to handle
+     * @param  integer  $event   Event to handle
      * @param  callable $handler Callback to handle the event (or events).
-     * @return void
+     * @return null
      */
     public function bind($event, callable $handler)
     {

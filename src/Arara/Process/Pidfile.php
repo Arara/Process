@@ -1,4 +1,12 @@
 <?php
+/*
+ * This file is part of the Arara\Process package.
+ *
+ * Copyright (c) Henrique Moody <henriquemoody@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Arara\Process;
 
@@ -7,20 +15,45 @@ use Arara\Process\Exception\RuntimeException;
 
 /**
  * Class to handle pidfiles.
+ *
+ * @author Henrique Moody <henriquemoody@gmail.com>
  */
 class Pidfile
 {
+    /**
+     * @var string
+     */
     protected $applicationName;
+
+    /**
+     * @var Control
+     */
     protected $control;
+
+    /**
+     * @var string
+     */
     protected $fileName;
+
+    /**
+     * @var resource
+     */
     protected $fileResource;
+
+    /**
+     * @var string
+     */
     protected $lockDirectory;
+
+    /**
+     * @var integer
+     */
     protected $processId;
 
     /**
-     * @param  Control $control Object used to control process information
-     * @param  string $applicationName The application name, used as pidfile basename
-     * @param  string $lockDirectory Directory were pidfile is stored
+     * @param Control $control         Object used to control process information
+     * @param string  $applicationName The application name, used as pidfile basename
+     * @param string  $lockDirectory   Directory were pidfile is stored
      */
     public function __construct(Control $control, $applicationName = 'arara', $lockDirectory = '/var/run')
     {
@@ -42,15 +75,16 @@ class Pidfile
     /**
      * Defines application name.
      *
-     * @throws InvalidArgumentException When application name is not valid
-     * @param  string $applicationName The application name, used as pidfile basename
-     * @return void
+     * @param string $applicationName The application name, used as pidfile basename.
+     *
+     * @throws InvalidArgumentException When application name is not valid.
+     *
+     * @return null
      */
     protected function setApplicationName($applicationName)
     {
         if ($applicationName != strtolower($applicationName)) {
             throw new InvalidArgumentException('Application name should be lowercase');
-
         }
         if (preg_match('/[^a-z0-9]/', $applicationName)) {
             throw new InvalidArgumentException('Application name should contains only alphanumeric chars');
@@ -67,9 +101,11 @@ class Pidfile
     /**
      * Defines the lock directory.
      *
-     * @throws InvalidArgumentException When lock directory is not valid
-     * @param  string $lockDirectory Directory were pidfile is stored
-     * @return void
+     * @param string $lockDirectory Directory were pidfile should be stored.
+     *
+     * @throws InvalidArgumentException When lock directory is not valid.
+     *
+     * @return null
      */
     protected function setLockDirectory($lockDirectory)
     {
@@ -92,7 +128,7 @@ class Pidfile
     protected function getFileName()
     {
         if (null === $this->fileName) {
-            $this->fileName = $this->lockDirectory . '/' . $this->applicationName . '.pid';
+            $this->fileName = $this->lockDirectory.'/'.$this->applicationName.'.pid';
         }
 
         return $this->fileName;
@@ -119,7 +155,7 @@ class Pidfile
     /**
      * Returns TRUE when pidfile is active or FALSE when is not.
      *
-     * @return bool
+     * @return boolean
      */
     public function isActive()
     {
@@ -134,7 +170,7 @@ class Pidfile
     /**
      * Returns Pidfile content with the PID or NULL when there is no stored PID.
      *
-     * @return int|null
+     * @return integer|null
      */
     public function getProcessId()
     {
@@ -152,7 +188,7 @@ class Pidfile
      *
      * Create an empty file, store the PID into the file and lock it.
      *
-     * @return void
+     * @return null
      */
     public function initialize()
     {
@@ -174,7 +210,7 @@ class Pidfile
             throw new RuntimeException('Could not truncate pidfile');
         }
 
-        if (! @fwrite($handle, $this->control->info()->getId() . PHP_EOL)) {
+        if (! @fwrite($handle, $this->control->info()->getId().PHP_EOL)) {
             throw new RuntimeException('Could not write on pidfile');
         }
     }
@@ -184,7 +220,7 @@ class Pidfile
      *
      * Unlock pidfile and removes it.
      *
-     * @return void
+     * @return null
      */
     public function finalize()
     {

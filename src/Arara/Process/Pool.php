@@ -1,4 +1,12 @@
 <?php
+/*
+ * This file is part of the Arara\Process package.
+ *
+ * Copyright (c) Henrique Moody <henriquemoody@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Arara\Process;
 
@@ -6,26 +14,64 @@ use Arara\Process\Exception\RuntimeException;
 use Countable;
 use SplObjectStorage;
 
+/**
+ * Handles pools of process.
+ *
+ * @author Henrique Moody <henriquemoody@gmail.com>
+ */
 class Pool implements Process, Countable
 {
+    /**
+     * @var SplObjectStorage
+     */
     protected $process;
+
+    /**
+     * @var integer
+     */
     protected $processLimit;
+
+    /**
+     * @var boolean
+     */
     protected $running;
+
+    /**
+     * @var boolean
+     */
     protected $stopped;
 
+    /**
+     * @param integer $processLimit Number of process in the pool.
+     * @param boolean $autoStart    Starts pool automatically when TRUE (default: FALSE)
+     */
     public function __construct($processLimit, $autoStart = false)
     {
         $this->process = new SplObjectStorage();
-        $this->processLimit = $processLimit;
-        $this->running = (bool) $autoStart;
+        $this->processLimit = (integer) $processLimit;
+        $this->running = (boolean) $autoStart;
         $this->stopped = false;
     }
 
+    /**
+     * Return the number of active process in the pool.
+     *
+     * @return integer
+     */
     public function count()
     {
         return $this->process->count();
     }
 
+    /**
+     * Attachs a new process to the pool.
+     *
+     * Try to detach finished processes from the pool when reaches its limit.
+     *
+     * @param Process $process
+     *
+     * @return null
+     */
     public function attach(Process $process)
     {
         if ($this->stopped) {
@@ -46,11 +92,25 @@ class Pool implements Process, Countable
         }
     }
 
+    /**
+     * Detachs a process from the pool.
+     *
+     * @param Process $process
+     *
+     * @return null
+     */
     public function detach(Process $process)
     {
         $this->process->detach($process);
     }
 
+    /**
+     * Returns the fist process in the queue.
+     *
+     * Try to detach finished processes from the pool.
+     *
+     * @return Process|null
+     */
     public function getFirstProcess()
     {
         $firstProcess = null;

@@ -1,4 +1,12 @@
 <?php
+/*
+ * This file is part of the Arara\Process package.
+ *
+ * Copyright (c) Henrique Moody <henriquemoody@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Arara\Process\Action;
 
@@ -11,6 +19,8 @@ use Arara\Process\Control;
  * Classes based on this interface must have two responsibilities.
  * 1. Run an action for a given process;
  * 2. Run triggers when some events are dispatched.
+ *
+ * @author Henrique Moody <henriquemoody@gmail.com>
  */
 interface Action
 {
@@ -79,19 +89,21 @@ interface Action
     /**
      * This is the action to be runned.
      *
-     * @param  Control $control Process controller.
-     * @param  Context $context Process context.
-     * @return int Event status.
+     * @param Control $control Process controller.
+     * @param Context $context Process context.
+     *
+     * @return integer Event status.
      */
     public function execute(Control $control, Context $context);
 
     /**
      * Must be called after action is finished to trigger possible defined events.
      *
-     * @param  int $event Event to be triggered.
-     * @param  Control $control Process controller.
-     * @param  Context $context Process context.
-     * @return void No return value is expected.
+     * @param integer $event   Event to be triggered.
+     * @param Control $control Process controller.
+     * @param Context $context Process context.
+     *
+     * @return null No return value is expected.
      */
     public function trigger($event, Control $control, Context $context);
 }

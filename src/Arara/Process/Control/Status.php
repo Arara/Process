@@ -1,18 +1,35 @@
 <?php
+/*
+ * This file is part of the Arara\Process package.
+ *
+ * Copyright (c) Henrique Moody <henriquemoody@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Arara\Process\Control;
 
 use Arara\Process\Exception\InvalidArgumentException;
 
+/**
+ * Process status information.
+ *
+ * @author Henrique Moody <henriquemoody@gmail.com>
+ */
 class Status
 {
+    /**
+     * @var integer
+     */
     protected $status;
 
     /**
      * Create object and define the wait status to be analized for the object methods.
      *
      * @throws InvalidArgumentException When status is not valid.
-     * @param  int $status
+     *
+     * @param integer $status
      */
     public function __construct($status)
     {
@@ -25,7 +42,7 @@ class Status
     /**
      * Returns the exit code of a terminated child.
      *
-     * @return int
+     * @return integer
      */
     public function getExitStatus()
     {
@@ -35,7 +52,7 @@ class Status
     /**
      * Returns the signal which caused the child to stop.
      *
-     * @return int
+     * @return integer
      */
     public function getStopSignal()
     {
@@ -45,7 +62,7 @@ class Status
     /**
      * Returns the signal which caused the child to terminate.
      *
-     * @return int
+     * @return integer
      */
     public function getTerminateSignal()
     {
@@ -55,7 +72,7 @@ class Status
     /**
      * Checks if status code represents a normal exit.
      *
-     * @return bool
+     * @return boolean
      */
     public function isExited()
     {
@@ -65,7 +82,7 @@ class Status
     /**
      * Checks whether the status code represents a termination due to a signal.
      *
-     * @return bool
+     * @return boolean
      */
     public function isSignaled()
     {
@@ -75,7 +92,7 @@ class Status
     /**
      * Checks whether the child process is currently stopped.
      *
-     * @return bool
+     * @return boolean
      */
     public function isStopped()
     {
@@ -83,7 +100,9 @@ class Status
     }
 
     /**
-     * @return bool
+     * Returns TRUE when successful or FALSE if not.
+     *
+     * @return boolean
      */
     public function isSuccessful()
     {

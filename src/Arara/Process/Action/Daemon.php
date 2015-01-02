@@ -1,4 +1,12 @@
 <?php
+/*
+ * This file is part of the Arara\Process package.
+ *
+ * Copyright (c) Henrique Moody <henriquemoody@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Arara\Process\Action;
 
@@ -8,12 +16,17 @@ use Arara\Process\Exception\InvalidArgumentException;
 use Arara\Process\Exception\LogicException;
 use Arara\Process\Pidfile;
 
+/**
+ * Action implementation for daemons.
+ *
+ * @author Henrique Moody <henriquemoody@gmail.com>
+ */
 class Daemon extends Callback
 {
     /**
      * When TRUE the daemon is dying, when FALSE it is not.
      *
-     * @var bool
+     * @var boolean
      */
     protected $dying = false;
 
@@ -44,8 +57,8 @@ class Daemon extends Callback
     );
 
     /**
-     * @param  callable $callback Payload callback.
-     * @param  array[optional] $options Daemon options.
+     * @param callable $callback Payload callback.
+     * @param array    $options  Daemon options.
      */
     public function __construct($callback, array $options = array())
     {
@@ -58,7 +71,7 @@ class Daemon extends Callback
     /**
      * Returns TRUE when is dying or false if it's not.
      *
-     * @return bool
+     * @return boolean
      */
     public function isDying()
     {
@@ -68,8 +81,9 @@ class Daemon extends Callback
     /**
      * Set daemon as dying (or not).
      *
-     * @param  bool[optional] $isDying Default is TRUE.
-     * @return void
+     * @param boolean $isDying Default is TRUE.
+     *
+     * @return null
      */
     public function setAsDying($isDying = true)
     {
@@ -87,7 +101,7 @@ class Daemon extends Callback
     /**
      * Binds some callbacks as default triggers.
      *
-     * @return void
+     * @return null
      */
     protected function bindDefaultTriggers()
     {
@@ -113,9 +127,10 @@ class Daemon extends Callback
     /**
      * Default trigger for EVENT_INIT.
      *
-     * @param  Control $control
-     * @param  Context $context
-     * @return void
+     * @param Control $control
+     * @param Context $context
+     *
+     * @return null
      */
     public function handleInit(Control $control, Context $context)
     {
@@ -131,14 +146,14 @@ class Daemon extends Callback
      *
      * Finishes the parent process.
      *
-     * @param  Control $control
-     * @return void
+     * @param Control $control
+     *
+     * @return null
      */
     public function handleFork(Control $control)
     {
         $control->flush(0.5);
     }
-
 
     /**
      * Default trigger for EVENT_START.
@@ -154,9 +169,10 @@ class Daemon extends Callback
      * - Create pidfile
      * - Define pidfile cleanup
      *
-     * @param  Control $control
-     * @param  Context $context
-     * @return void
+     * @param Control $control
+     * @param Context $context
+     *
+     * @return null
      */
     public function handleStart(Control $control, Context $context)
     {
@@ -223,8 +239,9 @@ class Daemon extends Callback
     /**
      * Defines daemon options.
      *
-     * @param  array $options
-     * @return void
+     * @param array $options
+     *
+     * @return null
      */
     public function setOptions(array $options)
     {
@@ -237,9 +254,10 @@ class Daemon extends Callback
      * Defines an option for daemon.
      *
      * @throws InvalidArgumentException When option is not valid.
-     * @param  string $name Option name.
-     * @param  mixed $value Option value.
-     * @return void
+     * @param  string                   $name  Option name.
+     * @param  mixed                    $value Option value.
+     *
+     * @return null
      */
     public function setOption($name, $value)
     {
@@ -253,7 +271,8 @@ class Daemon extends Callback
     /**
      * Returns the value of a defined option
      *
-     * @param  string $name Option name.
+     * @param string $name Option name.
+     *
      * @return mixed
      */
     public function getOption($name)

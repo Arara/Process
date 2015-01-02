@@ -1,4 +1,12 @@
 <?php
+/*
+ * This file is part of the Arara\Process package.
+ *
+ * Copyright (c) Henrique Moody <henriquemoody@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Arara\Process;
 
@@ -7,21 +15,45 @@ use Arara\Process\Control\Status;
 use Arara\Process\Exception\ErrorException;
 use Arara\Process\Exception\RuntimeException;
 use Arara\Process\Exception\UnexpectedValueException;
+use Arara\Process\Handler\ErrorException as PhpError;
+use Arara\Process\Handler\SignalAlarm;
 use Exception;
 
+/**
+ * Handle child process.
+ *
+ * @author Henrique Moody <henriquemoody@gmail.com>
+ */
 class Child implements Process
 {
+    /**
+     * @var Action
+     */
     protected $action;
+
+    /**
+     * @var Context
+     */
     protected $context;
+
+    /**
+     * @var Control
+     */
     protected $control;
+
+    /**
+     * @var Status
+     */
     protected $status;
 
     /**
      * Create a child process.
      *
-     * @param  Action $action
-     * @param  Control $control
-     * @param  int[optional] $timeout
+     * Defines internal instances and trigger Action::EVENT_INIT event.
+     *
+     * @param Action  $action
+     * @param Control $control
+     * @param integer $timeout
      */
     public function __construct(Action $action, Control $control, $timeout = 0)
     {
@@ -38,7 +70,7 @@ class Child implements Process
     /**
      * Return the process id (PID).
      *
-     * @return int
+     * @return integer
      */
     public function getId()
     {
@@ -52,7 +84,7 @@ class Child implements Process
     /**
      * Return TRUE if there is a defined id or FALSE if not.
      *
-     * @return bool
+     * @return boolean
      */
     public function hasId()
     {
@@ -62,7 +94,7 @@ class Child implements Process
     /**
      * Return the process status.
      *
-     * @return Arara\Control\Status
+     * @return Status
      */
     public function getStatus()
     {
@@ -84,8 +116,9 @@ class Child implements Process
     /**
      * Sends a signal to the current process and returns its results.
      *
-     * @param  int $signalNumber
-     * @return boolen
+     * @param integer $signalNumber
+     *
+     * @return boolean
      */
     protected function sendSignal($signalNumber)
     {
@@ -113,11 +146,11 @@ class Child implements Process
     /**
      * Define the timeout handler.
      *
-     * @return void
+     * @return null
      */
     protected function setHandlerAlarm()
     {
-        $handler = new Handler\SignalAlarm($this->control, $this->action, $this->context);
+        $handler = new SignalAlarm($this->control, $this->action, $this->context);
         $this->control->signal()->setHandler('alarm', $handler);
         $this->control->signal()->alarm($this->context->timeout);
     }
@@ -125,17 +158,19 @@ class Child implements Process
     /**
      * Overwrite default PHP error handler to throws exception when an error occurs.
      *
-     * @return void
+     * @return null
      */
     protected function setHandlerErrorException()
     {
-        set_error_handler(new Handler\ErrorException(), E_ALL & ~E_NOTICE);
+        $handler = new PhpError();
+
+        set_error_handler($handler, E_ALL & ~E_NOTICE);
     }
 
     /**
      * Runs action trigger by the given event ignoring all exception.
      *
-     * @return void
+     * @return null
      */
     protected function silentRunActionTrigger($event)
     {
@@ -149,7 +184,7 @@ class Child implements Process
     /**
      * Execute the action, triggers the events and then exit the program.
      *
-     * @return void
+     * @return null
      */
     protected function run()
     {
@@ -184,6 +219,7 @@ class Child implements Process
         $this->context->isRunning = true;
         if ($this->context->processId > 0) {
             $this->action->trigger(Action::EVENT_FORK, $this->control, $this->context);
+
             return;
         }
 
