@@ -211,7 +211,7 @@ class Child implements Process
      */
     public function wait()
     {
-        if (! $this->isRunning()) {
+        if(!is_null($this->status)) {
             return false;
         }
 
