@@ -32,5 +32,10 @@
         "psr-0": {
             "Arara\\Test": "tests/src"
         }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.10-dev"
+        }
     }
 }
