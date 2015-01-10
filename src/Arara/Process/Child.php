@@ -254,7 +254,8 @@ class Child implements Process
         $waitStatus = 0;
         $waitReturn = $this->control->waitProcessId($this->getId(), $waitStatus);
         if ($waitReturn === $this->getId()) {
-            $this->isRunning = false ;
+            $this->context->isRunning = false;
+            $this->context->processId = null;
         }
 
         $this->status = new Status($waitStatus);
