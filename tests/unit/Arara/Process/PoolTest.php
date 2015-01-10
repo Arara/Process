@@ -415,29 +415,26 @@ class PoolTest extends TestCase
         $pool->wait();
     }
 
-    public function testShouldNotWaitNonRunningProcessAtThePoolWhenTryingToWaitPool()
+    public function testShouldNotWaitReapedProcessAtThePoolWhenTryingToWaitPool()
     {
         $process1 = $this->getMock('Arara\Process\Process');
         $process1
             ->expects($this->any())
-            ->method('isRunning')
+            ->method('wait')
             ->will($this->onConsecutiveCalls(true, false));
-        $process1
-            ->expects($this->never())
-            ->method('wait');
-
+ 
         $process2 = $this->getMock('Arara\Process\Process');
         $process2
-            ->expects($this->any())
-            ->method('isRunning')
-            ->will($this->returnValue(true));
-        $process2
             ->expects($this->once())
-            ->method('wait');
+            ->method('wait')
+            ->will($this->returnValue(true)) ;
 
         $pool = new Pool(2, true);
         $pool->attach($process1);
         $pool->attach($process2);
+        
+        $process1->wait() ;
+        
         $pool->wait();
     }
 }

@@ -247,12 +247,15 @@ class Child implements Process
      */
     public function wait()
     {
-        if (! $this->isRunning()) {
+        if (!is_null($this->status)) {
             return false;
         }
 
         $waitStatus = 0;
         $waitReturn = $this->control->waitProcessId($this->getId(), $waitStatus);
+        if ($waitReturn === $this->getId()) {
+            $this->isRunning = false ;
+        }
 
         $this->status = new Status($waitStatus);
 

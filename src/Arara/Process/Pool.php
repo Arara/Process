@@ -210,9 +210,6 @@ class Pool implements Process, Countable
     {
         $result = $this->isRunning();
         foreach ($this->process as $process) {
-            if (! $process->isRunning()) {
-                continue;
-            }
             $result = $process->wait() && $result;
         }
 
