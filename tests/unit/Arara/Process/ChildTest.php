@@ -317,24 +317,11 @@ class ChildTest extends TestCase
         $this->assertFalse($child->isRunning());
     }
 
-    public function testShouldWaitProcessIfProcessIsRunning()
+    public function testShouldWaitProcessIfWaitStatusNotReaped()
     {
         $processId = 123456;
 
-        $controlSignalMock = $this->controlSignal
-            ->setMethods(array('send'))
-            ->getMock();
-        $controlSignalMock
-            ->expects($this->once())
-            ->method('send')
-            ->with(0, $processId)
-            ->will($this->returnValue(true));
-
         $controlMock = $this->control->getMock();
-        $controlMock
-            ->expects($this->once())
-            ->method('signal')
-            ->will($this->returnValue($controlSignalMock));
         $controlMock
             ->expects($this->once())
             ->method('waitProcessId')
@@ -347,14 +334,23 @@ class ChildTest extends TestCase
 
         $this->assertTrue($child->wait());
     }
-    public function testShouldNotWaitWhenProcessIsNotRunning()
+    
+    public function testShouldNotWaitWhenProcessAlreadyReaped()
     {
+        $processId = 123456;
+
         $controlMock = $this->control->getMock();
         $controlMock
-            ->expects($this->never())
-            ->method('waitProcessId');
+            ->expects($this->once())
+            ->method('waitProcessId')
+            ->will($this->returnValue($processId));
 
         $child = new Child($this->action->getMock(), $controlMock);
+        $context = $this->getObjectPropertyValue($child, 'context');
+        $context->processId = $processId;
+        $context->isRunning = true;
+
+        $this->assertTrue($child->wait()) ;
 
         $this->assertFalse($child->wait());
     }
@@ -373,20 +369,7 @@ class ChildTest extends TestCase
     {
         $processId = 123456;
 
-        $controlSignalMock = $this->controlSignal
-            ->setMethods(array('send'))
-            ->getMock();
-        $controlSignalMock
-            ->expects($this->once())
-            ->method('send')
-            ->with(0, $processId)
-            ->will($this->returnValue(true));
-
         $controlMock = $this->control->getMock();
-        $controlMock
-            ->expects($this->once())
-            ->method('signal')
-            ->will($this->returnValue($controlSignalMock));
         $controlMock
             ->expects($this->once())
             ->method('waitProcessId')
@@ -408,20 +391,7 @@ class ChildTest extends TestCase
     {
         $processId = 123456;
 
-        $controlSignalMock = $this->controlSignal
-            ->setMethods(array('send'))
-            ->getMock();
-        $controlSignalMock
-            ->expects($this->once())
-            ->method('send')
-            ->with(0, $processId)
-            ->will($this->returnValue(true));
-
         $controlMock = $this->control->getMock();
-        $controlMock
-            ->expects($this->once())
-            ->method('signal')
-            ->will($this->returnValue($controlSignalMock));
         $controlMock
             ->expects($this->once())
             ->method('waitProcessId')
