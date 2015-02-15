@@ -1,0 +1,457 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Process by Arara</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/Arara/Process">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/Arara/Process/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/Arara/Process/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Process</h1>
+          <p>Provides a better API to work with processes on Unix-like systems using PHP.</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/Arara">Arara</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1>
+<a id="araraprocess" class="anchor" href="#araraprocess" aria-hidden="true"><span class="octicon octicon-link"></span></a>Arara\Process</h1>
+
+<p><a href="http://travis-ci.org/Arara/Process" title="Build Status"><img src="https://scrutinizer-ci.com/g/Arara/Process/badges/build.png?b=master" alt="Build Status"></a>
+<a href="https://scrutinizer-ci.com/g/Arara/Process/?branch=master" title="Code Quality"><img src="https://scrutinizer-ci.com/g/Arara/Process/badges/quality-score.png?b=master" alt="Code Quality"></a>
+<a href="https://scrutinizer-ci.com/g/Arara/Process/?branch=master" title="Code Coverage"><img src="https://scrutinizer-ci.com/g/Arara/Process/badges/coverage.png?b=master" alt="Code Coverage"></a>
+<a href="https://packagist.org/packages/arara/process" title="Total Downloads"><img src="https://poser.pugx.org/arara/process/downloads.png" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/arara/process" title="License"><img src="https://poser.pugx.org/arara/process/license.png" alt="License"></a>
+<a href="https://packagist.org/packages/arara/process" title="Latest Stable Version"><img src="https://poser.pugx.org/arara/process/v/stable.png" alt="Latest Stable Version"></a>
+<a href="https://bitdeli.com/free" title="Bitdeli Badge"><img src="https://d2weczhvl823v0.cloudfront.net/Arara/process/trend.png" alt="Bitdeli Badge"></a></p>
+
+<p>This library provides a better API to work with processes on Unix-like systems using PHP.</p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>The package is available on <a href="https://packagist.org/packages/arara/process">Packagist</a>. You can install it using
+<a href="http://getcomposer.org">Composer</a>.</p>
+
+<div class="highlight highlight-bash"><pre>composer require arara/process</pre></div>
+
+<h3>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h3>
+
+<ul>
+<li>PHP 5.4+</li>
+<li><a href="http://php.net/pcntl">PCNTL</a></li>
+<li><a href="http://php.net/posix">POSIX</a></li>
+<li>
+<a href="https://github.com/PHPFluent/Callback">PHPFluent\Callback</a> (installed by Composer)</li>
+</ul>
+
+<p>Version <a href="https://github.com/Arara/Process/tree/1.6.0">1.6.0</a> or less of Arara\Process works on PHP 5.3.</p>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Along with this document, there are many usage examples in the <a href="examples/">examples/</a> directory which may be used for reference.</p>
+
+<p>All examples within this document assume you have the following statement at the beginning of the file:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-k">declare</span>(<span class="pl-c1">ticks</span><span class="pl-k">=</span><span class="pl-c1">1</span>);</span></pre></div>
+
+<p>Without this statement, there is no guarantee PHP will handle signals; this is very important for PCNTL to work properly.
+It has been required since version 4.3.0 of PHP, so this is not a request of the library but of the PHP language itself.</p>
+
+<p>If you want to know more about <em>ticks</em>, we recommend you read <a href="http://php.net/declare#control-structures.declare.ticks">http://php.net/declare#control-structures.declare.ticks</a>.</p>
+
+<h3>
+<a id="action-interface" class="anchor" href="#action-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>Action interface</h3>
+
+<p>Forks may be encapsulated using <code>Arara\Process\Action\Action</code> interface.
+All classes that implements this interface must implement two methods:</p>
+
+<ul>
+<li>
+<code>execute(..)</code>: may contain the action performed in the background</li>
+<li>
+<code>trigger(...)</code>: may contain specific actions to events</li>
+</ul>
+
+<p>Using this interface you can create your own actions and run them in the background.</p>
+
+<h3>
+<a id="events" class="anchor" href="#events" aria-hidden="true"><span class="octicon octicon-link"></span></a>Events</h3>
+
+<p>The <code>Arara\Process\Action\Action::trigger(..)</code> method, as it is written, associates specific actions with events.
+Those events can be:</p>
+
+<ul>
+<li>
+<code>Action::EVENT_INIT</code>: triggered when action is initialized
+
+<ul>
+<li>When the action is attached to a Child object</li>
+</ul>
+</li>
+<li>
+<code>Action::EVENT_FORK</code>: triggered when action is forked
+
+<ul>
+<li>After the action is forked it is triggered on the <strong>parent</strong> process</li>
+</ul>
+</li>
+<li>
+<code>Action::EVENT_START</code>: triggered before the execute() method is executed</li>
+<li>
+<code>Action::EVENT_SUCCESS</code>: triggered when the action is finished with success, that is:
+
+<ul>
+<li>When the action does not encounter a PHP error</li>
+<li>When the action does not throw an exception</li>
+<li>When the action does not return any value</li>
+<li>When the action returns an <code>Action::EVENT_SUCCESS</code> value</li>
+</ul>
+</li>
+<li>
+<code>Action::EVENT_ERROR</code>: triggered when the action is encounters an error, that is:
+
+<ul>
+<li>When the action encounters a PHP error</li>
+<li>When the action returns an <code>Action:EVENT_ERROR</code> value</li>
+</ul>
+</li>
+<li>
+<code>Action::EVENT_FAILURE</code>: triggered after the action has finished and failed, that is:
+
+<ul>
+<li>When the action throws an exception</li>
+<li>When the action returns an <code>Action::EVENT_FAILURE</code> value</li>
+</ul>
+</li>
+<li>
+<code>Action::EVENT_TIMEOUT</code>: triggered when the action experiences a timeout</li>
+<li>
+<code>Action::EVENT_FINISH</code>: triggered after the execute() method has executed.</li>
+</ul>
+
+<h3>
+<a id="callback-action" class="anchor" href="#callback-action" aria-hidden="true"><span class="octicon octicon-link"></span></a>Callback action</h3>
+
+<p>In order to make it easy to execute forks with no need to create a specific class to execute something in the background, there
+is a generic implementation that allows a callback to be run in the background; the only thing one must do is pass the callback
+to the constructor of this class.</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-k">use</span> <span class="pl-s3">Arara\Process\Action\Callback</span>;</span>
+<span class="pl-s2"></span>
+<span class="pl-s2"><span class="pl-vo">$callback</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-s3">Callback</span>(<span class="pl-st">function</span> () {</span>
+<span class="pl-s2">    <span class="pl-s3">echo</span> <span class="pl-s1"><span class="pl-pds">"</span>This will be executed in the background!<span class="pl-pds">"</span></span> <span class="pl-k">.</span> <span class="pl-sc">PHP_EOL</span>;</span>
+<span class="pl-s2">});</span></pre></div>
+
+<p>The Callback action provides a way to bind callbacks to be triggered by specific events:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$callback</span><span class="pl-k">-&gt;</span>bind(<span class="pl-s3">Callback</span><span class="pl-k">::</span><span class="pl-c1">EVENT_SUCCESS</span>, <span class="pl-st">function</span> () {</span>
+<span class="pl-s2">    <span class="pl-s3">echo</span> <span class="pl-s1"><span class="pl-pds">"</span>This will be executed if the action callback was successful!<span class="pl-pds">"</span></span> <span class="pl-k">.</span> <span class="pl-sc">PHP_EOL</span>;</span>
+<span class="pl-s2">});</span></pre></div>
+
+<p>Also, one can bind a callback to multiple events:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$callback</span><span class="pl-k">-&gt;</span>bind(<span class="pl-s3">Callback</span><span class="pl-k">::</span><span class="pl-c1">EVENT_ERROR</span> <span class="pl-k">|</span> <span class="pl-s3">Callback</span><span class="pl-k">::</span><span class="pl-c1">EVENT_FAILURE</span>, <span class="pl-st">function</span> () {</span>
+<span class="pl-s2">    <span class="pl-s3">echo</span> <span class="pl-s1"><span class="pl-pds">"</span>It is going to be executed if the action fails or get an error<span class="pl-pds">"</span></span> <span class="pl-k">.</span> <span class="pl-sc">PHP_EOL</span>;</span>
+<span class="pl-s2">});</span></pre></div>
+
+<h3>
+<a id="command-action" class="anchor" href="#command-action" aria-hidden="true"><span class="octicon octicon-link"></span></a>Command action</h3>
+
+<p>You may want to run just a Linux command, for that reason there is Command action.</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$command</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-s3">Command</span>(<span class="pl-s1"><span class="pl-pds">'</span>whoami<span class="pl-pds">'</span></span>);</span></pre></div>
+
+<p>Using Command action you can define arguments as second param:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$command</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-s3">Command</span>(<span class="pl-s1"><span class="pl-pds">'</span>cp<span class="pl-pds">'</span></span>, <span class="pl-s3">array</span>(<span class="pl-s1"><span class="pl-pds">'</span>/path/to/source<span class="pl-pds">'</span></span>, <span class="pl-s1"><span class="pl-pds">'</span>/path/to/destination<span class="pl-pds">'</span></span>));</span></pre></div>
+
+<p>If you prefer arguments can be defined by a key =&gt; value array:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$command</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-s3">Command</span>(</span>
+<span class="pl-s2">    <span class="pl-s1"><span class="pl-pds">'</span>find<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s2">    <span class="pl-s3">array</span>(</span>
+<span class="pl-s2">        <span class="pl-s1"><span class="pl-pds">'</span>/path/to/dir<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s2">        <span class="pl-s1"><span class="pl-pds">'</span>-name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s1"><span class="pl-pds">'</span>*<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s2">        <span class="pl-s1"><span class="pl-pds">'</span>-type<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s1"><span class="pl-pds">'</span>f<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s2">    )</span>
+<span class="pl-s2">);</span></pre></div>
+
+<p>Command action is based on Callback action so you can also bind triggers for events.</p>
+
+<h3>
+<a id="daemon-action" class="anchor" href="#daemon-action" aria-hidden="true"><span class="octicon octicon-link"></span></a>Daemon action</h3>
+
+<p>You can create daemons using the <code>Arara\Process\Action\Daemon</code> class:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$daemon</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-s3">Daemon</span>(</span>
+<span class="pl-s2">    <span class="pl-st">function</span> (<span class="pl-s3">Control</span> <span class="pl-vo">$control</span>, <span class="pl-s3">Context</span> <span class="pl-vo">$context</span>, <span class="pl-s3">Daemon</span> <span class="pl-vo">$daemon</span>) {</span>
+<span class="pl-s2">        <span class="pl-k">while</span> (<span class="pl-k">!</span> <span class="pl-vo">$daemon</span><span class="pl-k">-&gt;</span>isDying()) {</span>
+<span class="pl-s2">            <span class="pl-c">// Do whatever you want =)</span></span>
+<span class="pl-s2">        }</span>
+<span class="pl-s2">    }</span>
+<span class="pl-s2">);</span></pre></div>
+
+<p>This action will:</p>
+
+<ol>
+<li>Detach process session from the parent</li>
+<li>Update process umask</li>
+<li>Update process work directory</li>
+<li>Define process GID (if defined)</li>
+<li>Define process UID (if defined)</li>
+<li>Recreate standards file descriptors (STDIN, STDOUT and STDERR)</li>
+<li>Create Pidfile</li>
+<li>Run the defined payload callback</li>
+</ol>
+
+<p>Daemon action is based on Callback action thus you can also bind triggers for events.</p>
+
+<h4>
+<a id="daemon-options" class="anchor" href="#daemon-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Daemon options</h4>
+
+<p>Daemon action class has some options that allows you to change some behaviours:</p>
+
+<ul>
+<li>
+<code>name</code>: Name used by pidfile (default <em>arara</em>)</li>
+<li>
+<code>lock_dir</code>: Lock directory for pidfile (default <em>/var</em>/run)</li>
+<li>
+<code>work_dir</code>: Work directory (default <em>/</em>)</li>
+<li>
+<code>umask</code>: Default umask value (default <em>0</em>)</li>
+<li>
+<code>user_id</code>: When defined changed the daemon UID (default <em>NULL</em>)</li>
+<li>
+<code>group_id</code>: When defined changed the daemon GID (default <em>NULL</em>)</li>
+<li>
+<code>stdin</code>: File to use as <code>STDIN</code> (default <em>/dev/null</em>)</li>
+<li>
+<code>stdout</code>: File to use as <code>STDOUT</code> (default <em>/dev/null</em>)</li>
+<li>
+<code>stderr</code>: File to use as <code>STDERR</code> (default <em>/dev/null</em>)</li>
+</ul>
+
+<p>You can change default daemon options by defining it on class constructor:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$daemon</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-s3">Daemon</span>(</span>
+<span class="pl-s2">    <span class="pl-vo">$callback</span>,</span>
+<span class="pl-s2">    <span class="pl-s3">array</span>(</span>
+<span class="pl-s2">        <span class="pl-s1"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s1"><span class="pl-pds">'</span>mydaemonname<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s2">        <span class="pl-s1"><span class="pl-pds">'</span>lock_dir<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">__DIR__</span>,</span>
+<span class="pl-s2">    )</span>
+<span class="pl-s2">);</span></pre></div>
+
+<p>After the object is created you may change all options:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$daemon</span><span class="pl-k">-&gt;</span>setOptions(</span>
+<span class="pl-s2">    <span class="pl-s3">array</span>(</span>
+<span class="pl-s2">        <span class="pl-s1"><span class="pl-pds">'</span>stdout<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s1"><span class="pl-pds">'</span>/tmp/daemon.stdout<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s2">        <span class="pl-s1"><span class="pl-pds">'</span>stderr<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s1"><span class="pl-pds">'</span>/tmp/daemon.stderr<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s2">    )</span>
+<span class="pl-s2">);</span></pre></div>
+
+<p>Also you can change just an option:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$daemon</span><span class="pl-k">-&gt;</span>setOption(<span class="pl-s1"><span class="pl-pds">'</span>work_dir<span class="pl-pds">'</span></span>, <span class="pl-c1">__DIR__</span>);</span></pre></div>
+
+<h3>
+<a id="starting-a-process-in-the-background" class="anchor" href="#starting-a-process-in-the-background" aria-hidden="true"><span class="octicon octicon-link"></span></a>Starting a process in the background</h3>
+
+<p>The class <code>Arara\Process\Child</code> allows you to execute any action in the background.</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-s3">Child</span>(</span>
+<span class="pl-s2">    <span class="pl-k">new</span> <span class="pl-s3">Daemon</span>(<span class="pl-st">function</span> () {</span>
+<span class="pl-s2">        <span class="pl-c">// What my daemon does...</span></span>
+<span class="pl-s2">    }),</span>
+<span class="pl-s2">    <span class="pl-k">new</span> <span class="pl-s3">Control</span>()</span>
+<span class="pl-s2">);</span>
+<span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>start(); <span class="pl-c">// Runs the callback in the background</span></span></pre></div>
+
+<p>The above example runs the Daemon action in the background, but one can use any class which implements
+the <code>Arara\Process\Action\Action</code> interface like Callback action.</p>
+
+<h3>
+<a id="check-if-the-process-is-running" class="anchor" href="#check-if-the-process-is-running" aria-hidden="true"><span class="octicon octicon-link"></span></a>Check if the process is running</h3>
+
+<p>Checking to see if a process is running is a very common routine; to perform this using this library you may call:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>isRunning(); <span class="pl-c">// Returns TRUE if it is running or FALSE if it is not</span></span></pre></div>
+
+<p>This method not only checks the state of the object, but also checks to see if the process is already running on the system.</p>
+
+<h3>
+<a id="terminating-the-process" class="anchor" href="#terminating-the-process" aria-hidden="true"><span class="octicon octicon-link"></span></a>Terminating the process</h3>
+
+<p>If the process has already started, this tells the process to terminate, but does not force it.</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>terminate(); <span class="pl-c">// Sends a SIGTERM to the process</span></span></pre></div>
+
+<h3>
+<a id="killing-the-process" class="anchor" href="#killing-the-process" aria-hidden="true"><span class="octicon octicon-link"></span></a>Killing the process</h3>
+
+<p>If it has already started, this forces the process to terminate immediately.</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>kill(); <span class="pl-c">// Sends a SIGKILL to the process</span></span></pre></div>
+
+<h3>
+<a id="waiting-on-the-process" class="anchor" href="#waiting-on-the-process" aria-hidden="true"><span class="octicon octicon-link"></span></a>Waiting on the process</h3>
+
+<p>If you want to wait on the process to finish, instead of just starting the process in the background, you can call:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>wait();</span></pre></div>
+
+<p>The next line of code will be executed after the process finishes.</p>
+
+<h3>
+<a id="getting-a-process-status" class="anchor" href="#getting-a-process-status" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting a process' status</h3>
+
+<p>It is possible to get the status of a process after waiting for it finish.
+The <code>Arara\Process\Child</code> class has a method <code>getStatus()</code> which allows you to check the status of a process.</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>getStatus(); <span class="pl-c">// Returns an Arara\Process\Control\Status instance</span></span></pre></div>
+
+<p>Internally, this calls the <code>wait()</code> method, in order to wait for the process to finish - and then get its status.</p>
+
+<h4>
+<a id="get-the-exit-code-of-the-process" class="anchor" href="#get-the-exit-code-of-the-process" aria-hidden="true"><span class="octicon octicon-link"></span></a>Get the exit code of the process</h4>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>getStatus()<span class="pl-k">-&gt;</span>getExitStatus();</span></pre></div>
+
+<h4>
+<a id="get-the-signal-which-caused-the-process-to-stop" class="anchor" href="#get-the-signal-which-caused-the-process-to-stop" aria-hidden="true"><span class="octicon octicon-link"></span></a>Get the signal which caused the process to stop</h4>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>getStatus()<span class="pl-k">-&gt;</span>getStopSignal();</span></pre></div>
+
+<h4>
+<a id="get-the-signal-which-caused-the-process-to-terminate" class="anchor" href="#get-the-signal-which-caused-the-process-to-terminate" aria-hidden="true"><span class="octicon octicon-link"></span></a>Get the signal which caused the process to terminate</h4>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>getStatus()<span class="pl-k">-&gt;</span>getTerminateSignal();</span></pre></div>
+
+<h4>
+<a id="checks-if-the-status-code-represents-a-normal-exit" class="anchor" href="#checks-if-the-status-code-represents-a-normal-exit" aria-hidden="true"><span class="octicon octicon-link"></span></a>Checks if the status code represents a normal exit</h4>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>getStatus()<span class="pl-k">-&gt;</span>isExited();</span></pre></div>
+
+<h4>
+<a id="checks-whether-the-status-code-represents-a-termination-due-to-a-signal" class="anchor" href="#checks-whether-the-status-code-represents-a-termination-due-to-a-signal" aria-hidden="true"><span class="octicon octicon-link"></span></a>Checks whether the status code represents a termination due to a signal</h4>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>getStatus()<span class="pl-k">-&gt;</span>isSignaled();</span></pre></div>
+
+<h4>
+<a id="checks-whether-the-process-is-stopped" class="anchor" href="#checks-whether-the-process-is-stopped" aria-hidden="true"><span class="octicon octicon-link"></span></a>Checks whether the process is stopped</h4>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>getStatus()<span class="pl-k">-&gt;</span>isStopped();</span></pre></div>
+
+<h4>
+<a id="checks-if-the-process-was-finished-successfully" class="anchor" href="#checks-if-the-process-was-finished-successfully" aria-hidden="true"><span class="octicon octicon-link"></span></a>Checks if the process was finished successfully</h4>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$child</span><span class="pl-k">-&gt;</span>getStatus()<span class="pl-k">-&gt;</span>isSuccessful();</span></pre></div>
+
+<h3>
+<a id="spawning" class="anchor" href="#spawning" aria-hidden="true"><span class="octicon octicon-link"></span></a>Spawning</h3>
+
+<p>Since you are working with forks you are able work with spawn as well. The <code>Arara\Process\Pool</code> class provides a simple
+way to work with it.</p>
+
+<p>This class handles the queue of process dynamically, the only thing you have to do is provide the limit of children you
+want in the constructor and then attach the children.</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$maxConcurrentChildren</span> <span class="pl-k">=</span> <span class="pl-c1">2</span>;</span>
+<span class="pl-s2"><span class="pl-vo">$pool</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-s3">Pool</span>(<span class="pl-vo">$maxConcurrentChildren</span>);</span>
+<span class="pl-s2"><span class="pl-vo">$pool</span><span class="pl-k">-&gt;</span>start();</span>
+<span class="pl-s2"></span>
+<span class="pl-s2"><span class="pl-vo">$pool</span><span class="pl-k">-&gt;</span>attach(<span class="pl-k">new</span> <span class="pl-s3">Child</span>(<span class="pl-c">/* ... */</span>));</span>
+<span class="pl-s2"><span class="pl-vo">$pool</span><span class="pl-k">-&gt;</span>attach(<span class="pl-k">new</span> <span class="pl-s3">Child</span>(<span class="pl-c">/* ... */</span>));</span>
+<span class="pl-s2"><span class="pl-vo">$pool</span><span class="pl-k">-&gt;</span>attach(<span class="pl-k">new</span> <span class="pl-s3">Child</span>(<span class="pl-c">/* ... */</span>));</span>
+<span class="pl-s2"><span class="pl-vo">$pool</span><span class="pl-k">-&gt;</span>attach(<span class="pl-k">new</span> <span class="pl-s3">Child</span>(<span class="pl-c">/* ... */</span>));</span>
+<span class="pl-s2"><span class="pl-c">// ...</span></span></pre></div>
+
+<p>The number of children it has does not matter; it will only run 2 process simultaneously; when one of those process is
+finished, it is removed from the queue and a new slot is opened.</p>
+
+<p>The <code>Arara\Process\Pool</code> class contains most of the methods of <code>Arara\Process\Child</code> class:</p>
+
+<ul>
+<li><code>isRunning()</code></li>
+<li><code>kill()</code></li>
+<li><code>start()</code></li>
+<li><code>terminate()</code></li>
+<li><code>wait()</code></li>
+</ul>
+
+<p>This behaves similarly for all methods.</p>
+
+<h3>
+<a id="control-class" class="anchor" href="#control-class" aria-hidden="true"><span class="octicon octicon-link"></span></a>Control class</h3>
+
+<p>You can also handle processes without using Pool, Child or the Action classes.</p>
+
+<p>We provide a simple API to work with the <code>pcntl_*</code> and <code>posix_*</code> functions. You can learn more by reading the
+code of <code>Arara\Process\Control</code> and its dependencies, but here is an example:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$control</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-s3">Control</span>();</span>
+<span class="pl-s2"><span class="pl-vo">$pid</span> <span class="pl-k">=</span> <span class="pl-vo">$control</span><span class="pl-k">-&gt;</span>fork();<span class="pl-c">// Throws RuntimeException when pcntl_fork() returns -1</span></span>
+<span class="pl-s2"><span class="pl-k">if</span> (<span class="pl-vo">$pid</span> <span class="pl-k">&gt;</span> <span class="pl-c1">0</span>) {</span>
+<span class="pl-s2">    <span class="pl-s3">echo</span> <span class="pl-s1"><span class="pl-pds">'</span>Waiting on child...<span class="pl-pds">'</span></span> <span class="pl-k">.</span> <span class="pl-sc">PHP_EOL</span>;</span>
+<span class="pl-s2">    <span class="pl-vo">$control</span><span class="pl-k">-&gt;</span>waitProcessId(<span class="pl-vo">$pid</span>);</span>
+<span class="pl-s2">    <span class="pl-s3">echo</span> <span class="pl-s1"><span class="pl-pds">'</span>Child finished<span class="pl-pds">'</span></span> <span class="pl-k">.</span> <span class="pl-sc">PHP_EOL</span>;</span>
+<span class="pl-s2">    <span class="pl-vo">$control</span><span class="pl-k">-&gt;</span>quit();</span>
+<span class="pl-s2">}</span>
+<span class="pl-s2"></span>
+<span class="pl-s2"><span class="pl-s3">echo</span> <span class="pl-s1"><span class="pl-pds">'</span>Child process has PID <span class="pl-pds">'</span></span> <span class="pl-k">.</span> <span class="pl-vo">$control</span><span class="pl-k">-&gt;</span>info()<span class="pl-k">-&gt;</span>getId() <span class="pl-k">.</span> <span class="pl-sc">PHP_EOL</span>;</span>
+<span class="pl-s2"><span class="pl-s3">echo</span> <span class="pl-s1"><span class="pl-pds">'</span>Child process has parent PID <span class="pl-pds">'</span></span> <span class="pl-k">.</span> <span class="pl-vo">$control</span><span class="pl-k">-&gt;</span>info()<span class="pl-k">-&gt;</span>getParentId() <span class="pl-k">.</span> <span class="pl-sc">PHP_EOL</span>;</span>
+<span class="pl-s2"></span>
+<span class="pl-s2"><span class="pl-vo">$control</span><span class="pl-k">-&gt;</span>flush(<span class="pl-c1">2.5</span>); <span class="pl-c">// Will try to flush current process memory and sleep by 2 and a half seconds</span></span>
+<span class="pl-s2"><span class="pl-vo">$control</span><span class="pl-k">-&gt;</span>signal()<span class="pl-k">-&gt;</span>send(<span class="pl-s1"><span class="pl-pds">'</span>kill<span class="pl-pds">'</span></span>); <span class="pl-c">// Will send SIGKILL to the current process (the child)</span></span></pre></div>
+
+<h3>
+<a id="pidfile-class" class="anchor" href="#pidfile-class" aria-hidden="true"><span class="octicon octicon-link"></span></a>Pidfile class</h3>
+
+<p>If you are working with background tasks you may want to create a lock to avoid people running your script twice. For this
+purpose there is the class <code>Arara\Process\Pidfile</code>.</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s2"><span class="pl-vo">$control</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-s3">Control</span>();</span>
+<span class="pl-s2"><span class="pl-vo">$applicationName</span> <span class="pl-k">=</span> <span class="pl-s1"><span class="pl-pds">'</span>my_app<span class="pl-pds">'</span></span>;</span>
+<span class="pl-s2"><span class="pl-vo">$pidfile</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-s3">Pidfile</span>(<span class="pl-vo">$control</span>, <span class="pl-vo">$applicationName</span>);</span>
+<span class="pl-s2"><span class="pl-vo">$pidfile</span><span class="pl-k">-&gt;</span>initialize();</span>
+<span class="pl-s2"></span>
+<span class="pl-s2"><span class="pl-c">// Whatever you need here...</span></span>
+<span class="pl-s2"></span>
+<span class="pl-s2"><span class="pl-vo">$pidfile</span><span class="pl-k">-&gt;</span>finalize();</span></pre></div>
+
+<p>The second time someone runs it an exception is thrown. We recommend you put this code into a <code>try..catch</code> statement.</p>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
