@@ -1,4 +1,2 @@
-.*
-composer.*
-build/
-vendor/
+/composer.lock
+/vendor/
