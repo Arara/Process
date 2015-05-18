@@ -1,11 +1,10 @@
 # Arara\Process
-[![Build Status](https://scrutinizer-ci.com/g/Arara/Process/badges/build.png?b=master)](http://travis-ci.org/Arara/Process "Build Status")
-[![Code Quality](https://scrutinizer-ci.com/g/Arara/Process/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Arara/Process/?branch=master "Code Quality")
-[![Code Coverage](https://scrutinizer-ci.com/g/Arara/Process/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Arara/Process/?branch=master "Code Coverage")
-[![Total Downloads](https://poser.pugx.org/arara/process/downloads.png)](https://packagist.org/packages/arara/process "Total Downloads")
-[![License](https://poser.pugx.org/arara/process/license.png)](https://packagist.org/packages/arara/process "License")
-[![Latest Stable Version](https://poser.pugx.org/arara/process/v/stable.png)](https://packagist.org/packages/arara/process "Latest Stable Version")
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/Arara/process/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+[![Build Status](https://img.shields.io/travis/Arara/Process/master.svg?style=flat-square)](http://travis-ci.org/Arara/Process)
+[![Code Quality](https://img.shields.io/scrutinizer/g/Arara/Process/master.svg?style=flat-square)](https://scrutinizer-ci.com/g/Arara/Process/?branch=master)
+[![Code Coverage](https://img.shields.io/scrutinizer/coverage/g/Arara/Process/master.svg?style=flat-square)](https://scrutinizer-ci.com/g/Arara/Process/?branch=master)
+[![Latest Version](https://img.shields.io/packagist/v/arara/process.svg?style=flat-square)](https://packagist.org/packages/arara/process)
+[![Total Downloads](https://img.shields.io/packagist/dt/arara/process.svg?style=flat-square)](https://packagist.org/packages/arara/process)
+[![License](https://img.shields.io/packagist/l/arara/process.svg?style=flat-square)](https://packagist.org/packages/arara/process)
 
 This library provides a better API to work with processes on Unix-like systems using PHP.
 
