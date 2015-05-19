@@ -35,6 +35,10 @@ class ErrorException
      */
     public function __invoke($severity, $message, $filename, $line)
     {
+        if (0 === error_reporting()) {
+            return;
+        }
+
         throw new Exception($message, 0, $severity, $filename, $line);
     }
 }
