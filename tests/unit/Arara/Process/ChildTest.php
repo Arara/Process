@@ -334,7 +334,7 @@ class ChildTest extends TestCase
 
         $this->assertTrue($child->wait());
     }
-    
+
     public function testShouldNotWaitWhenProcessAlreadyReaped()
     {
         $processId = 123456;
@@ -409,12 +409,29 @@ class ChildTest extends TestCase
      * @expectedException Arara\Process\Exception\RuntimeException
      * @expectedExceptionMessage Process already started
      */
-    public function testShouldNotStartActionIfThereIsADefinedProcessId()
+    public function testShouldNotStartActionIfItIsAlreadyRunning()
     {
         $processId = 123456;
-        $child = new Child($this->action->getMock(), $this->control->getMock());
+
+        $controlSignalMock = $this->controlSignal
+            ->setMethods(array('send'))
+            ->getMock();
+        $controlSignalMock
+            ->expects($this->once())
+            ->method('send')
+            ->with(0, $processId)
+            ->will($this->returnValue(true));
+
+        $controlMock = $this->control->getMock();
+        $controlMock
+            ->expects($this->once())
+            ->method('signal')
+            ->will($this->returnValue($controlSignalMock));
+
+        $child = new Child($this->action->getMock(), $controlMock);
         $context = $this->getObjectPropertyValue($child, 'context');
         $context->processId = $processId;
+        $context->isRunning = true;
         $child->start();
     }
 

@@ -211,7 +211,7 @@ class Child implements Process
      */
     public function start()
     {
-        if ($this->hasId()) {
+        if ($this->hasId() && $this->isRunning()) {
             throw new RuntimeException('Process already started');
         }
 
