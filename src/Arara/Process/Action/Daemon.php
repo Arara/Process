@@ -184,7 +184,10 @@ class Daemon extends Callback
         gc_enable();
 
         // Callback for handle when process is terminated
-        $control->signal()->prependHandler(SIGTERM, array($this, 'setAsDying'));
+        $control->signal()->prependHandler(SIGTERM, function () use ($context) {
+            $this->setAsDying();
+            $context->pidfile->finalize();
+        });
         $control->signal()->setHandler(SIGTSTP, SIG_IGN);
         $control->signal()->setHandler(SIGTTOU, SIG_IGN);
         $control->signal()->setHandler(SIGTTIN, SIG_IGN);
@@ -221,9 +224,6 @@ class Daemon extends Callback
 
         // Create pidfile
         $context->pidfile->initialize();
-
-        // Define pidfile cleanup
-        register_shutdown_function(array($context->pidfile, 'finalize'));
     }
 
     /**
