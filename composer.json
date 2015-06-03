@@ -15,7 +15,7 @@
         "ext-pcntl": "*",
         "ext-posix": "*",
         "php": ">=5.4.0",
-        "phpfluent/callback": "~1.0.0"
+        "phpfluent/callback": "~1.0"
     },
     "require-dev": {
         "ext-uopz": "*",
