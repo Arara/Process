@@ -56,6 +56,10 @@ class TestCase extends PHPUnit_Framework_TestCase
      */
     protected function overwrite($functionName, $callback)
     {
+        if (!function_exists('uopz_function')) {
+            $this->markTestSkipped('uopz is not enabled');
+        }
+
         if (in_array($functionName, $this->overwrites)) {
             throw new PHPUnit_Framework_Exception(sprintf('"%s" is already overwritten', $functionName));
         }

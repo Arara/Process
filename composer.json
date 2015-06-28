@@ -18,10 +18,12 @@
         "phpfluent/callback": "~1.0"
     },
     "require-dev": {
-        "ext-uopz": "*",
         "phpmd/phpmd" : "~2.2",
         "phpunit/phpunit": "~4.6",
         "squizlabs/php_codesniffer": "~2.3"
+    },
+    "suggest": {
+        "ext-uopz": "Allow modification of the internal structures that represent PHP code"
     },
     "autoload": {
         "psr-0": {
