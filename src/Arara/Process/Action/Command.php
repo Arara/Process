@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -29,14 +30,14 @@ class Command extends Callback
     /**
      * @var array
      */
-    protected $arguments = array();
+    protected $arguments = [];
 
     /**
-     * @param string  $command
-     * @param array   $arguments
-     * @param boolean $prefix
+     * @param string $command
+     * @param array  $arguments
+     * @param bool   $prefix
      */
-    public function __construct($command, array $arguments = array(), $prefix = true)
+    public function __construct($command, array $arguments = [], $prefix = true)
     {
         $this->command = $prefix ? '/usr/bin/env '.$command : $command;
         $this->arguments = $arguments;
@@ -84,7 +85,7 @@ class Command extends Callback
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function execute(Control $control, Context $context)
     {

@@ -1,7 +1,7 @@
 --TEST--
 Should be able to handle start event.
 --FILE--
-<?php require __DIR__ . '/../../examples/child-event-start.php'; ?>
+<?php require __DIR__.'/../../examples/child-event-start.php'; ?>
 --EXPECTF--
 {
     "isRunning": true,

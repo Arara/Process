@@ -11,7 +11,7 @@ use Arara\Process\Context;
 use Arara\Process\Control;
 
 $action = new Callback(function () {
-    trim(array('A PHP error occours'));
+    trim(['A PHP error occours']);
 });
 $action->bind(Action::EVENT_ERROR, function (Context $context) {
     echo json_encode($context->toArray(), (JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT)).PHP_EOL;

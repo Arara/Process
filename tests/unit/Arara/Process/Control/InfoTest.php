@@ -122,7 +122,7 @@ class InfoTest extends TestCase
         $this->overwrite(
             'posix_getpwnam',
             function () use ($expectedUserId) {
-                return array('uid' => $expectedUserId);
+                return ['uid' => $expectedUserId];
             }
         );
 
@@ -228,10 +228,10 @@ class InfoTest extends TestCase
             'posix_getgrgid',
             function ($groupId) use ($currentGroupId, $expectedGroupName) {
                 if ($currentGroupId != $groupId) {
-                    return array();
+                    return [];
                 }
 
-                return array('name' => $expectedGroupName);
+                return ['name' => $expectedGroupName];
             }
         );
 
@@ -250,14 +250,13 @@ class InfoTest extends TestCase
         $this->overwrite(
             'posix_getgrgid',
             function () {
-                return array();
+                return [];
             }
         );
 
         $info = new Info();
         $info->getGroupName();
     }
-
 
     public function testShouldDefineCurrentGroupName()
     {
@@ -267,7 +266,7 @@ class InfoTest extends TestCase
         $this->overwrite(
             'posix_getgrnam',
             function () use ($expectedGroupId) {
-                return array('gid' => 1004);
+                return ['gid' => 1004];
             }
         );
 
@@ -295,7 +294,7 @@ class InfoTest extends TestCase
         $this->overwrite(
             'posix_getgrnam',
             function () {
-                return array();
+                return [];
             }
         );
 

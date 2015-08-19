@@ -13,14 +13,14 @@ class TestCase extends PHPUnit_Framework_TestCase
      *
      * @var array
      */
-    protected $overwrites = array();
+    protected $overwrites = [];
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     final protected function setUp()
     {
-        $this->overwrites = array();
+        $this->overwrites = [];
 
         $this->init();
     }
@@ -31,7 +31,7 @@ class TestCase extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     final protected function tearDown()
     {
@@ -50,8 +50,9 @@ class TestCase extends PHPUnit_Framework_TestCase
     /**
      * Overwrites a native PHP function.
      *
-     * @param  string $functionName
-     * @param  callable $callback
+     * @param string   $functionName
+     * @param callable $callback
+     *
      * @return self
      */
     protected function overwrite($functionName, $callback)
@@ -75,7 +76,8 @@ class TestCase extends PHPUnit_Framework_TestCase
     /**
      * Restores an overwritten function.
      *
-     * @param  string $functionName
+     * @param string $functionName
+     *
      * @return self
      */
     protected function restore($functionName)

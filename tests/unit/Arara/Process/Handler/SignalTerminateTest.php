@@ -13,7 +13,7 @@ class SignalTerminateTest extends TestCase
     {
         $control = $this
             ->getMockBuilder('Arara\Process\Control')
-            ->setMethods(array('quit'))
+            ->setMethods(['quit'])
             ->getMock();
 
         $control

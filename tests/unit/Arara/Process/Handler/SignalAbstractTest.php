@@ -13,7 +13,7 @@ class SignalAbstractTest extends TestCase
     public function testShouldAcceptAnInstanceOfControlOnConstructor()
     {
         $control = new Control();
-        $handler = $this->getMockForAbstractClass('Arara\Process\Handler\SignalAbstract', array($control));
+        $handler = $this->getMockForAbstractClass('Arara\Process\Handler\SignalAbstract', [$control]);
 
         $this->assertAttributeSame($control, 'control', $handler);
     }

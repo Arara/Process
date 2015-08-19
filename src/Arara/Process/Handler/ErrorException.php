@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -24,14 +25,12 @@ class ErrorException
      *
      * Always throws an exception.
      *
-     * @param integer $severity
-     * @param string  $message
-     * @param string  $filename
-     * @param integer $line
+     * @param int    $severity
+     * @param string $message
+     * @param string $filename
+     * @param int    $line
      *
      * @throws Exception
-     *
-     * @return null
      */
     public function __invoke($severity, $message, $filename, $line)
     {

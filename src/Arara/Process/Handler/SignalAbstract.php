@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -35,9 +36,7 @@ abstract class SignalAbstract
     /**
      * Handler for the signal.
      *
-     * @param integer $signal
-     *
-     * @return null
+     * @param int $signal
      */
     abstract public function __invoke($signal);
 }

@@ -32,7 +32,7 @@ class ContextTest extends TestCase
         $context->foo = true;
         $context->bar = false;
 
-        $expectedValue = array('foo' => true, 'bar' => false);
+        $expectedValue = ['foo' => true, 'bar' => false];
         $actualValue = $context->toArray();
 
         $this->assertSame($expectedValue, $actualValue);
@@ -40,13 +40,13 @@ class ContextTest extends TestCase
 
     public function testShouldAcceptAnArrayOfPropertiesOnConstructor()
     {
-        $data = array(
+        $data = [
             'foo' => true,
             'bar' => false,
-        );
+        ];
         $context = new Context($data);
 
-        $expectedValue = array('foo' => true, 'bar' => false);
+        $expectedValue = ['foo' => true, 'bar' => false];
         $actualValue = $context->toArray();
 
         $this->assertSame($expectedValue, $actualValue);
@@ -60,15 +60,15 @@ class ContextTest extends TestCase
         $context->exception = $exception;
 
         $actualValue = $context->toArray();
-        $expectedValue = array(
-            'exception' => array(
+        $expectedValue = [
+            'exception' => [
                 'class'     => get_class($exception),
                 'message'   => $exception->getMessage(),
                 'code'      => $exception->getCode(),
                 'file'      => $exception->getFile(),
                 'line'      => $exception->getLine(),
-            ),
-        );
+            ],
+        ];
 
         $this->assertSame($actualValue, $expectedValue);
     }

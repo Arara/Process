@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -53,7 +54,7 @@ class Child implements Process
      *
      * @param Action  $action
      * @param Control $control
-     * @param integer $timeout
+     * @param int     $timeout
      */
     public function __construct(Action $action, Control $control, $timeout = 0)
     {
@@ -70,7 +71,7 @@ class Child implements Process
     /**
      * Return the process id (PID).
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -84,7 +85,7 @@ class Child implements Process
     /**
      * Return TRUE if there is a defined id or FALSE if not.
      *
-     * @return boolean
+     * @return bool
      */
     public function hasId()
     {
@@ -106,7 +107,7 @@ class Child implements Process
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function isRunning()
     {
@@ -116,9 +117,9 @@ class Child implements Process
     /**
      * Sends a signal to the current process and returns its results.
      *
-     * @param integer $signalNumber
+     * @param int $signalNumber
      *
-     * @return boolean
+     * @return bool
      */
     protected function sendSignal($signalNumber)
     {
@@ -127,7 +128,7 @@ class Child implements Process
         }
 
         $result = $this->control->signal()->send($signalNumber, $this->context->processId);
-        if (in_array($signalNumber, array(SIGTERM, SIGKILL))) {
+        if (in_array($signalNumber, [SIGTERM, SIGKILL])) {
             $this->context->isRunning = false;
             $this->context->processId = null;
         }
@@ -136,7 +137,7 @@ class Child implements Process
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function kill()
     {
@@ -145,8 +146,6 @@ class Child implements Process
 
     /**
      * Define the timeout handler.
-     *
-     * @return null
      */
     protected function setHandlerAlarm()
     {
@@ -157,8 +156,6 @@ class Child implements Process
 
     /**
      * Overwrite default PHP error handler to throws exception when an error occurs.
-     *
-     * @return null
      */
     protected function setHandlerErrorException()
     {
@@ -169,8 +166,6 @@ class Child implements Process
 
     /**
      * Runs action trigger by the given event ignoring all exception.
-     *
-     * @return null
      */
     protected function silentRunActionTrigger($event)
     {
@@ -183,8 +178,6 @@ class Child implements Process
 
     /**
      * Execute the action, triggers the events and then exit the program.
-     *
-     * @return null
      */
     protected function run()
     {
@@ -207,7 +200,7 @@ class Child implements Process
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function start()
     {
@@ -235,7 +228,7 @@ class Child implements Process
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function terminate()
     {
@@ -243,7 +236,7 @@ class Child implements Process
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function wait()
     {

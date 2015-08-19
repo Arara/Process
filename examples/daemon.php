@@ -6,8 +6,8 @@ require_once __DIR__.'/../vendor/autoload.php';
 
 use Arara\Process\Action\Daemon;
 use Arara\Process\Child;
-use Arara\Process\Control;
 use Arara\Process\Context;
+use Arara\Process\Control;
 
 $daemon = new Daemon(
     function (Daemon $daemon, Control $control) {

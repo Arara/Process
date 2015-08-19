@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -17,20 +18,20 @@ use Exception;
  *
  * @property string     $command
  * @property Exception  $exception
- * @property integer    $exitCode
- * @property integer    $finishTime
- * @property boolean    $isRunning
+ * @property int        $exitCode
+ * @property int        $finishTime
+ * @property bool       $isRunning
  * @property array      $outputLines
  * @property string     $outputString
  * @property string     $outputTail
  * @property Pidfile    $pidfile
- * @property integer    $processId
- * @property integer    $returnValue
- * @property integer    $startTime
+ * @property int        $processId
+ * @property int        $returnValue
+ * @property int        $startTime
  * @property resource   $stderr
  * @property resource   $stdin
  * @property resource   $stdout
- * @property integer    $timeout
+ * @property int        $timeout
  *
  * @author Henrique Moody <henriquemoody@gmail.com>
  */
@@ -39,14 +40,14 @@ class Context
     /**
      * @var array
      */
-    protected $data = array();
+    protected $data = [];
 
     /**
      * Accept an array of properties on constructor.
      *
      * @param array $data Optional key => value properties.
      */
-    public function __construct(array $data = array())
+    public function __construct(array $data = [])
     {
         foreach ($data as $property => $value) {
             $this->__set($property, $value);
@@ -58,8 +59,6 @@ class Context
      *
      * @param string $property
      * @param mixed  $value
-     *
-     * @return null
      */
     public function __set($property, $value)
     {
@@ -93,13 +92,13 @@ class Context
     protected function normalize($value)
     {
         if ($value instanceof Exception) {
-            $value = array(
+            $value = [
                 'class'     => get_class($value),
                 'message'   => $value->getMessage(),
                 'code'      => $value->getCode(),
                 'file'      => $value->getFile(),
                 'line'      => $value->getLine(),
-            );
+            ];
         }
 
         return $value;
@@ -112,7 +111,7 @@ class Context
      */
     public function toArray()
     {
-        $data = array();
+        $data = [];
         foreach ($this->data as $key => $value) {
             $data[$key] = $this->normalize($value);
         }

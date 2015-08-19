@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -26,7 +27,7 @@ class Daemon extends Callback
     /**
      * When TRUE the daemon is dying, when FALSE it is not.
      *
-     * @var boolean
+     * @var bool
      */
     protected $dying = false;
 
@@ -35,7 +36,7 @@ class Daemon extends Callback
      *
      * @var array
      */
-    protected $options = array(
+    protected $options = [
         // Daemon name
         'name' => 'arara',
         // Lock directory
@@ -54,13 +55,13 @@ class Daemon extends Callback
         'stdout' => '/dev/null',
         // STDERR file path
         'stderr' => '/dev/null',
-    );
+    ];
 
     /**
      * @param callable $callback Payload callback.
      * @param array    $options  Daemon options.
      */
-    public function __construct($callback, array $options = array())
+    public function __construct($callback, array $options = [])
     {
         parent::__construct($callback);
 
@@ -71,7 +72,7 @@ class Daemon extends Callback
     /**
      * Returns TRUE when is dying or false if it's not.
      *
-     * @return boolean
+     * @return bool
      */
     public function isDying()
     {
@@ -81,9 +82,7 @@ class Daemon extends Callback
     /**
      * Set daemon as dying (or not).
      *
-     * @param boolean $isDying Default is TRUE.
-     *
-     * @return null
+     * @param bool $isDying Default is TRUE.
      */
     public function setAsDying($isDying = true)
     {
@@ -91,7 +90,7 @@ class Daemon extends Callback
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function execute(Control $control, Context $context)
     {
@@ -100,24 +99,22 @@ class Daemon extends Callback
 
     /**
      * Binds some callbacks as default triggers.
-     *
-     * @return null
      */
     protected function bindDefaultTriggers()
     {
-        $this->handlers[self::EVENT_INIT]   = $this->fluentCallback(array($this, 'handleInit'));
-        $this->handlers[self::EVENT_FORK]   = $this->fluentCallback(array($this, 'handleFork'));
-        $this->handlers[self::EVENT_START]  = $this->fluentCallback(array($this, 'handleStart'));
+        $this->handlers[self::EVENT_INIT]   = $this->fluentCallback([$this, 'handleInit']);
+        $this->handlers[self::EVENT_FORK]   = $this->fluentCallback([$this, 'handleFork']);
+        $this->handlers[self::EVENT_START]  = $this->fluentCallback([$this, 'handleStart']);
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @throws InvalidArgumentException When event binding is forbidden.
      */
     public function bind($event, callable $handler)
     {
-        if (in_array($event, array(self::EVENT_INIT, self::EVENT_FORK, self::EVENT_START))) {
+        if (in_array($event, [self::EVENT_INIT, self::EVENT_FORK, self::EVENT_START])) {
             throw new InvalidArgumentException('You can not bind a callback for this event');
         }
 
@@ -129,8 +126,6 @@ class Daemon extends Callback
      *
      * @param Control $control
      * @param Context $context
-     *
-     * @return null
      */
     public function handleInit(Control $control, Context $context)
     {
@@ -147,8 +142,6 @@ class Daemon extends Callback
      * Finishes the parent process.
      *
      * @param Control $control
-     *
-     * @return null
      */
     public function handleFork(Control $control)
     {
@@ -171,8 +164,6 @@ class Daemon extends Callback
      *
      * @param Control $control
      * @param Context $context
-     *
-     * @return null
      */
     public function handleStart(Control $control, Context $context)
     {
@@ -240,8 +231,6 @@ class Daemon extends Callback
      * Defines daemon options.
      *
      * @param array $options
-     *
-     * @return null
      */
     public function setOptions(array $options)
     {
@@ -253,11 +242,11 @@ class Daemon extends Callback
     /**
      * Defines an option for daemon.
      *
-     * @throws InvalidArgumentException When option is not valid.
-     * @param  string                   $name  Option name.
-     * @param  mixed                    $value Option value.
      *
-     * @return null
+     * @param string $name  Option name.
+     * @param mixed  $value Option value.
+     *
+     * @throws InvalidArgumentException When option is not valid.
      */
     public function setOption($name, $value)
     {
@@ -269,7 +258,7 @@ class Daemon extends Callback
     }
 
     /**
-     * Returns the value of a defined option
+     * Returns the value of a defined option.
      *
      * @param string $name Option name.
      *

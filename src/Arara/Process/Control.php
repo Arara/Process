@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -59,10 +60,8 @@ class Control
      * @param array  $envs
      *
      * @throws RuntimeException When get an error.
-     *
-     * @return null
      */
-    public function execute($path, array $args = array(), array $envs = array())
+    public function execute($path, array $args = [], array $envs = [])
     {
         if (false === @pcntl_exec($path, $args, $envs)) {
             throw new RuntimeException('Error when executing command');
@@ -75,9 +74,7 @@ class Control
      *
      * @SuppressWarnings("exit")
      *
-     * @param integer $exitCode Optional exit code.
-     *
-     * @return null
+     * @param int $exitCode Optional exit code.
      */
     public function quit($exitCode = 0)
     {
@@ -92,11 +89,10 @@ class Control
      * - Clears file status cache
      * - Forces collection of any existing garbage cycles
      *
+     *
+     * @param float|int $seconds Seconds to sleep (can be 0.5)
+     *
      * @throws InvalidArgumentException When $seconds is not a valid value.
-     *
-     * @param float|integer $seconds Seconds to sleep (can be 0.5)
-     *
-     * @return null
      */
     public function flush($seconds = 0)
     {
@@ -119,7 +115,7 @@ class Control
      *
      * @throws RuntimeException When fork fails.
      *
-     * @return integer When is the child process returns "0" unless returns the child PID.
+     * @return int When is the child process returns "0" unless returns the child PID.
      */
     public function fork()
     {
@@ -154,10 +150,10 @@ class Control
     /**
      * Waits on or returns the status of a forked child.
      *
-     * @param integer $status
-     * @param integer $options
+     * @param int $status
+     * @param int $options
      *
-     * @return integer
+     * @return int
      */
     public function wait(&$status = null, $options = 0)
     {
@@ -167,11 +163,11 @@ class Control
     /**
      * Waits on or returns the status of a forked child by its id (PID).
      *
-     * @param integer $processId
-     * @param integer $status
-     * @param integer $options
+     * @param int $processId
+     * @param int $status
+     * @param int $options
      *
-     * @return integer
+     * @return int
      */
     public function waitProcessId($processId, &$status = null, $options = 0)
     {

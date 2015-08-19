@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -20,16 +21,17 @@ use Arara\Process\Exception\InvalidArgumentException;
 class Status
 {
     /**
-     * @var integer
+     * @var int
      */
     protected $status;
 
     /**
      * Create object and define the wait status to be analized for the object methods.
      *
-     * @throws InvalidArgumentException When status is not valid.
      *
-     * @param integer $status
+     * @param int $status
+     *
+     * @throws InvalidArgumentException When status is not valid.
      */
     public function __construct($status)
     {
@@ -42,7 +44,7 @@ class Status
     /**
      * Returns the exit code of a terminated child.
      *
-     * @return integer
+     * @return int
      */
     public function getExitStatus()
     {
@@ -52,7 +54,7 @@ class Status
     /**
      * Returns the signal which caused the child to stop.
      *
-     * @return integer
+     * @return int
      */
     public function getStopSignal()
     {
@@ -62,7 +64,7 @@ class Status
     /**
      * Returns the signal which caused the child to terminate.
      *
-     * @return integer
+     * @return int
      */
     public function getTerminateSignal()
     {
@@ -72,7 +74,7 @@ class Status
     /**
      * Checks if status code represents a normal exit.
      *
-     * @return boolean
+     * @return bool
      */
     public function isExited()
     {
@@ -82,7 +84,7 @@ class Status
     /**
      * Checks whether the status code represents a termination due to a signal.
      *
-     * @return boolean
+     * @return bool
      */
     public function isSignaled()
     {
@@ -92,7 +94,7 @@ class Status
     /**
      * Checks whether the child process is currently stopped.
      *
-     * @return boolean
+     * @return bool
      */
     public function isStopped()
     {
@@ -102,7 +104,7 @@ class Status
     /**
      * Returns TRUE when successful or FALSE if not.
      *
-     * @return boolean
+     * @return bool
      */
     public function isSuccessful()
     {

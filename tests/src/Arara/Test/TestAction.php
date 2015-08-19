@@ -33,7 +33,7 @@ class TestAction implements Action
      *
      * @var array
      */
-    protected $events = array (
+    protected $events = [
         self::EVENT_INIT    => 'Init',
         self::EVENT_FORK    => 'Fork',
         self::EVENT_START   => 'Start',
@@ -42,16 +42,16 @@ class TestAction implements Action
         self::EVENT_FAILURE => 'Failure',
         self::EVENT_TIMEOUT => 'Timeout',
         self::EVENT_FINISH  => 'Finish',
-    );
+    ];
 
     /**
      * @var array
      */
-    public $records = array();
+    public $records = [];
 
     /**
-     * @param  int $actionId
-     * @param  int $output
+     * @param int $actionId
+     * @param int $output
      */
     public function __construct($actionId, $output = self::ACTION)
     {
@@ -62,19 +62,18 @@ class TestAction implements Action
     /**
      * Creates a log (output).
      *
-     * @param  string $event
-     * @param  Control $control
-     * @param  boolean $output
-     * @return void
+     * @param string  $event
+     * @param Control $control
+     * @param bool    $output
      */
     protected function log($event, Control $control, $output)
     {
-        $record = array(
+        $record = [
             'date' => date('Y-m-d H:i:s'),
             'pid' => $control->info()->getId(),
             'actionId' => $this->actionId,
             'event' => $event,
-        );
+        ];
         $this->records[] = $record;
 
         if (! $output) {
@@ -89,11 +88,11 @@ class TestAction implements Action
             $record['event']
         );
 
-        echo $message . PHP_EOL;
+        echo $message.PHP_EOL;
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function execute(Control $control, Context $context)
     {
@@ -102,7 +101,7 @@ class TestAction implements Action
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function trigger($event, Control $control, Context $context)
     {

@@ -99,14 +99,14 @@ class ControlTest extends TestCase
     {
         $control = new Control();
 
-        $this->assertInstanceOf(__NAMESPACE__ . '\\Control\\Info', $control->info());
+        $this->assertInstanceOf(__NAMESPACE__.'\\Control\\Info', $control->info());
     }
 
     public function testShouldReturnAValidSignalController()
     {
         $control = new Control();
 
-        $this->assertInstanceOf(__NAMESPACE__ . '\\Control\\Signal', $control->signal());
+        $this->assertInstanceOf(__NAMESPACE__.'\\Control\\Signal', $control->signal());
     }
 
     public function testShouldDefineSignalHandlersByDefault()
@@ -208,6 +208,7 @@ class ControlTest extends TestCase
             'pcntl_waitpid',
             function ($processId, &$status) use ($expectedStatus) {
                 $status = $expectedStatus;
+
                 return -1;
             }
         );
@@ -225,7 +226,7 @@ class ControlTest extends TestCase
     public function testShouldNotAcceptANonNumericValueOnFlushMethod()
     {
         $control = new Control();
-        $control->flush(array());
+        $control->flush([]);
     }
 
     /**

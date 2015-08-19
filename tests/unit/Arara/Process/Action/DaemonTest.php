@@ -39,7 +39,7 @@ class DaemonTest extends TestCase
     public function testShouldDefineOptionsOnConstructor()
     {
         $action = function () {};
-        $options = array(
+        $options = [
             'name' => 'myapp',
             'lock_dir' => '/tmp',
             'work_dir' => __DIR__,
@@ -49,7 +49,7 @@ class DaemonTest extends TestCase
             'stdin' => '/dev/stdin',
             'stdout' => '/dev/stdout',
             'stderr' => '/dev/stderr',
-        );
+        ];
 
         $daemon = new Daemon($action, $options);
 
@@ -59,7 +59,7 @@ class DaemonTest extends TestCase
     public function testShouldHaveOptionsByDefault()
     {
         $daemon = new Daemon(function () {});
-        $expectedOptions = array(
+        $expectedOptions = [
             'name' => 'arara',
             'lock_dir' => '/var/run',
             'work_dir' => '/',
@@ -69,7 +69,7 @@ class DaemonTest extends TestCase
             'stdin' => '/dev/null',
             'stdout' => '/dev/null',
             'stderr' => '/dev/null',
-        );
+        ];
 
         $this->assertSame($expectedOptions, $daemon->getOptions());
     }
@@ -77,11 +77,11 @@ class DaemonTest extends TestCase
     public function testShouldBindDefaultEventHandlers()
     {
         $daemon = new Daemon(function () {});
-        $expectedHandlers = array(
-            Daemon::EVENT_INIT    => array($daemon, 'handleInit'),
-            Daemon::EVENT_FORK    => array($daemon, 'handleFork'),
-            Daemon::EVENT_START   => array($daemon, 'handleStart'),
-        );
+        $expectedHandlers = [
+            Daemon::EVENT_INIT    => [$daemon, 'handleInit'],
+            Daemon::EVENT_FORK    => [$daemon, 'handleFork'],
+            Daemon::EVENT_START   => [$daemon, 'handleStart'],
+        ];
 
         $this->assertSame($expectedHandlers, $daemon->getHandlers());
     }
@@ -164,7 +164,7 @@ class DaemonTest extends TestCase
 
     public function testShouldExecutePayloadCallbackWithArguments()
     {
-        $actualArguments = array();
+        $actualArguments = [];
         $payloadCallback = function (Control $control, Context $context, Daemon $daemon) use (&$actualArguments) {
             $actualArguments = func_get_args();
         };
@@ -172,7 +172,7 @@ class DaemonTest extends TestCase
         $control = new Control();
         $context = new Context();
 
-        $expectedArguments = array($control, $context, $daemon);
+        $expectedArguments = [$control, $context, $daemon];
 
         $daemon->execute($control, $context);
 
@@ -183,7 +183,7 @@ class DaemonTest extends TestCase
     {
         $control = new Control();
         $context = new Context();
-        $daemon = new Daemon(function () {}, array('lock_dir' => __DIR__));
+        $daemon = new Daemon(function () {}, ['lock_dir' => __DIR__]);
         $daemon->trigger(Daemon::EVENT_INIT, $control, $context);
 
         $this->assertInstanceOf('Arara\\Process\\Pidfile', $context->pidfile);
@@ -194,7 +194,7 @@ class DaemonTest extends TestCase
         $control = new Control();
         $context = new Context();
         $applicationName = 'mydaemon';
-        $daemon = new Daemon(function () {}, array('name' => $applicationName, 'lock_dir' => __DIR__));
+        $daemon = new Daemon(function () {}, ['name' => $applicationName, 'lock_dir' => __DIR__]);
         $daemon->trigger(Daemon::EVENT_INIT, $control, $context);
 
         $this->assertEquals($applicationName, $context->pidfile->getApplicationName());

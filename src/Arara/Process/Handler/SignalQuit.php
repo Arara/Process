@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -18,7 +19,7 @@ namespace Arara\Process\Handler;
 class SignalQuit extends SignalAbstract
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function __invoke($signal)
     {

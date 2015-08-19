@@ -16,7 +16,7 @@ class CommandTest extends TestCase
     protected function init()
     {
         $this->defaultExecCallback = function ($command, &$output, &$return_var) {
-            $output = array('first', 'Second', 'Third');
+            $output = ['first', 'Second', 'Third'];
             $return_var = 0;
 
             return end($output);
@@ -35,7 +35,7 @@ class CommandTest extends TestCase
 
     public function testShouldAcceptArgumentsOnConstructor()
     {
-        $arguments = array(__DIR__, '-name' => '*');
+        $arguments = [__DIR__, '-name' => '*'];
         $action = new Command('find', $arguments);
 
         $this->assertEquals($arguments, $action->getArguments());
@@ -43,7 +43,7 @@ class CommandTest extends TestCase
 
     public function testShouldRemoveCommandPrefixOnConstructor()
     {
-        $action = new Command('echo', array(), false);
+        $action = new Command('echo', [], false);
 
         $actualCommand = $action->getCommand();
         $expectedCommand = 'echo';
@@ -57,7 +57,7 @@ class CommandTest extends TestCase
 
         $control = new Control();
         $context = new Context();
-        $action = new Command('echo', array('Arara', 'Process'));
+        $action = new Command('echo', ['Arara', 'Process']);
         $action->execute($control, $context);
 
         $actualCommand = $context->command;
@@ -72,7 +72,7 @@ class CommandTest extends TestCase
 
         $control = new Control();
         $context = new Context();
-        $action = new Command('echo', array('-n' => 'Process'));
+        $action = new Command('echo', ['-n' => 'Process']);
         $action->execute($control, $context);
 
         $actualCommand = $context->command;
@@ -88,7 +88,7 @@ class CommandTest extends TestCase
         $control = new Control();
         $context = new Context();
         $prefixEnv = false;
-        $action = new Command('echo', array('Arara\Process'), $prefixEnv);
+        $action = new Command('echo', ['Arara\Process'], $prefixEnv);
         $action->execute($control, $context);
 
         $actualCommand = $context->command;
@@ -105,7 +105,7 @@ class CommandTest extends TestCase
         $this->overwrite(
             'exec',
             function ($command, &$output, &$return_var) use (&$actualCommand) {
-                $output = array();
+                $output = [];
                 $return_var = 0;
                 $actualCommand = $command;
 
@@ -115,7 +115,7 @@ class CommandTest extends TestCase
 
         $control = new Control();
         $context = new Context();
-        $action = new Command('echo', array('Arara\Process'), false);
+        $action = new Command('echo', ['Arara\Process'], false);
         $action->execute($control, $context);
 
         $this->assertEquals($expectedCommand, $actualCommand);
@@ -129,7 +129,7 @@ class CommandTest extends TestCase
         $this->overwrite(
             'exec',
             function ($command, &$output, &$return_var) {
-                $output = array();
+                $output = [];
                 $return_var = 1;
 
                 return '';
@@ -138,7 +138,7 @@ class CommandTest extends TestCase
 
         $control = new Control();
         $context = new Context();
-        $action = new Command('echo', array('Arara\nProcess'), false);
+        $action = new Command('echo', ['Arara\nProcess'], false);
         $action->execute($control, $context);
     }
 
@@ -151,7 +151,7 @@ class CommandTest extends TestCase
         $this->overwrite(
             'exec',
             function ($command, &$output, &$return_var) {
-                $output = array('First', 'Second');
+                $output = ['First', 'Second'];
                 $return_var = 1;
 
                 return end($output);
@@ -160,7 +160,7 @@ class CommandTest extends TestCase
 
         $control = new Control();
         $context = new Context();
-        $action = new Command('echo', array('Arara\nProcess'), false);
+        $action = new Command('echo', ['Arara\nProcess'], false);
         $action->execute($control, $context);
     }
 
@@ -171,7 +171,7 @@ class CommandTest extends TestCase
         $this->overwrite(
             'exec',
             function ($command, &$output, &$return_var) use ($expectedTail) {
-                $output = array('Arara', $expectedTail);
+                $output = ['Arara', $expectedTail];
                 $return_var = 0;
 
                 return end($output);
@@ -180,7 +180,7 @@ class CommandTest extends TestCase
 
         $control = new Control();
         $context = new Context();
-        $action = new Command('echo', array('Arara\nProcess'));
+        $action = new Command('echo', ['Arara\nProcess']);
         $action->execute($control, $context);
 
         $actualTail = $context->outputTail;
@@ -190,7 +190,7 @@ class CommandTest extends TestCase
 
     public function testShouldStoreOutputLines()
     {
-        $expectedLines = array('Arara', 'Process');
+        $expectedLines = ['Arara', 'Process'];
 
         $this->overwrite(
             'exec',
@@ -204,7 +204,7 @@ class CommandTest extends TestCase
 
         $control = new Control();
         $context = new Context();
-        $action = new Command('echo', array('Arara\nProcess'));
+        $action = new Command('echo', ['Arara\nProcess']);
         $action->execute($control, $context);
 
         $actualLines = $context->outputLines;
@@ -214,7 +214,7 @@ class CommandTest extends TestCase
 
     public function testShouldStoreOutputString()
     {
-        $expectedString = 'Arara' . PHP_EOL . 'Process';
+        $expectedString = 'Arara'.PHP_EOL.'Process';
 
         $this->overwrite(
             'exec',
@@ -228,7 +228,7 @@ class CommandTest extends TestCase
 
         $control = new Control();
         $context = new Context();
-        $action = new Command('echo', array('Arara\nProcess'));
+        $action = new Command('echo', ['Arara\nProcess']);
         $action->execute($control, $context);
 
         $actualString = $context->outputString;
@@ -242,7 +242,7 @@ class CommandTest extends TestCase
 
         $control = new Control();
         $context = new Context();
-        $action = new Command('echo', array('Arara\nProcess'));
+        $action = new Command('echo', ['Arara\nProcess']);
         $action->execute($control, $context);
 
         $actualReturn = $context->returnValue;

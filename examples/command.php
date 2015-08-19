@@ -9,7 +9,7 @@ use Arara\Process\Child;
 use Arara\Process\Context;
 use Arara\Process\Control;
 
-$command = new Command('find', array(__DIR__, '-name' => '*', '-type' => 'f'));
+$command = new Command('find', [__DIR__, '-name' => '*', '-type' => 'f']);
 $command->bind(Command::EVENT_FINISH, function (Context $context) {
     echo json_encode($context->toArray(), (JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT)).PHP_EOL;
 });

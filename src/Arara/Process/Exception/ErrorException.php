@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -11,7 +12,7 @@
 namespace Arara\Process\Exception;
 
 /**
- * {@inheritDoc}
+ * {@inheritdoc}
  *
  * @author Henrique Moody <henriquemoody@gmail.com>
  */

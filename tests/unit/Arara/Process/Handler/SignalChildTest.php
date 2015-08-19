@@ -13,7 +13,7 @@ class SignalChildTest extends TestCase
     {
         $control = $this
             ->getMockBuilder('Arara\Process\Control')
-            ->setMethods(array('wait'))
+            ->setMethods(['wait'])
             ->getMock();
 
         $control
@@ -30,7 +30,7 @@ class SignalChildTest extends TestCase
     {
         $control = $this
             ->getMockBuilder('Arara\Process\Control')
-            ->setMethods(array('wait'))
+            ->setMethods(['wait'])
             ->getMock();
 
         $control

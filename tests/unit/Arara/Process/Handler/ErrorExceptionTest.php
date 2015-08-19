@@ -2,7 +2,6 @@
 
 namespace Arara\Process\Handler;
 
-use Arara\Process\Control;
 use Arara\Test\TestCase;
 
 /**

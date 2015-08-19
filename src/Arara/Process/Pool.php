@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -27,23 +28,23 @@ class Pool implements Process, Countable
     protected $process;
 
     /**
-     * @var integer
+     * @var int
      */
     protected $processLimit;
 
     /**
-     * @var boolean
+     * @var bool
      */
     protected $running;
 
     /**
-     * @var boolean
+     * @var bool
      */
     protected $stopped;
 
     /**
-     * @param integer $processLimit Number of process in the pool.
-     * @param boolean $autoStart    Starts pool automatically when TRUE (default: FALSE)
+     * @param int  $processLimit Number of process in the pool.
+     * @param bool $autoStart    Starts pool automatically when TRUE (default: FALSE)
      */
     public function __construct($processLimit, $autoStart = false)
     {
@@ -56,7 +57,7 @@ class Pool implements Process, Countable
     /**
      * Return the number of active process in the pool.
      *
-     * @return integer
+     * @return int
      */
     public function count()
     {
@@ -69,8 +70,6 @@ class Pool implements Process, Countable
      * Try to detach finished processes from the pool when reaches its limit.
      *
      * @param Process $process
-     *
-     * @return null
      */
     public function attach(Process $process)
     {
@@ -96,8 +95,6 @@ class Pool implements Process, Countable
      * Detachs a process from the pool.
      *
      * @param Process $process
-     *
-     * @return null
      */
     public function detach(Process $process)
     {
@@ -130,7 +127,7 @@ class Pool implements Process, Countable
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function isRunning()
     {
@@ -142,7 +139,7 @@ class Pool implements Process, Countable
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function kill()
     {
@@ -159,7 +156,7 @@ class Pool implements Process, Countable
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function start()
     {
@@ -187,7 +184,7 @@ class Pool implements Process, Countable
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function terminate()
     {
@@ -204,7 +201,7 @@ class Pool implements Process, Countable
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function wait()
     {

@@ -17,7 +17,7 @@ try {
     $pidfile->finalize(); // You may use register_shutdown_function([$pidfile, 'finalize']);
 } catch (Exception $exception) {
     echo $exception->getMessage().PHP_EOL;
-    echo "Running PID is #".$pidfile->getProcessId().PHP_EOL;
+    echo 'Running PID is #'.$pidfile->getProcessId().PHP_EOL;
 }
 
 echo 'Finished'.PHP_EOL;

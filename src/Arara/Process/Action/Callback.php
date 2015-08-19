@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -29,7 +30,7 @@ class Callback implements Action
     /**
      * @var array
      */
-    protected $handlers = array();
+    protected $handlers = [];
 
     /**
      * @param callable $callback Callback to run as action.
@@ -58,7 +59,7 @@ class Callback implements Action
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function execute(Control $control, Context $context)
     {
@@ -66,7 +67,7 @@ class Callback implements Action
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function trigger($event, Control $control, Context $context)
     {
@@ -82,9 +83,8 @@ class Callback implements Action
     /**
      * Bind a handler for event/events.
      *
-     * @param  integer  $event   Event to handle
-     * @param  callable $handler Callback to handle the event (or events).
-     * @return null
+     * @param int      $event   Event to handle
+     * @param callable $handler Callback to handle the event (or events).
      */
     public function bind($event, callable $handler)
     {
@@ -98,7 +98,7 @@ class Callback implements Action
      */
     public function getHandlers()
     {
-        $handlers = array();
+        $handlers = [];
         foreach ($this->handlers as $key => $handler) {
             $handlers[$key] = $handler->getCallable();
         }

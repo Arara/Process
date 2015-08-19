@@ -27,7 +27,7 @@ class SignalAlarmTest extends TestCase
 
         $control = $this
             ->getMockBuilder('Arara\Process\Control')
-            ->setMethods(array('quit'))
+            ->setMethods(['quit'])
             ->getMock();
 
         $control
@@ -37,7 +37,7 @@ class SignalAlarmTest extends TestCase
 
         $action = $this
             ->getMockBuilder('Arara\Process\Action\Action')
-            ->setMethods(array('execute', 'trigger'))
+            ->setMethods(['execute', 'trigger'])
             ->getMock();
 
         $action
@@ -55,22 +55,22 @@ class SignalAlarmTest extends TestCase
 
         $control = $this
             ->getMockBuilder('Arara\Process\Control')
-            ->setMethods(array('quit'))
+            ->setMethods(['quit'])
             ->getMock();
 
         $action = $this
             ->getMockBuilder('Arara\Process\Action\Action')
-            ->setMethods(array('execute', 'trigger'))
+            ->setMethods(['execute', 'trigger'])
             ->getMock();
 
         $handler = new SignalAlarm($control, $action, $context);
         $handler(SIGALRM);
 
         $actualData = $context->toArray();
-        $expectedData = array(
+        $expectedData = [
             'exitCode' => 3,
             'finishTime' => self::TIMESTAMP,
-        );
+        ];
 
         $this->assertEquals($expectedData, $actualData);
     }

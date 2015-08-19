@@ -35,14 +35,14 @@ class CallbackTest extends TestCase
 
     public function testShouldReturnAllDefinedHandlers()
     {
-        $callback = new Callback(function() {});
+        $callback = new Callback(function () {});
         $callback->bind(Callback::EVENT_INIT, 'trim');
         $callback->bind(Callback::EVENT_ERROR, 'strlen');
 
-        $expectedHandlers = array(
+        $expectedHandlers = [
             Callback::EVENT_INIT => 'trim',
             Callback::EVENT_ERROR => 'strlen',
-        );
+        ];
 
         $this->assertEquals($expectedHandlers, $callback->getHandlers());
     }
@@ -50,10 +50,10 @@ class CallbackTest extends TestCase
     public function testShouldAddEventHandlers()
     {
         $event = Callback::EVENT_SUCCESS;
-        $handler = function() {};
-        $expectedHandlers = array($event => $handler);
+        $handler = function () {};
+        $expectedHandlers = [$event => $handler];
 
-        $callback = new Callback(function() {});
+        $callback = new Callback(function () {});
         $callback->bind($event, $handler);
 
         $this->assertEquals($expectedHandlers, $callback->getHandlers());
@@ -69,7 +69,7 @@ class CallbackTest extends TestCase
             $counter++;
         };
 
-        $callback = new Callback(function() {});
+        $callback = new Callback(function () {});
         $callback->bind($event, $handler);
         $callback->trigger($event, $control, $context);
 
@@ -85,7 +85,7 @@ class CallbackTest extends TestCase
             $counter++;
         };
 
-        $callback = new Callback(function() {});
+        $callback = new Callback(function () {});
         $callback->bind(Callback::EVENT_ERROR | Callback::EVENT_FAILURE, $handler);
         $callback->trigger(Callback::EVENT_ERROR, $control, $context);
         $callback->trigger(Callback::EVENT_FAILURE, $control, $context);
@@ -102,7 +102,7 @@ class CallbackTest extends TestCase
             $counter++;
         };
 
-        $callback = new Callback(function() {});
+        $callback = new Callback(function () {});
         $callback->bind(Callback::EVENT_ERROR, $handler);
         $callback->trigger(Callback::EVENT_FAILURE, $control, $context);
 

@@ -1,7 +1,7 @@
 --TEST--
 Should be able to handle PHP error event.
 --FILE--
-<?php require __DIR__ . '/../../examples/child-event-error.php'; ?>
+<?php require __DIR__.'/../../examples/child-event-error.php'; ?>
 --EXPECTF--
 {
     "isRunning": true,

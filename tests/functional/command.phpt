@@ -1,7 +1,7 @@
 --TEST--
 Should be able to execute a shell command.
 --FILE--
-<?php require __DIR__ . '/../../examples/command.php'; ?>
+<?php require __DIR__.'/../../examples/command.php'; ?>
 --EXPECTF--
 {
     "isRunning": true,

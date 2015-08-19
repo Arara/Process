@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Arara\Process package.
  *
@@ -46,7 +47,7 @@ class Pidfile
     protected $lockDirectory;
 
     /**
-     * @var integer
+     * @var int
      */
     protected $processId;
 
@@ -78,8 +79,6 @@ class Pidfile
      * @param string $applicationName The application name, used as pidfile basename.
      *
      * @throws InvalidArgumentException When application name is not valid.
-     *
-     * @return null
      */
     protected function setApplicationName($applicationName)
     {
@@ -104,8 +103,6 @@ class Pidfile
      * @param string $lockDirectory Directory were pidfile should be stored.
      *
      * @throws InvalidArgumentException When lock directory is not valid.
-     *
-     * @return null
      */
     protected function setLockDirectory($lockDirectory)
     {
@@ -121,7 +118,7 @@ class Pidfile
     }
 
     /**
-     * Returns the Pidfile filename
+     * Returns the Pidfile filename.
      *
      * @return string
      */
@@ -135,7 +132,7 @@ class Pidfile
     }
 
     /**
-     * Returns the Pidfile file resource
+     * Returns the Pidfile file resource.
      *
      * @return resource
      */
@@ -155,7 +152,7 @@ class Pidfile
     /**
      * Returns TRUE when pidfile is active or FALSE when is not.
      *
-     * @return boolean
+     * @return bool
      */
     public function isActive()
     {
@@ -170,7 +167,7 @@ class Pidfile
     /**
      * Returns Pidfile content with the PID or NULL when there is no stored PID.
      *
-     * @return integer|null
+     * @return int|null
      */
     public function getProcessId()
     {
@@ -187,8 +184,6 @@ class Pidfile
      * Initializes pidfile.
      *
      * Create an empty file, store the PID into the file and lock it.
-     *
-     * @return null
      */
     public function initialize()
     {
@@ -219,8 +214,6 @@ class Pidfile
      * Finalizes pidfile.
      *
      * Unlock pidfile and removes it.
-     *
-     * @return null
      */
     public function finalize()
     {

@@ -133,7 +133,7 @@ class ChildTest extends TestCase
         $processId = 123456;
 
         $controlSignalMock = $this->controlSignal
-            ->setMethods(array('send'))
+            ->setMethods(['send'])
             ->getMock();
         $controlSignalMock
             ->expects($this->once())
@@ -160,7 +160,7 @@ class ChildTest extends TestCase
         $processId = 123456;
 
         $controlSignalMock = $this->controlSignal
-            ->setMethods(array('send'))
+            ->setMethods(['send'])
             ->getMock();
         $controlSignalMock
             ->expects($this->once())
@@ -188,7 +188,7 @@ class ChildTest extends TestCase
         $processId = 123456;
 
         $controlSignalMock = $this->controlSignal
-            ->setMethods(array('send'))
+            ->setMethods(['send'])
             ->getMock();
         $controlSignalMock
             ->expects($this->once())
@@ -227,7 +227,7 @@ class ChildTest extends TestCase
         $processId = 123456;
 
         $controlSignalMock = $this->controlSignal
-            ->setMethods(array('send'))
+            ->setMethods(['send'])
             ->getMock();
         $controlSignalMock
             ->expects($this->once())
@@ -255,7 +255,7 @@ class ChildTest extends TestCase
         $processId = 123456;
 
         $controlSignalMock = $this->controlSignal
-            ->setMethods(array('send'))
+            ->setMethods(['send'])
             ->getMock();
         $controlSignalMock
             ->expects($this->once())
@@ -294,7 +294,7 @@ class ChildTest extends TestCase
         $processId = 123456;
 
         $controlSignalMock = $this->controlSignal
-            ->setMethods(array('send'))
+            ->setMethods(['send'])
             ->getMock();
         $controlSignalMock
             ->expects($this->once())
@@ -414,7 +414,7 @@ class ChildTest extends TestCase
         $processId = 123456;
 
         $controlSignalMock = $this->controlSignal
-            ->setMethods(array('send'))
+            ->setMethods(['send'])
             ->getMock();
         $controlSignalMock
             ->expects($this->once())
@@ -635,7 +635,7 @@ class ChildTest extends TestCase
             ->expects($this->any())
             ->method('execute')
             ->will($this->returnCallback(function () {
-                trim(array());
+                trim([]);
             }));
         $action
             ->expects($this->at(3))
@@ -737,7 +737,7 @@ class ChildTest extends TestCase
             ->expects($this->any())
             ->method('execute')
             ->will($this->returnCallback(function () {
-                trim(array());
+                trim([]);
             }));
 
         $control = $this->control->getMock();

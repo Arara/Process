@@ -213,7 +213,6 @@ class PidfileTest extends TestCase
                 }
             );
 
-
         $control = new Control();
         $pidfile = new Pidfile($control, 'arara', 'filename');
         $pidfile->isActive();
@@ -236,10 +235,9 @@ class PidfileTest extends TestCase
             ->overwrite(
             'fgets',
                 function () use ($processId) {
-                    return $processId . PHP_EOL;
+                    return $processId.PHP_EOL;
                 }
             );
-
 
         $signal = $this->getMock('Arara\Process\Control\Signal');
         $signal
@@ -295,7 +293,7 @@ class PidfileTest extends TestCase
             ->overwrite(
                 'fgets',
                 function () use ($processId) {
-                    return $processId . PHP_EOL . 987981723 . 12387687;
+                    return $processId.PHP_EOL. 987981723 . 12387687;
                 }
             );
 
@@ -409,7 +407,6 @@ class PidfileTest extends TestCase
                 }
             );
 
-
         $pidfile = new Pidfile(new Control());
         $pidfile->initialize();
     }
@@ -418,7 +415,7 @@ class PidfileTest extends TestCase
     {
         $processId = 123456;
         $actualContent = null;
-        $expectedContent = $processId . PHP_EOL;
+        $expectedContent = $processId.PHP_EOL;
 
         $this
             ->restore('fwrite')
@@ -430,7 +427,6 @@ class PidfileTest extends TestCase
                     return true;
                 }
             );
-
 
         $signal = $this->getMock('Arara\Process\Control\Signal');
         $signal

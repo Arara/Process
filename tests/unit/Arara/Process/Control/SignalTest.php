@@ -70,7 +70,7 @@ class SignalTest extends TestCase
         $signal = new Signal();
         $signal->setHandler(SIGINT, 'trim');
 
-        $this->assertEquals(array('trim'), $signal->getHandlers(SIGINT));
+        $this->assertEquals(['trim'], $signal->getHandlers(SIGINT));
     }
 
     public function testShouldHandleASignalByPcntlConstantName()
@@ -85,7 +85,7 @@ class SignalTest extends TestCase
         $signal = new Signal();
         $signal->setHandler('SIGINT', 'trim');
 
-        $this->assertEquals(array('trim'), $signal->getHandlers(SIGINT));
+        $this->assertEquals(['trim'], $signal->getHandlers(SIGINT));
     }
 
     public function testShouldHandleASignalByName()
@@ -100,7 +100,7 @@ class SignalTest extends TestCase
         $signal = new Signal();
         $signal->setHandler('alarm', 'trim');
 
-        $this->assertEquals(array('trim'), $signal->getHandlers(SIGALRM));
+        $this->assertEquals(['trim'], $signal->getHandlers(SIGALRM));
     }
 
     /**
@@ -138,13 +138,13 @@ class SignalTest extends TestCase
     public function testShouldTriggerAnErrorWhenSignalHandlerIsNotAValidCallback()
     {
         $signal = new Signal();
-        $signal->setHandler('hangup', array());
+        $signal->setHandler('hangup', []);
     }
 
     public function testShouldIgnoreASignalByPcntlConstant()
     {
         $actualArguments = null;
-        $expectedArguments = array(SIGINT, SIG_IGN);
+        $expectedArguments = [SIGINT, SIG_IGN];
 
         $this->overwrite(
             'pcntl_signal',
@@ -164,7 +164,7 @@ class SignalTest extends TestCase
     public function testShouldIgnoreASignalByPcntlConstantName()
     {
         $actualArguments = null;
-        $expectedArguments = array(SIGINT, SIG_IGN);
+        $expectedArguments = [SIGINT, SIG_IGN];
 
         $this->overwrite(
             'pcntl_signal',
@@ -184,7 +184,7 @@ class SignalTest extends TestCase
     public function testShouldIgnoreASignalByName()
     {
         $actualArguments = null;
-        $expectedArguments = array(SIGTERM, SIG_IGN);
+        $expectedArguments = [SIGTERM, SIG_IGN];
 
         $this->overwrite(
             'pcntl_signal',
@@ -214,7 +214,7 @@ class SignalTest extends TestCase
         $signal->setHandler('quit', 'rtrim');
         $signal->setHandler('quit', 'trim');
 
-        $this->assertEquals(array('trim'), $signal->getHandlers('quit'));
+        $this->assertEquals(['trim'], $signal->getHandlers('quit'));
     }
 
     public function testShouldAppendHandler()
@@ -231,7 +231,7 @@ class SignalTest extends TestCase
         $signal->appendHandler('quit', 'trim');
         $signal->appendHandler('quit', 'ltrim');
 
-        $this->assertEquals(array('rtrim', 'trim', 'ltrim'), $signal->getHandlers('quit'));
+        $this->assertEquals(['rtrim', 'trim', 'ltrim'], $signal->getHandlers('quit'));
     }
 
     public function testShouldPrependHandler()
@@ -248,7 +248,7 @@ class SignalTest extends TestCase
         $signal->prependHandler('stop', 'trim');
         $signal->prependHandler('stop', 'ltrim');
 
-        $this->assertEquals(array('ltrim', 'trim', 'rtrim'), $signal->getHandlers('stop'));
+        $this->assertEquals(['ltrim', 'trim', 'rtrim'], $signal->getHandlers('stop'));
     }
 
     public function testShouldHandleSignals()
@@ -277,7 +277,7 @@ class SignalTest extends TestCase
     public function testShouldSendASignalByPcntlConstant()
     {
         $actualArguments = null;
-        $expectedArguments = array(12345, SIGINT);
+        $expectedArguments = [12345, SIGINT];
 
         $this->overwrite(
             'posix_kill',
@@ -297,7 +297,7 @@ class SignalTest extends TestCase
     public function testShouldSendASignalByPcntlConstantName()
     {
         $actualArguments = null;
-        $expectedArguments = array(12345, SIGINT);
+        $expectedArguments = [12345, SIGINT];
 
         $this->overwrite(
             'posix_kill',
@@ -317,7 +317,7 @@ class SignalTest extends TestCase
     public function testShouldSendASignalByName()
     {
         $actualArguments = null;
-        $expectedArguments = array(12345, SIGALRM);
+        $expectedArguments = [12345, SIGALRM];
 
         $this->overwrite(
             'posix_kill',

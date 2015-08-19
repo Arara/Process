@@ -422,7 +422,7 @@ class PoolTest extends TestCase
             ->expects($this->any())
             ->method('wait')
             ->will($this->onConsecutiveCalls(true, false));
- 
+
         $process2 = $this->getMock('Arara\Process\Process');
         $process2
             ->expects($this->once())
@@ -432,9 +432,9 @@ class PoolTest extends TestCase
         $pool = new Pool(2, true);
         $pool->attach($process1);
         $pool->attach($process2);
-        
+
         $process1->wait() ;
-        
+
         $pool->wait();
     }
 }
