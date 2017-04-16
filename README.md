@@ -378,3 +378,7 @@ $pidfile->finalize();
 ```
 
 The second time someone runs it an exception is thrown. We recommend you put this code into a `try..catch` statement.
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/Arara/process/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
